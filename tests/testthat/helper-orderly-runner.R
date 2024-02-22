@@ -11,7 +11,6 @@ create_temporary_root <- function(...) {
   suppressMessages(orderly2::orderly_init(path, ...))
 }
 
-
 test_prepare_orderly_example <- function(examples, ...) {
   tmp <- tempfile()
   withr::defer_parent(unlink(tmp, recursive = TRUE))
@@ -41,4 +40,16 @@ helper_add_git <- function(path) {
   url <- "https://example.com/git"
   gert::git_remote_add(url, repo = path)
   list(path = path, user = user, branch = branch, sha = sha, url = url)
+}
+
+new_queue_quietly <- function(root, ...) {
+  suppressMessages(Queue$new(root, ...))
+}
+
+skip_if_no_redis <- function() {
+  available <- redux::redis_available()
+  if (!available) {
+    testthat::skip("Skipping test as redis is not available")
+  }
+  invisible(available)
 }
