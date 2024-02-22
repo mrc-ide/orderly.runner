@@ -20,7 +20,7 @@ test_that("git ref to sha", {
   testthat::skip_on_cran()
   repo <- initialise_git_repo()
   other <- create_new_branch(repo$path, "other")
-  sha1 <- git_ref_to_sha("main", repo$path)
+  sha1 <- git_ref_to_sha(repo$branch, repo$path)
   sha2 <- git_ref_to_sha("other", repo$path)
   
   expect_match(sha1, "^[[:xdigit:]]{40}$")

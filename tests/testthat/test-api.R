@@ -28,7 +28,7 @@ test_that("can list orderly reports", {
     vcapply(res$data, function(item) as.character(item[["name"]]))
   }
 
-  res <- endpoint$run("main")
+  res <- endpoint$run(repo$branch)
   expect_equal(res$status_code, 200)
   expect_setequal(get_reports_from_response(res), c("data", "parameters"))
 
