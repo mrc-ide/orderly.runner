@@ -16,7 +16,6 @@
 ##'
 ##' @export
 api <- function(root, validate = NULL, log_level = "info") {
-  orderly2::orderly_list_src(root, locate = FALSE)
   logger <- porcelain::porcelain_logger(log_level)
   api <- porcelain::porcelain$new(validate = validate, logger = logger)
   api$include_package_endpoints(state = list(root = root))
@@ -29,4 +28,18 @@ root <- function() {
   versions <- list(orderly2 = package_version_string("orderly2"),
                    orderly.runner = package_version_string("orderly.runner"))
   lapply(versions, scalar)
+}
+
+##' @porcelain 
+##'   GET /report/list => json(report_list)
+##'   query hash :: string
+##'   state root :: root
+report_list <- function(root, hash) {
+  temp_root <- git_clone_depth_1(root, hash)
+  src_reports <- orderly2::orderly_list_src(temp_root, locate = FALSE)
+  lapply(src_reports, function(report_name) {
+    list(
+      name = scalar(report_name)
+    )
+  })
 }
