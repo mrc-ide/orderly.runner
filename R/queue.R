@@ -10,7 +10,7 @@ Queue <- R6::R6Class("Queue", #nolint
     config = NULL,
 
     #' @description
-    #' Create object, read configuration and setup redis connection.
+    #' Create object, read configuration and setup Redis connection.
     #'
     #' @param root Orderly root.
     #' @param queue_id ID of an existing queue to connect to, creates a new one
@@ -45,6 +45,8 @@ Queue <- R6::R6Class("Queue", #nolint
       private$queue$worker_len()
     },
 
+    #' @description stop workers and destroy queue if
+    #' cleanup_on_exit is TRUE and Redis connection available
     finalize = function() {
       if (private$cleanup_on_exit && !is.null(private$con)) {
         private$queue$worker_stop(type = "kill")
