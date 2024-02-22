@@ -36,7 +36,8 @@ test_that("can list orderly reports", {
   gert::git_branch_create("other", repo = path)
   unlink(file.path(path, "src", "data"), recursive = TRUE)
   gert::git_add(".", repo = path)
-  sha <- gert::git_commit("Remove data report", repo = path)
+  sha <- gert::git_commit("Remove data report", repo = path,
+                          author = "Test User <test.user@example.com>")
 
   ## Can list items from this sha
   other_res <- endpoint$run(sha)
