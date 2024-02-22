@@ -10,3 +10,15 @@ create_temporary_root <- function(...) {
   withr::defer_parent(unlink(path, recursive = TRUE))
   suppressMessages(orderly2::orderly_init(path, ...))
 }
+
+new_queue_quietly <- function(root, ...) {
+  suppressMessages(Queue$new(root, ...))
+}
+
+skip_if_no_redis <- function() {
+  available <- redux::redis_available()
+  if (!available) {
+    testthat::skip("Skipping test as redis is not available")
+  }
+  invisible(available)
+}
