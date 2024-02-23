@@ -13,7 +13,6 @@ Roxygen: list(markdown = TRUE, roclets = c("rd", "namespace", "porcelain::porcel
 URL: https://github.com/mrc-ide/orderly.runner
 BugReports: https://github.com/mrc-ide/orderly.runner/issues
 Imports:
-    cli,
     docopt,
     gert,
     jsonlite,
