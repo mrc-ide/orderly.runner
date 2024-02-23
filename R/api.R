@@ -35,11 +35,14 @@ root <- function() {
 ##'   query hash :: string
 ##'   state root :: root
 report_list <- function(root, hash) {
-  temp_root <- git_clone_depth_1(root, hash)
-  src_reports <- orderly2::orderly_list_src(temp_root, locate = FALSE)
-  lapply(src_reports, function(report_name) {
-    list(
-      name = scalar(report_name)
-    )
-  })
+  contents <- gert::git_ls(root, ref = hash)
+  re <- "^src/([^/]+)/(\\1|orderly)\\.(yml|R)$"
+  nms <- sub(re, "\\1", 
+             grep(re, contents$path, value = TRUE, perl = TRUE), 
+             perl = TRUE)
+  last_changed <- function(nm) {
+    max(contents$modified[startsWith(contents$path, sprintf("src/%s", nm))])
+  }
+  data.frame(name = nms, 
+             updated = vnapply(nms, last_changed, USE.NAMES = FALSE))
 }

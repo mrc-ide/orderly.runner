@@ -42,28 +42,3 @@ helper_add_git <- function(path) {
   gert::git_remote_add(url, repo = path)
   list(path = path, user = user, branch = branch, sha = sha, url = url)
 }
-
-
-initialise_git_repo <- function() {
-  t <- tempfile()
-  dir.create(t)
-  writeLines(c("# Example", "", "example repo"), file.path(t, "README.md"))
-  helper_add_git(t)
-}
-
-
-create_new_commit <- function(path, new_file = "new", message = "new message") {
-  writeLines("new file", file.path(path, new_file))
-  gert::git_add(".", repo = path)
-  user <- "author <author@example.com>"
-  gert::git_commit(message, author = user, committer = user, repo = path)
-}
-
-
-create_new_branch <- function(path, branch_name = "other") {
-  initial_branch <- gert::git_branch(repo = path)
-  gert::git_branch_create(branch_name, repo = path)
-  commit_sha <- create_new_commit(path, branch_name)
-  gert::git_branch_checkout(initial_branch, repo = path)
-  list(branch = branch_name, sha = commit_sha)
-}

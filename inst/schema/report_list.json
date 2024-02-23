@@ -4,7 +4,8 @@
     "items": {
       "type": "object",
       "properties": {
-        "name": { "type": "string" }
+        "name": { "type": "string" },
+        "updated": { "type": "number" }
       }
     }
 }
