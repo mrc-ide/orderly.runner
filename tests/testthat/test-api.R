@@ -28,9 +28,7 @@ test_that("can list orderly reports", {
   res <- endpoint$run(repo$branch)
   expect_equal(res$status_code, 200)
   expect_setequal(res$data$name, c("data", "parameters"))
-  # TODO: actually get modified time, looks like some issue with value
-  # coming back from gert::git_ls
-  expect_equal(res$data$update, c(0, 0))
+  expect_true(all(res$data$updated_time > (Sys.time() - 100)))
 
   ## Delete a report on a 2nd branch
   gert::git_branch_create("other", repo = path)

@@ -30,19 +30,24 @@ root <- function() {
   lapply(versions, scalar)
 }
 
+
 ##' @porcelain 
 ##'   GET /report/list => json(report_list)
 ##'   query hash :: string
 ##'   state root :: root
 report_list <- function(root, hash) {
   contents <- gert::git_ls(root, ref = hash)
+  ## Note there is a bug in current gert, and git_ls returns 0 for modified
+  ## and created time whenever called with a "ref". Get them via stat_files
+  ## for now
+  contents <- gert::git_stat_files(contents$path, ref = hash, repo = root)
   re <- "^src/([^/]+)/(\\1|orderly)\\.(yml|R)$"
   nms <- sub(re, "\\1", 
-             grep(re, contents$path, value = TRUE, perl = TRUE), 
+             grep(re, contents$file, value = TRUE, perl = TRUE), 
              perl = TRUE)
   last_changed <- function(nm) {
-    max(contents$modified[startsWith(contents$path, sprintf("src/%s", nm))])
+    max(contents$modified[startsWith(contents$file, sprintf("src/%s", nm))])
   }
   data.frame(name = nms, 
-             updated = vnapply(nms, last_changed, USE.NAMES = FALSE))
+             updated_time = vnapply(nms, last_changed, USE.NAMES = FALSE))
 }

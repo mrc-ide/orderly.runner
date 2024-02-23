@@ -5,7 +5,7 @@
       "type": "object",
       "properties": {
         "name": { "type": "string" },
-        "updated": { "type": "number" }
+        "updated_time": { "type": "number" }
       }
     }
 }
