@@ -13,8 +13,8 @@ package_version_string <- function(name) {
 }
 
 
-vcapply <- function(X, FUN, ...) { # nolint
-  vapply(X, FUN, character(1), ...)
+vcapply <- function(...) {
+  vapply(FUN.VALUE = character(1), ...)
 }
 
 
