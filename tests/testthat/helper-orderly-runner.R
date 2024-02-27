@@ -46,6 +46,16 @@ new_queue_quietly <- function(root, ...) {
   suppressMessages(Queue$new(root, ...))
 }
 
+start_queue_workers_quietly <- function(n_workers, controller) {
+  suppressMessages(
+    rrq::rrq_worker_spawn2(n_workers, controller = controller)
+  )
+}
+
+kill_queue_workers <- function(controller) {
+  rrq::rrq_worker_stop(controller = controller)
+}
+
 skip_if_no_redis <- function() {
   available <- redux::redis_available()
   if (!available) {
