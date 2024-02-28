@@ -28,7 +28,7 @@ jobs:
 
       - name: Start Redis
         run: |
-          ./scripts/redis
+          ./scripts/redis start
 
       - name: Test coverage
         run: |
