@@ -4,3 +4,9 @@ test_that("null-or-value works", {
   expect_equal(NULL %||% NULL, NULL)
   expect_equal(NULL %||% 2, 2)
 })
+
+test_that("first_dirname gets the first dir part of the filename", {
+  expect_equal(
+    first_dirname(c("test/file/name.txt", "test", ".", "testing/file.txt")),
+    c("test", "test", ".", "testing"))
+})

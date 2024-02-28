@@ -21,30 +21,36 @@ test_that("Can construct the api", {
 
 
 test_that("can list orderly reports", {
-  path <- test_prepare_orderly_example(c("data", "parameters"))
-  repo <- helper_add_git(path)
-  endpoint <- orderly_runner_endpoint("GET", "/report/list", path)
+  repo <- test_prepare_orderly_remote_example(c("data", "parameters"))
+  endpoint <- orderly_runner_endpoint("GET", "/report/list", repo$local)
 
-  res <- endpoint$run(repo$branch)
+  res <- endpoint$run(gert::git_branch(repo$local))
   expect_equal(res$status_code, 200)
   expect_setequal(res$data$name, c("data", "parameters"))
   expect_true(all(res$data$updated_time > (Sys.time() - 100)))
+  expect_false(all(res$data$has_modifications))
 
-  ## Delete a report on a 2nd branch
-  gert::git_branch_create("other", repo = path)
-  unlink(file.path(path, "src", "data"), recursive = TRUE)
-  gert::git_add(".", repo = path)
-  sha <- gert::git_commit("Remove data report", repo = path,
+  ## Add a report on a 2nd branch
+  gert::git_branch_create("other", repo = repo$local)
+  fs::dir_copy(file.path(repo$local, "src", "parameters"), 
+               file.path(repo$local, "src", "parameters2"))
+  gert::git_add(".", repo = repo$local)
+  sha <- gert::git_commit("Add report data2", repo = repo$local,
                           author = "Test User <test.user@example.com>")
 
   ## Can list items from this sha
   other_res <- endpoint$run(sha)
   expect_equal(other_res$status_code, 200)
-  expect_equal(other_res$data$name, "parameters")
+  params2 <- other_res$data[other_res$data$name == "parameters2", ]
+  existing <- other_res$data[other_res$data$name != "parameters2", ]
+  expect_equal(existing, res$data)
+  expect_equal(nrow(params2), 1)
+  expect_true(params2$has_modifications)
 
   ## We can still see all reports on main branch
-  first_commit_res <- endpoint$run(repo$sha)
+  commits <- gert::git_log(repo = repo$local)$commit
+  first_commit <- commits[length(commits)]
+  first_commit_res <- endpoint$run(first_commit)
   expect_equal(first_commit_res$status_code, 200)
-  expect_setequal(first_commit_res$data$name, 
-                  c("data", "parameters"))
+  expect_equal(first_commit_res$data, res$data)
 })

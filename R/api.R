@@ -44,6 +44,13 @@ report_list <- function(root, hash) {
   last_changed <- function(nm) {
     max(contents$modified[startsWith(contents$path, sprintf("src/%s", nm))])
   }
+  updated_time <- vnapply(nms, last_changed, USE.NAMES = FALSE)
+  modified_sources <- git_get_modified(hash, relative_dir = "src/", repo = root)
+  modified_reports <- unique(first_dirname(modified_sources))
+  has_modifications <- vlapply(nms, function(report_name) {
+    report_name %in% modified_reports
+  }, USE.NAMES = FALSE)
   data.frame(name = nms, 
-             updated_time = vnapply(nms, last_changed, USE.NAMES = FALSE))
+             updated_time = updated_time,
+             has_modifications = has_modifications)
 }
