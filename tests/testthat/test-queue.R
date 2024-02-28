@@ -11,7 +11,6 @@ test_that("Can bring up queue", {
   expect_equal(q$number_of_workers(), 0)
   start_queue_workers_quietly(1, q$controller)
   expect_equal(q$number_of_workers(), 1)
-  kill_queue_workers(q$controller)
 })
 
 
