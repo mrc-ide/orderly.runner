@@ -16,7 +16,6 @@
 ##'
 ##' @export
 api <- function(root, validate = NULL, log_level = "info") {
-  orderly2::orderly_list_src(root, locate = FALSE)
   logger <- porcelain::porcelain_logger(log_level)
   api <- porcelain::porcelain$new(validate = validate, logger = logger)
   api$include_package_endpoints(state = list(root = root))
@@ -29,4 +28,22 @@ root <- function() {
   versions <- list(orderly2 = package_version_string("orderly2"),
                    orderly.runner = package_version_string("orderly.runner"))
   lapply(versions, scalar)
+}
+
+
+##' @porcelain 
+##'   GET /report/list => json(report_list)
+##'   query hash :: string
+##'   state root :: root
+report_list <- function(root, hash) {
+  contents <- gert::git_ls(root, ref = hash)
+  re <- "^src/([^/]+)/(\\1|orderly)\\.(yml|R)$"
+  nms <- sub(re, "\\1", 
+             grep(re, contents$path, value = TRUE, perl = TRUE),
+             perl = TRUE)
+  last_changed <- function(nm) {
+    max(contents$modified[startsWith(contents$path, sprintf("src/%s", nm))])
+  }
+  data.frame(name = nms, 
+             updated_time = vnapply(nms, last_changed, USE.NAMES = FALSE))
 }

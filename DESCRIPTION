@@ -8,16 +8,18 @@ Authors@R: c(person("Rich", "FitzJohn", role = c("aut", "cre"),
 Description: Small HTTP server for running orderly reports.
 License: MIT + file LICENSE
 Encoding: UTF-8
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.1
 Roxygen: list(markdown = TRUE, roclets = c("rd", "namespace", "porcelain::porcelain_roclet"))
 URL: https://github.com/mrc-ide/orderly.runner
 BugReports: https://github.com/mrc-ide/orderly.runner/issues
 Imports:
     docopt,
+    gert (>= 2.0.1),
     jsonlite,
     orderly2,
     porcelain,
 Suggests:
+    fs,
     httr,
     lgr,
     mockery,
@@ -26,4 +28,5 @@ Suggests:
 Config/testthat/edition: 3
 Remotes:
     mrc-ide/orderly2,
-    reside-ic/porcelain
+    reside-ic/porcelain,
+    r-lib/gert

@@ -18,3 +18,33 @@ test_that("Can construct the api", {
   expect_length(logs, 2)
   expect_equal(logs[[1]]$logger, "orderly.runner")
 })
+
+
+test_that("can list orderly reports", {
+  path <- test_prepare_orderly_example(c("data", "parameters"))
+  repo <- helper_add_git(path)
+  endpoint <- orderly_runner_endpoint("GET", "/report/list", path)
+
+  res <- endpoint$run(repo$branch)
+  expect_equal(res$status_code, 200)
+  expect_setequal(res$data$name, c("data", "parameters"))
+  expect_true(all(res$data$updated_time > (Sys.time() - 100)))
+
+  ## Delete a report on a 2nd branch
+  gert::git_branch_create("other", repo = path)
+  unlink(file.path(path, "src", "data"), recursive = TRUE)
+  gert::git_add(".", repo = path)
+  sha <- gert::git_commit("Remove data report", repo = path,
+                          author = "Test User <test.user@example.com>")
+
+  ## Can list items from this sha
+  other_res <- endpoint$run(sha)
+  expect_equal(other_res$status_code, 200)
+  expect_equal(other_res$data$name, "parameters")
+
+  ## We can still see all reports on main branch
+  first_commit_res <- endpoint$run(repo$sha)
+  expect_equal(first_commit_res$status_code, 200)
+  expect_setequal(first_commit_res$data$name, 
+                  c("data", "parameters"))
+})
