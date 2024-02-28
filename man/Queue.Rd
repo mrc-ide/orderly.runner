@@ -15,6 +15,8 @@ Object for managing running jobs on the redis queue
 \item{\code{root}}{Orderly root}
 
 \item{\code{config}}{Orderly config}
+
+\item{\code{controller}}{RRQ controller}
 }
 \if{html}{\out{</div>}}
 }
@@ -32,7 +34,7 @@ Object for managing running jobs on the redis queue
 \subsection{Method \code{new()}}{
 Create object, read configuration and setup Redis connection.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Queue$new(root, queue_id = NULL, workers = 1, cleanup_on_exit = workers > 0)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Queue$new(root, queue_id = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -42,11 +44,6 @@ Create object, read configuration and setup Redis connection.
 
 \item{\code{queue_id}}{ID of an existing queue to connect to, creates a new one
 if NULL (default NULL)}
-
-\item{\code{workers}}{Number of workers to spawn (default 1)}
-
-\item{\code{cleanup_on_exit}}{If TRUE workers are killed on exit (defaults
-to TRUE if workers is > 0)}
 }
 \if{html}{\out{</div>}}
 }
@@ -64,8 +61,7 @@ to TRUE if workers is > 0)}
 \if{html}{\out{<a id="method-Queue-finalize"></a>}}
 \if{latex}{\out{\hypertarget{method-Queue-finalize}{}}}
 \subsection{Method \code{finalize()}}{
-stop workers and destroy queue if
-cleanup_on_exit is TRUE and Redis connection available
+Destroy queue
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Queue$finalize()}\if{html}{\out{</div>}}
 }
