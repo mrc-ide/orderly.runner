@@ -13,20 +13,26 @@ Roxygen: list(markdown = TRUE, roclets = c("rd", "namespace", "porcelain::porcel
 URL: https://github.com/mrc-ide/orderly.runner
 BugReports: https://github.com/mrc-ide/orderly.runner/issues
 Imports:
+    cli,
     docopt,
     gert (>= 2.0.1),
+    ids,
     jsonlite,
     orderly2,
     porcelain,
+    R6,
+    redux,
+    rrq,
+    withr
 Suggests:
     fs,
     httr,
     lgr,
     mockery,
-    testthat (>= 3.0.0),
-    withr
+    testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Remotes:
     mrc-ide/orderly2,
     reside-ic/porcelain,
+    mrc-ide/rrq,
     r-lib/gert
