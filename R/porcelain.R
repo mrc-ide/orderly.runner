@@ -18,5 +18,15 @@
         porcelain::porcelain_state(root = state$root),
         returning = porcelain::porcelain_returning_json("report_list"),
         validate = validate)
+    },
+    "GET /report/<name:string>/parameters" = function(state, validate) {
+      porcelain::porcelain_endpoint$new(
+        "GET",
+        "/report/<name:string>/parameters",
+        report_parameters,
+        porcelain::porcelain_input_query(ref = "string"),
+        porcelain::porcelain_state(root = state$root),
+        returning = porcelain::porcelain_returning_json("report_parameters"),
+        validate = validate)
     })
 }

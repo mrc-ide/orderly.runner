@@ -18,7 +18,7 @@ Imports:
     gert (>= 2.0.1),
     ids,
     jsonlite,
-    orderly2,
+    orderly2 (>= 1.99.12),
     porcelain,
     R6,
     redux,
@@ -32,7 +32,7 @@ Suggests:
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Remotes:
-    mrc-ide/orderly2,
+    mrc-ide/orderly2@add-ast-read,
     reside-ic/porcelain,
     mrc-ide/rrq,
     r-lib/gert

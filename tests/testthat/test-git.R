@@ -25,10 +25,7 @@ test_that("can get files which have been modified", {
   testthat::skip_on_cran()
   repo <- test_prepare_orderly_remote_example("data")
   copy_examples("parameters", repo$local)
-  gert::git_add(".", repo = repo$local)
-  user <- "author <author@example.com>"
-  gert::git_commit("add parameters", author = user, committer = user, 
-                   repo = repo$local)
+  git_add_and_commit(repo$local)
   
   log <- gert::git_log(repo = repo$local)
   expect_equal(git_get_modified(log$commit[[2]], repo = repo$local),
