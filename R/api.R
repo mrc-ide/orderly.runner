@@ -33,10 +33,10 @@ root <- function() {
 
 ##' @porcelain 
 ##'   GET /report/list => json(report_list)
-##'   query hash :: string
+##'   query ref :: string
 ##'   state root :: root
-report_list <- function(root, hash) {
-  contents <- gert::git_ls(root, ref = hash)
+report_list <- function(root, ref) {
+  contents <- gert::git_ls(root, ref = ref)
   re <- "^src/([^/]+)/(\\1|orderly)\\.(yml|R)$"
   nms <- sub(re, "\\1", 
              grep(re, contents$path, value = TRUE, perl = TRUE),
@@ -45,7 +45,7 @@ report_list <- function(root, hash) {
     max(contents$modified[startsWith(contents$path, sprintf("src/%s", nm))])
   }
   updated_time <- vnapply(nms, last_changed, USE.NAMES = FALSE)
-  modified_sources <- git_get_modified(hash, relative_dir = "src/", repo = root)
+  modified_sources <- git_get_modified(ref, relative_dir = "src/", repo = root)
   modified_reports <- unique(first_dirname(modified_sources))
   has_modifications <- vlapply(nms, function(report_name) {
     report_name %in% modified_reports
