@@ -5,6 +5,7 @@ assert_scalar <- function(x, name = deparse(substitute(x)), arg = name,
                      i = "{name} has length {length(x)}"),
                    call = call, arg = arg)
   }
+  invisible(x)
 }
 
 
@@ -13,6 +14,7 @@ assert_character <- function(x, name = deparse(substitute(x)),
   if (!is.character(x)) {
     cli::cli_abort("'{name}' must be character", call = call, arg = arg)
   }
+  invisible(x)
 }
 
 

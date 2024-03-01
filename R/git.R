@@ -12,19 +12,6 @@ git_run <- function(args, repo = NULL, check = FALSE) {
 }
 
 
-git_ref_to_sha <- function(ref, repo = NULL, check = FALSE) {
-  assert_scalar_character(ref)
-  res <- git_run(c("rev-parse", ref), repo = repo, check = FALSE)
-  if (res$success) {
-    res$output
-  } else if (check) {
-    stop(sprintf("Git reference '%s' not found", ref), call. = FALSE)
-  } else {
-    NA_character_
-  }
-}
-
-
 git_get_default_branch <- function(repo = NULL) {
   # This is assuming remote origin exists. We'll get an error if it
   # doesn't. But this should be safe for us as we'll always have cloned
@@ -48,7 +35,7 @@ git_get_modified <- function(ref, base = NULL,
   }
   git_run(
     c("diff", "--name-only", relative,
-      sprintf("%s...%s", base, git_ref_to_sha(ref, repo = repo, check = TRUE)),
+      sprintf("%s...%s", base, gert::git_commit_id(ref, repo = repo)),
       additional_args),
     repo = repo, check = TRUE)$output
 }

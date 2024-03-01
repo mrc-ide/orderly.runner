@@ -1,24 +1,3 @@
-test_that("git ref to sha", {
-  testthat::skip_on_cran()
-  repo <- initialise_git_repo()
-  other <- create_new_branch(repo$path, "other")
-  sha1 <- git_ref_to_sha(repo$branch, repo$path)
-  sha2 <- git_ref_to_sha("other", repo$path)
-  
-  expect_match(sha1, "^[[:xdigit:]]{40}$")
-  expect_match(sha2, "^[[:xdigit:]]{40}$")
-  expect_true(sha1 != sha2)
-  
-  expect_equal(git_ref_to_sha("HEAD", repo$path), sha1)
-  expect_equal(git_ref_to_sha(substr(sha1, 1, 7), repo$path), sha1)
-  
-  expect_identical(git_ref_to_sha("unknown", repo$path),
-                   NA_character_)
-  expect_error(git_ref_to_sha("unknown", repo$path, TRUE),
-               "Git reference 'unknown' not found")
-})
-
-
 test_that("handle failure", {
   testthat::skip_on_cran()
   repo <- initialise_git_repo()
