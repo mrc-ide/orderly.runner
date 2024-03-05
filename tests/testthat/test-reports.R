@@ -9,8 +9,9 @@ test_that("can get orderly script name", {
             file.path(root, "src", "data", "orderly.R"))
   git_add_and_commit(root)
   
-  expect_error(get_orderly_script_path("data", "HEAD", root), 
-               "Found 2 valid orderly scripts. There must only be one.")
+  expect_error(
+    get_orderly_script_path("data", "HEAD", root), 
+    "Found 2 valid orderly scripts. There must be one and only one.")
 })
 
 
