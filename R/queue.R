@@ -34,6 +34,20 @@ Queue <- R6::R6Class("Queue", #nolint
                                    controller = self$controller)
     },
 
+    submit = function(reportname, parameters = NULL,
+                      branch = "master", ref = "HEAD") {
+      run_args <- list(
+        self$root,
+        reportname,
+        parameters,
+        branch,
+        ref
+      )
+      rrq::rrq_task_create_call(runner_run, run_args,
+                                separate_process = TRUE,
+                                controller = self$controller)
+    },
+
     # Just until we add queue status for testing
     number_of_workers = function() {
       rrq::rrq_worker_len(self$controller)
