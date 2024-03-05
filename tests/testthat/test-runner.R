@@ -9,7 +9,7 @@ test_that("runner runs as expected", {
   worker_root <- file.path(orderly_root, ".packit", "workers", worker_id)
 
   suppressMessages(withr::with_envvar(
-    c(WORKER_ID = worker_id),
+    c(RRQ_WORKER_ID = worker_id),
     runner_run(orderly_root, "data", NULL, "master", "HEAD", echo = FALSE)
   ))
 
@@ -17,6 +17,7 @@ test_that("runner runs as expected", {
   expect_equal(length(list.files(file.path(orderly_root, "archive"))), 1)
   # cleanup has deleted draft folder
   expect_equal(file.exists(file.path(worker_root, "draft")), FALSE)
+  browser()
 })
 
 test_that("runner runs as expected with parameters", {
@@ -31,7 +32,7 @@ test_that("runner runs as expected with parameters", {
 
   parameters <- list(a = -1, b = -2, c = -3)
   suppressMessages(withr::with_envvar(
-    c(WORKER_ID = worker_id),
+    c(RRQ_WORKER_ID = worker_id),
     runner_run(orderly_root, "parameters", parameters,
                "master", "HEAD", echo = FALSE)
   ))

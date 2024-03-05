@@ -46,6 +46,20 @@ new_queue_quietly <- function(root, ...) {
   suppressMessages(Queue$new(root, ...))
 }
 
+make_worker_dirs <- function(orderly_root, ids) {
+  print(orderly_root)
+  packit_path <- file.path(orderly_root, ".packit")
+  dir.create(packit_path)
+  workers <- file.path(packit_path, "workers")
+  dir.create(workers)
+  lapply(ids, function(id) {
+    worker_path <- file.path(workers, id)
+    dir.create(worker_path)
+    gert::git_clone(orderly_root, path = worker_path)
+  })
+
+}
+
 start_queue_workers_quietly <- function(n_workers,
                                         controller, env = parent.frame()) {
   suppressMessages(
