@@ -19,7 +19,7 @@ test_that("can run server", {
 })
 
 test_that("can list reports", {
-  r <- bg$request("GET", "/report/list?hash=HEAD")
+  r <- bg$request("GET", "/report/list?ref=HEAD")
   expect_equal(httr::status_code(r), 200)
   
   dat <- httr::content(r)
