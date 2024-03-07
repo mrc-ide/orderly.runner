@@ -4,7 +4,7 @@ test_that("runner runs as expected", {
   gert::git_add(c("src", "orderly_config.yml"), repo = orderly_root)
   gert::git_commit("first commit", repo = orderly_root)
 
-  worker_id <- "cutie-patootie"
+  worker_id <- "worker1"
   make_worker_dirs(orderly_root, worker_id)
   worker_root <- file.path(orderly_root, ".packit", "workers", worker_id)
 
@@ -26,7 +26,7 @@ test_that("runner runs as expected with parameters", {
   gert::git_add(c("src", "orderly_config.yml"), repo = orderly_root)
   gert::git_commit("first commit", repo = orderly_root)
 
-  worker_id <- "cutie-patootie"
+  worker_id <- "worker1"
   make_worker_dirs(orderly_root, worker_id)
   worker_root <- file.path(orderly_root, ".packit", "workers", worker_id)
 

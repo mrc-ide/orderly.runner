@@ -58,3 +58,19 @@ test_that("Generated namespaced id if no ids exist", {
   q <- new_queue_quietly(root)
   expect_match(q$controller$queue_id, "orderly.runner")
 })
+
+test_that("Can submit task", {
+  skip_if_no_redis()
+
+  root <- test_prepare_orderly_example("data")
+  gert::git_init(root)
+  gert::git_add(c("src", "orderly_config.yml"), repo = root)
+  gert::git_commit("first commit", repo = root)
+
+  q <- new_queue_quietly(root)
+  worker_manager <- start_queue_workers_quietly(1, q$controller)
+  make_worker_dirs(root, worker_manager$id)
+
+  task_id <- q$submit("data")
+  browser()
+})

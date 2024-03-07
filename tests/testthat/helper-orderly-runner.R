@@ -62,10 +62,11 @@ make_worker_dirs <- function(orderly_root, ids) {
 
 start_queue_workers_quietly <- function(n_workers,
                                         controller, env = parent.frame()) {
-  suppressMessages(
+  worker_manager <- suppressMessages(
     rrq::rrq_worker_spawn2(n_workers, controller = controller)
   )
   withr::defer(rrq::rrq_worker_stop(controller = controller), env = env)
+  worker_manager
 }
 
 skip_if_no_redis <- function() {
