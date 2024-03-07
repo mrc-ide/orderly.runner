@@ -47,7 +47,6 @@ new_queue_quietly <- function(root, ...) {
 }
 
 make_worker_dirs <- function(orderly_root, ids) {
-  print(orderly_root)
   packit_path <- file.path(orderly_root, ".packit")
   dir.create(packit_path)
   workers <- file.path(packit_path, "workers")
