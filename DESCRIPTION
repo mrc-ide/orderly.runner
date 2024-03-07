@@ -34,5 +34,5 @@ Config/testthat/edition: 3
 Remotes:
     mrc-ide/orderly2,
     reside-ic/porcelain,
-    r-lib/gert,
-    mrc-ide/rrq
+    mrc-ide/rrq,
+    r-lib/gert
