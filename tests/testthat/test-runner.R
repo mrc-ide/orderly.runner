@@ -17,7 +17,6 @@ test_that("runner runs as expected", {
   expect_equal(length(list.files(file.path(orderly_root, "archive"))), 1)
   # cleanup has deleted draft folder
   expect_equal(file.exists(file.path(worker_root, "draft")), FALSE)
-  browser()
 })
 
 test_that("runner runs as expected with parameters", {

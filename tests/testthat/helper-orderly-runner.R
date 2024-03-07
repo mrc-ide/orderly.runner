@@ -76,3 +76,17 @@ skip_if_no_redis <- function() {
   }
   invisible(available)
 }
+
+expect_worker_task_complete <- function(task_id, controller, n_tries) {
+  is_completed <- FALSE
+  for (i in seq_len(n_tries)) {
+    is_completed <- rrq::rrq_task_status(
+      task_id, controller = controller
+    ) == "COMPLETE"
+    if (is_completed == TRUE) {
+      break
+    }
+    Sys.sleep(1)
+  }
+  expect_equal(is_completed, TRUE)
+}

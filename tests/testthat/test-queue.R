@@ -59,6 +59,7 @@ test_that("Generated namespaced id if no ids exist", {
   expect_match(q$controller$queue_id, "orderly.runner")
 })
 
+
 test_that("Can submit task", {
   skip_if_no_redis()
 
@@ -72,5 +73,61 @@ test_that("Can submit task", {
   make_worker_dirs(root, worker_manager$id)
 
   task_id <- q$submit("data")
-  browser()
+  expect_worker_task_complete(task_id, q$controller, 10)
+})
+
+
+test_that("Can submit 2 tasks on different branches", {
+  skip_if_no_redis()
+
+  root <- test_prepare_orderly_example("data")
+  gert::git_init(root)
+  gert::git_add(c("src", "orderly_config.yml"), repo = root)
+  gert::git_commit("first commit", repo = root)
+
+  gert::git_branch_create("branch1", repo = root)
+  gert::git_branch_checkout("branch1", repo = root)
+  write.table("test", file = file.path(root, "test.txt"))
+  gert::git_add("test.txt", repo = root)
+  gert::git_commit("branch1 commit", repo = root)
+
+  q <- new_queue_quietly(root)
+  worker_manager <- start_queue_workers_quietly(2, q$controller)
+  make_worker_dirs(root, worker_manager$id)
+
+  task_id1 <- q$submit("data", branch = "master")
+  task_id2 <- q$submit("data", branch = "branch1")
+  expect_worker_task_complete(task_id1, q$controller, 10)
+  expect_worker_task_complete(task_id2, q$controller, 10)
+
+  worker_id2 <- rrq::rrq_task_info(task_id2, controller = q$controller)$worker
+  worker2_txt <- file.path(root, ".packit", "workers", worker_id2, "test.txt")
+  expect_equal(file.exists(worker2_txt), TRUE)
+})
+
+
+test_that("Can submit 2 tasks on different commit hashes", {
+  skip_if_no_redis()
+
+  root <- test_prepare_orderly_example("data")
+  gert::git_init(root)
+  gert::git_add(c("src", "orderly_config.yml"), repo = root)
+  sha1 <- gert::git_commit("first commit", repo = root)
+
+  write.table("test", file = file.path(root, "test.txt"))
+  gert::git_add("test.txt", repo = root)
+  sha2 <- gert::git_commit("second commit", repo = root)
+
+  q <- new_queue_quietly(root)
+  worker_manager <- start_queue_workers_quietly(2, q$controller)
+  make_worker_dirs(root, worker_manager$id)
+
+  task_id1 <- q$submit("data", ref = sha1)
+  task_id2 <- q$submit("data", ref = sha2)
+  expect_worker_task_complete(task_id1, q$controller, 10)
+  expect_worker_task_complete(task_id2, q$controller, 10)
+
+  worker_id2 <- rrq::rrq_task_info(task_id2, controller = q$controller)$worker
+  worker2_txt <- file.path(root, ".packit", "workers", worker_id2, "test.txt")
+  expect_equal(file.exists(worker2_txt), TRUE)
 })
