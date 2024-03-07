@@ -15,7 +15,7 @@ BugReports: https://github.com/mrc-ide/orderly.runner/issues
 Imports:
     cli,
     docopt,
-    gert,
+    gert (>= 2.0.1),
     ids,
     jsonlite,
     orderly2,
