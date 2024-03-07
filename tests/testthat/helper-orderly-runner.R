@@ -67,9 +67,9 @@ copy_examples <- function(examples, path_src) {
 }
 
 
-helper_add_git <- function(path) {
+helper_add_git <- function(path, add = ".") {
   gert::git_init(path)
-  gert::git_add(".", repo = path)
+  gert::git_add(add, repo = path)
   user <- "author <author@example.com>"
   sha <- gert::git_commit("initial", author = user, committer = user,
                           repo = path)
@@ -135,9 +135,10 @@ initialise_git_repo <- function() {
 }
 
 
-create_new_commit <- function(path, new_file = "new", message = "new message") {
+create_new_commit <- function(path, new_file = "new", message = "new message",
+                              add = ".") {
   writeLines("new file", file.path(path, new_file))
-  gert::git_add(".", repo = path)
+  gert::git_add(add, repo = path)
   user <- "author <author@example.com>"
   gert::git_commit(message, author = user, committer = user, repo = path)
 }

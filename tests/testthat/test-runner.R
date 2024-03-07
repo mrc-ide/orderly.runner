@@ -1,8 +1,6 @@
 test_that("runner runs as expected", {
   orderly_root <- test_prepare_orderly_example("data")
-  gert::git_init(orderly_root)
-  gert::git_add(c("src", "orderly_config.yml"), repo = orderly_root)
-  gert::git_commit("first commit", repo = orderly_root)
+  helper_add_git(orderly_root, c("src", "orderly_config.yml"))
 
   worker_id <- "worker1"
   make_worker_dirs(orderly_root, worker_id)
@@ -21,9 +19,7 @@ test_that("runner runs as expected", {
 
 test_that("runner runs as expected with parameters", {
   orderly_root <- test_prepare_orderly_example("parameters")
-  gert::git_init(orderly_root)
-  gert::git_add(c("src", "orderly_config.yml"), repo = orderly_root)
-  gert::git_commit("first commit", repo = orderly_root)
+  helper_add_git(orderly_root, c("src", "orderly_config.yml"))
 
   worker_id <- "worker1"
   make_worker_dirs(orderly_root, worker_id)

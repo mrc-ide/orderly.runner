@@ -34,13 +34,13 @@ test_that("can get files which have been modified", {
   expect_equal(git_get_modified(log$commit[[2]], repo = repo$local),
                character(0))
   expect_equal(git_get_modified(log$commit[[1]], repo = repo$local),
-               "src/parameters/orderly.R")
+               "src/parameters/parameters.R")
   expect_equal(git_get_modified(log$commit[[1]], relative = "src/", 
                                 repo = repo$local),
-               "parameters/orderly.R")
+               "parameters/parameters.R")
   expect_equal(git_get_modified(log$commit[[1]], base = log$commit[[2]],
                                 repo = repo$local),
-               "src/parameters/orderly.R")
+               "src/parameters/parameters.R")
   expect_equal(git_get_modified(log$commit[[2]], base = log$commit[[1]],
                                 repo = repo$local),
                character(0))

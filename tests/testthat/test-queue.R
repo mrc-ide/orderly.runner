@@ -64,9 +64,7 @@ test_that("Can submit task", {
   skip_if_no_redis()
 
   root <- test_prepare_orderly_example("data")
-  gert::git_init(root)
-  gert::git_add(c("src", "orderly_config.yml"), repo = root)
-  gert::git_commit("first commit", repo = root)
+  helper_add_git(root, c("src", "orderly_config.yml"))
 
   q <- new_queue_quietly(root)
   worker_manager <- start_queue_workers_quietly(1, q$controller)
@@ -81,22 +79,18 @@ test_that("Can submit 2 tasks on different branches", {
   skip_if_no_redis()
 
   root <- test_prepare_orderly_example("data")
-  gert::git_init(root)
-  gert::git_add(c("src", "orderly_config.yml"), repo = root)
-  gert::git_commit("first commit", repo = root)
+  helper_add_git(root, c("src", "orderly_config.yml"))
 
-  gert::git_branch_create("branch1", repo = root)
-  gert::git_branch_checkout("branch1", repo = root)
-  write.table("test", file = file.path(root, "test.txt"))
-  gert::git_add("test.txt", repo = root)
-  gert::git_commit("branch1 commit", repo = root)
+  gert::git_branch_create("branch", repo = root)
+  gert::git_branch_checkout("branch", repo = root)
+  create_new_commit(root, new_file = "test.txt", add = "test.txt")
 
   q <- new_queue_quietly(root)
   worker_manager <- start_queue_workers_quietly(2, q$controller)
   make_worker_dirs(root, worker_manager$id)
 
   task_id1 <- q$submit("data", branch = "master")
-  task_id2 <- q$submit("data", branch = "branch1")
+  task_id2 <- q$submit("data", branch = "branch")
   expect_worker_task_complete(task_id1, q$controller, 10)
   expect_worker_task_complete(task_id2, q$controller, 10)
 
@@ -110,13 +104,8 @@ test_that("Can submit 2 tasks on different commit hashes", {
   skip_if_no_redis()
 
   root <- test_prepare_orderly_example("data")
-  gert::git_init(root)
-  gert::git_add(c("src", "orderly_config.yml"), repo = root)
-  sha1 <- gert::git_commit("first commit", repo = root)
-
-  write.table("test", file = file.path(root, "test.txt"))
-  gert::git_add("test.txt", repo = root)
-  sha2 <- gert::git_commit("second commit", repo = root)
+  sha1 <- helper_add_git(root, c("src", "orderly_config.yml"))$sha
+  sha2 <- create_new_commit(root, new_file = "test.txt", add = "test.txt")
 
   q <- new_queue_quietly(root)
   worker_manager <- start_queue_workers_quietly(2, q$controller)
