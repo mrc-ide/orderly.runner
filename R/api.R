@@ -37,7 +37,7 @@ root <- function() {
 ##'   state root :: root
 report_list <- function(root, ref) {
   contents <- gert::git_ls(root, ref = ref)
-  re <- "^src/([^/]+)/(\\1|orderly)\\.(yml|R)$"
+  re <- "^src/([^/]+)/(\\1|orderly)\\.R$"
   nms <- sub(re, "\\1", 
              grep(re, contents$path, value = TRUE, perl = TRUE),
              perl = TRUE)
@@ -53,4 +53,20 @@ report_list <- function(root, ref) {
   data.frame(name = nms, 
              updated_time = updated_time,
              has_modifications = has_modifications)
+}
+
+
+##' @porcelain
+##'   GET /report/<name:string>/parameters => json(report_parameters)
+##'   query ref :: string
+##'   state root :: root
+report_parameters <- function(root, ref, name) {
+  params <- get_report_parameters(name, ref, root)
+  lapply(names(params), function(param_name) {
+    value <- params[[param_name]]
+    list(
+      name = scalar(param_name),
+      value = if (is.null(value)) value else scalar(as.character(value))
+    )
+  })
 }

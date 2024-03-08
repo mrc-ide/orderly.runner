@@ -69,14 +69,11 @@ copy_examples <- function(examples, path_src) {
 
 helper_add_git <- function(path) {
   gert::git_init(path)
-  gert::git_add(".", repo = path)
-  user <- "author <author@example.com>"
-  sha <- gert::git_commit("initial", author = user, committer = user,
-                          repo = path)
+  sha <- git_add_and_commit(path)
   branch <- gert::git_branch(repo = path)
   url <- "https://example.com/git"
   gert::git_remote_add(url, repo = path)
-  list(path = path, user = user, branch = branch, sha = sha, url = url)
+  list(path = path, branch = branch, sha = sha, url = url)
 }
 
 
@@ -88,11 +85,16 @@ initialise_git_repo <- function() {
 }
 
 
-create_new_commit <- function(path, new_file = "new", message = "new message") {
-  writeLines("new file", file.path(path, new_file))
+git_add_and_commit <- function(path) {
   gert::git_add(".", repo = path)
   user <- "author <author@example.com>"
-  gert::git_commit(message, author = user, committer = user, repo = path)
+  gert::git_commit("new commit", author = user, committer = user, repo = path)
+}
+
+
+create_new_commit <- function(path, new_file = "new") {
+  writeLines("new file", file.path(path, new_file))
+  git_add_and_commit(path)
 }
 
 
