@@ -47,6 +47,10 @@ jobs:
           extra-packages: any::rcmdcheck
           needs: check
 
+      - name: Start Redis
+        run: |
+          ./scripts/redis start
+
       - uses: r-lib/actions/check-r-package@v2
         with:
           upload-snapshots: true

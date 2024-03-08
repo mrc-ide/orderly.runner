@@ -2,7 +2,7 @@ test_that("runner runs as expected", {
   orderly_root <- test_prepare_orderly_example("data")
   helper_add_git(orderly_root, c("src", "orderly_config.yml"))
 
-  worker_id <- "worker1"
+  worker_id <- ids::adjective_animal()
   make_worker_dirs(orderly_root, worker_id)
   worker_root <- file.path(orderly_root, ".packit", "workers", worker_id)
 
@@ -21,7 +21,7 @@ test_that("runner runs as expected with parameters", {
   orderly_root <- test_prepare_orderly_example("parameters")
   helper_add_git(orderly_root, c("src", "orderly_config.yml"))
 
-  worker_id <- "worker1"
+  worker_id <- ids::adjective_animal()
   make_worker_dirs(orderly_root, worker_id)
   worker_root <- file.path(orderly_root, ".packit", "workers", worker_id)
 
@@ -47,7 +47,7 @@ test_that("git clean clears unnecessary files", {
   orderly_root <- test_prepare_orderly_example("git-clean")
   helper_add_git(orderly_root, c("src", "orderly_config.yml"))
 
-  worker_id <- "worker1"
+  worker_id <- ids::adjective_animal()
   make_worker_dirs(orderly_root, worker_id)
   worker_root <- file.path(orderly_root, ".packit", "workers", worker_id)
 
