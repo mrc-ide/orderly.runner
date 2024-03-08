@@ -36,23 +36,21 @@ get_empty_dirs <- function(worker_path) {
 
 git_clean <- function(worker_path) {
   # gert does not have git clean but this should achieve the same thing
-  withCallingHandlers(
+  res <- withCallingHandlers(
     gert::git_stash_save(
       include_untracked = TRUE,
       include_ignored = TRUE,
       repo = worker_path
     ),
     error = function(e) {
-      browser()
+      # we don't need to rethrow the error here since it doesn't break any
+      # further report runs
+      if (e$message != "cannot stash changes - there is nothing to stash.") {
+        # TODO add logger here
+        message(e$message)
+      }
+      NULL
     }
-  )
-  res <- tryCatch(
-    gert::git_stash_save(
-      include_untracked = TRUE,
-      include_ignored = TRUE,
-      repo = worker_path
-    ),
-    error = function(e) NULL
   )
   if (!is.null(res)) {
     gert::git_stash_drop(repo = worker_path)
