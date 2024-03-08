@@ -88,6 +88,8 @@ make_worker_dirs <- function(orderly_root, ids) {
   lapply(ids, function(id) {
     worker_path <- file.path(workers, id)
     dir.create(worker_path)
+    gert::git_config_set("user.name", id)
+    gert::git_config_set("user.email", id)
     gert::git_clone(orderly_root, path = worker_path)
   })
 
