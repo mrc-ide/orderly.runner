@@ -48,12 +48,9 @@ jobs:
           needs: check
 
       - name: Start Redis
+        if: ${{ matrix.config.os != 'macos-latest' }}
         run: |
-          if [ ${{ matrix.config.os }} == 'macos-latest' ]; then
-            echo "Not starting redis on Mac"
-          else
-            ./scripts/redis start
-          fi
+          ./scripts/redis start
 
       - uses: r-lib/actions/check-r-package@v2
         with:
