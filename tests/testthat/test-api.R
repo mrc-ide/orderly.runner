@@ -39,9 +39,7 @@ test_that("can list orderly reports", {
     file.path(repo$local, "src", "parameters2", "parameters.R"),
     file.path(repo$local, "src", "parameters2", "parameters2.R")
   )
-  gert::git_add(".", repo = repo$local)
-  sha <- gert::git_commit("Add report data2", repo = repo$local,
-                          author = "Test User <test.user@example.com>")
+  sha <- git_add_and_commit(repo$local)
 
   ## Can list items from this sha
   other_res <- endpoint$run(sha)
@@ -58,4 +56,23 @@ test_that("can list orderly reports", {
   first_commit_res <- endpoint$run(first_commit)
   expect_equal(first_commit_res$status_code, 200)
   expect_equal(first_commit_res$data, res$data)
+})
+
+
+test_that("can get parameters for a report", {
+  repo <- test_prepare_orderly_remote_example(c("data", "parameters"))
+  endpoint <- orderly_runner_endpoint("GET", "/report/<name:string>/parameters", 
+                                      repo$local)
+
+  res <- endpoint$run("HEAD", "data")
+  expect_equal(res$status_code, 200)
+  expect_equal(res$data, list())
+
+  res <- endpoint$run("HEAD", "parameters")
+  expect_equal(res$status_code, 200)
+  expect_equal(res$data, list(
+    list(name = scalar("a"), value = NULL),
+    list(name = scalar("b"), value = scalar("2")),
+    list(name = scalar("c"), value = NULL))
+  )
 })
