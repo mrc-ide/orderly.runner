@@ -1,47 +1,4 @@
 runner_run <- function(orderly_root, reportname, parameters, branch, ref, ...) {
-  # Helper functions
-  # ==================
-  point_head_to_ref <- function(worker_path, branch, ref) {
-    gert::git_fetch(repo = worker_path)
-    gert::git_branch_checkout(branch, repo = worker_path)
-    gert::git_reset_hard(ref, repo = worker_path)
-  }
-
-  add_dir_parent_if_empty <- function(files_to_delete, path) {
-    contained_files <- list.files(path, full.names = TRUE)
-    if (length(setdiff(contained_files, files_to_delete)) > 0) {
-      return(files_to_delete)
-    }
-    add_dir_parent_if_empty(c(files_to_delete, path), dirname(path))
-  }
-
-  get_empty_dirs <- function(worker_path) {
-    dirs <- fs::dir_ls(worker_path, recurse = TRUE, type = "directory")
-    Reduce(add_dir_parent_if_empty, c(list(character()), dirs))
-  }
-
-  git_clean <- function(worker_path) {
-    # gert does not have git clean but this should achieve the same thing
-    res <- tryCatch(
-      gert::git_stash_save(
-        include_untracked = TRUE,
-        include_ignored = TRUE,
-        repo = worker_path
-      ),
-      error = function(e) NULL
-    )
-    if (!is.null(res)) {
-      gert::git_stash_drop(repo = worker_path)
-    }
-    # however git ignores all directories, only cares about files, so we may
-    # have empty directories left
-    unlink(get_empty_dirs(worker_path), recursive = TRUE)
-  }
-  # ==================
-
-
-  # Actual runner code
-  # ==================
   # Setup
   worker_id <- Sys.getenv("RRQ_WORKER_ID")
   worker_path <- file.path(orderly_root, ".packit", "workers", worker_id)
@@ -56,4 +13,41 @@ runner_run <- function(orderly_root, reportname, parameters, branch, ref, ...) {
 
   # Cleanup
   git_clean(worker_path)
+}
+
+point_head_to_ref <- function(worker_path, branch, ref) {
+  gert::git_fetch(repo = worker_path)
+  gert::git_branch_checkout(branch, repo = worker_path)
+  gert::git_reset_hard(ref, repo = worker_path)
+}
+
+add_dir_parent_if_empty <- function(files_to_delete, path) {
+  contained_files <- list.files(path, full.names = TRUE)
+  if (length(setdiff(contained_files, files_to_delete)) > 0) {
+    return(files_to_delete)
+  }
+  add_dir_parent_if_empty(c(files_to_delete, path), dirname(path))
+}
+
+get_empty_dirs <- function(worker_path) {
+  dirs <- fs::dir_ls(worker_path, recurse = TRUE, type = "directory")
+  Reduce(add_dir_parent_if_empty, c(list(character()), dirs))
+}
+
+git_clean <- function(worker_path) {
+  # gert does not have git clean but this should achieve the same thing
+  res <- tryCatch(
+    gert::git_stash_save(
+      include_untracked = TRUE,
+      include_ignored = TRUE,
+      repo = worker_path
+    ),
+    error = function(e) NULL
+  )
+  if (!is.null(res)) {
+    gert::git_stash_drop(repo = worker_path)
+  }
+  # however git ignores all directories, only cares about files, so we may
+  # have empty directories left
+  unlink(get_empty_dirs(worker_path), recursive = TRUE)
 }

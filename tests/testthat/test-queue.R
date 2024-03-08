@@ -66,9 +66,7 @@ test_that("Can submit task", {
   root <- test_prepare_orderly_example("data")
   helper_add_git(root, c("src", "orderly_config.yml"))
 
-  q <- new_queue_quietly(root)
-  worker_manager <- start_queue_workers_quietly(1, q$controller)
-  make_worker_dirs(root, worker_manager$id)
+  q <- start_queue_with_workers(root, 1)
 
   task_id <- q$submit("data")
   expect_worker_task_complete(task_id, q$controller, 10)
@@ -85,9 +83,7 @@ test_that("Can submit 2 tasks on different branches", {
   gert::git_branch_checkout("branch", repo = root)
   create_new_commit(root, new_file = "test.txt", add = "test.txt")
 
-  q <- new_queue_quietly(root)
-  worker_manager <- start_queue_workers_quietly(2, q$controller)
-  make_worker_dirs(root, worker_manager$id)
+  q <- start_queue_with_workers(root, 2)
 
   task_id1 <- q$submit("data", branch = "master")
   task_id2 <- q$submit("data", branch = "branch")
@@ -107,9 +103,7 @@ test_that("Can submit 2 tasks on different commit hashes", {
   sha1 <- helper_add_git(root, c("src", "orderly_config.yml"))$sha
   sha2 <- create_new_commit(root, new_file = "test.txt", add = "test.txt")
 
-  q <- new_queue_quietly(root)
-  worker_manager <- start_queue_workers_quietly(2, q$controller)
-  make_worker_dirs(root, worker_manager$id)
+  q <- start_queue_with_workers(root, 2)
 
   task_id1 <- q$submit("data", ref = sha1)
   task_id2 <- q$submit("data", ref = sha2)

@@ -105,6 +105,14 @@ start_queue_workers_quietly <- function(n_workers,
   worker_manager
 }
 
+start_queue_with_workers <- function(root, n_workers, env = parent.frame()) {
+  q <- new_queue_quietly(root)
+  worker_manager <- start_queue_workers_quietly(n_workers, q$controller,
+                                                env = env)
+  make_worker_dirs(root, worker_manager$id)
+  q
+}
+
 skip_if_no_redis <- function() {
   available <- redux::redis_available()
   if (!available) {
@@ -114,17 +122,10 @@ skip_if_no_redis <- function() {
 }
 
 expect_worker_task_complete <- function(task_id, controller, n_tries) {
-  is_completed <- FALSE
-  for (i in seq_len(n_tries)) {
-    is_completed <- rrq::rrq_task_status(
-      task_id, controller = controller
-    ) == "COMPLETE"
-    if (is_completed == TRUE) {
-      break
-    }
-    Sys.sleep(1)
-  }
-  expect_equal(is_completed, TRUE)
+  is_task_successful <- rrq::rrq_task_wait(
+    task_id, controller = controller, timeout = n_tries
+  )
+  expect_equal(is_task_successful, TRUE)
 }
 
 initialise_git_repo <- function() {
