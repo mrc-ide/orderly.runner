@@ -36,12 +36,15 @@ get_empty_dirs <- function(worker_path) {
 
 git_clean <- function(worker_path) {
   # gert does not have git clean but this should achieve the same thing
-  res <- withCallingHandlers(
-    gert::git_stash_save(
-      include_untracked = TRUE,
-      include_ignored = TRUE,
-      repo = worker_path
-    ),
+  withCallingHandlers(
+    {
+      gert::git_stash_save(
+        include_untracked = TRUE,
+        include_ignored = TRUE,
+        repo = worker_path
+      )
+      gert::git_stash_drop(repo = worker_path)
+    },
     error = function(e) {
       # we don't need to rethrow the error here since it doesn't break any
       # further report runs
@@ -52,9 +55,6 @@ git_clean <- function(worker_path) {
       NULL
     }
   )
-  if (!is.null(res)) {
-    gert::git_stash_drop(repo = worker_path)
-  }
   # however git ignores all directories, only cares about files, so we may
   # have empty directories left
   unlink(get_empty_dirs(worker_path), recursive = TRUE)
