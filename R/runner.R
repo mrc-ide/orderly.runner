@@ -36,7 +36,7 @@ get_empty_dirs <- function(worker_path) {
 
 git_clean <- function(worker_path) {
   # gert does not have git clean but this should achieve the same thing
-  withCallingHandlers(
+  tryCatch(
     {
       gert::git_stash_save(
         include_untracked = TRUE,
