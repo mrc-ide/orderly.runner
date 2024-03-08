@@ -1,0 +1,5 @@
+orderly2::orderly_artefact("Some data", "data.rds")
+d <- data.frame(a = 1:10, x = runif(10), y = 1:10 + runif(10))
+write.table("test", file = file.path("..", "..", "inside_draft.txt"))
+write.table("test", file = file.path("..", "..", "..", "outside_draft.txt"))
+saveRDS(d, "data.rds")
