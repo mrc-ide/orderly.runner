@@ -149,9 +149,9 @@ git_add_and_commit <- function(path, add = ".") {
 }
 
 
-create_new_commit <- function(path, new_file = "new") {
+create_new_commit <- function(path, new_file = "new", add = ".") {
   writeLines("new file", file.path(path, new_file))
-  git_add_and_commit(path)
+  git_add_and_commit(path, add)
 }
 
 
