@@ -39,3 +39,24 @@ test_that("runner runs as expected with parameters", {
   expect_equal(output, parameters)
   expect_equal(file.exists(file.path(worker_root, "draft")), FALSE)
 })
+
+test_that("git clean clears unnecessary files", {
+  # git-clean.R spawns a file in draft folder and one in worker root folder
+  # and there will also be an empty folder draft/git-clean so we test
+  # all components of git_clean
+  orderly_root <- test_prepare_orderly_example("git-clean")
+  helper_add_git(orderly_root, c("src", "orderly_config.yml"))
+
+  worker_id <- "worker1"
+  make_worker_dirs(orderly_root, worker_id)
+  worker_root <- file.path(orderly_root, ".packit", "workers", worker_id)
+
+  suppressMessages(withr::with_envvar(
+    c(RRQ_WORKER_ID = worker_id),
+    runner_run(orderly_root, "git-clean", NULL, "master", "HEAD", echo = FALSE)
+  ))
+
+  expect_equal(length(list.files(file.path(orderly_root, "archive"))), 1)
+  expect_equal(file.exists(file.path(worker_root, "draft")), FALSE)
+  expect_equal(file.exists(file.path(worker_root, "outside_draft.txt")), FALSE)
+})
