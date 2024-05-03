@@ -1,6 +1,6 @@
 test_that("runner runs as expected", {
   orderly_root <- test_prepare_orderly_example("data")
-  helper_add_git(orderly_root, c("src", "orderly_config.yml"))
+  git_info <- helper_add_git(orderly_root, c("src", "orderly_config.yml"))
 
   worker_id <- ids::adjective_animal()
   make_worker_dirs(orderly_root, worker_id)
@@ -8,7 +8,8 @@ test_that("runner runs as expected", {
 
   suppressMessages(withr::with_envvar(
     c(RRQ_WORKER_ID = worker_id),
-    runner_run(orderly_root, "data", NULL, "master", "HEAD", echo = FALSE)
+    runner_run(orderly_root, "data", NULL, git_info$branch, 
+               "HEAD", echo = FALSE)
   ))
 
   # report has been run with data in archive
@@ -19,7 +20,7 @@ test_that("runner runs as expected", {
 
 test_that("runner runs as expected with parameters", {
   orderly_root <- test_prepare_orderly_example("parameters")
-  helper_add_git(orderly_root, c("src", "orderly_config.yml"))
+  git_info <- helper_add_git(orderly_root, c("src", "orderly_config.yml"))
 
   worker_id <- ids::adjective_animal()
   make_worker_dirs(orderly_root, worker_id)
@@ -29,7 +30,7 @@ test_that("runner runs as expected with parameters", {
   suppressMessages(withr::with_envvar(
     c(RRQ_WORKER_ID = worker_id),
     runner_run(orderly_root, "parameters", parameters,
-               "master", "HEAD", echo = FALSE)
+               git_info$branch, "HEAD", echo = FALSE)
   ))
 
   report_archive <- file.path(orderly_root, "archive", "parameters")
@@ -45,7 +46,7 @@ test_that("git clean clears unnecessary files", {
   # and there will also be an empty folder draft/git-clean so we test
   # all components of git_clean
   orderly_root <- test_prepare_orderly_example("git-clean")
-  helper_add_git(orderly_root, c("src", "orderly_config.yml"))
+  git_info <- helper_add_git(orderly_root, c("src", "orderly_config.yml"))
 
   worker_id <- ids::adjective_animal()
   make_worker_dirs(orderly_root, worker_id)
@@ -53,7 +54,8 @@ test_that("git clean clears unnecessary files", {
 
   suppressMessages(withr::with_envvar(
     c(RRQ_WORKER_ID = worker_id),
-    runner_run(orderly_root, "git-clean", NULL, "master", "HEAD", echo = FALSE)
+    runner_run(orderly_root, "git-clean", NULL, git_info$branch, 
+               "HEAD", echo = FALSE)
   ))
 
   expect_equal(length(list.files(file.path(orderly_root, "archive"))), 1)

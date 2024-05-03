@@ -26,11 +26,11 @@ Queue <- R6::R6Class("Queue", #nolint
       }
 
       # Create queue
-      self$controller <- rrq::rrq_controller2(
+      self$controller <- rrq::rrq_controller(
         queue_id %||% orderly_queue_id()
       )
       worker_config <- rrq::rrq_worker_config(heartbeat_period = 10)
-      rrq::rrq_worker_config_save2("localhost", worker_config,
+      rrq::rrq_worker_config_save("localhost", worker_config,
                                    controller = self$controller)
     },
 

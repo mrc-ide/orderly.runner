@@ -6,7 +6,7 @@ test_that("Can bring up queue", {
   q <- new_queue_quietly(root)
   expect_equal(q$root, root)
   expect_equal(q$config$core$use_file_store, TRUE)
-  expect_equal(q$controller, rrq::rrq_controller2(q$controller$queue_id))
+  expect_equal(q$controller, rrq::rrq_controller(q$controller$queue_id))
 
   expect_equal(q$number_of_workers(), 0)
   start_queue_workers_quietly(1, q$controller)
@@ -64,11 +64,11 @@ test_that("Can submit task", {
   skip_if_no_redis()
 
   root <- test_prepare_orderly_example("data")
-  helper_add_git(root, c("src", "orderly_config.yml"))
+  git_info <- helper_add_git(root, c("src", "orderly_config.yml"))
 
   q <- start_queue_with_workers(root, 1)
 
-  task_id <- q$submit("data")
+  task_id <- q$submit("data", branch = git_info$branch)
   expect_worker_task_complete(task_id, q$controller, 10)
 })
 
@@ -77,7 +77,7 @@ test_that("Can submit 2 tasks on different branches", {
   skip_if_no_redis()
 
   root <- test_prepare_orderly_example("data")
-  helper_add_git(root, c("src", "orderly_config.yml"))
+  git_info <- helper_add_git(root, c("src", "orderly_config.yml"))
 
   gert::git_branch_create("branch", repo = root)
   gert::git_branch_checkout("branch", repo = root)
@@ -85,7 +85,7 @@ test_that("Can submit 2 tasks on different branches", {
 
   q <- start_queue_with_workers(root, 2)
 
-  task_id1 <- q$submit("data", branch = "master")
+  task_id1 <- q$submit("data", branch = git_info$branch)
   task_id2 <- q$submit("data", branch = "branch")
   expect_worker_task_complete(task_id1, q$controller, 10)
   expect_worker_task_complete(task_id2, q$controller, 10)
@@ -100,13 +100,13 @@ test_that("Can submit 2 tasks on different commit hashes", {
   skip_if_no_redis()
 
   root <- test_prepare_orderly_example("data")
-  sha1 <- helper_add_git(root, c("src", "orderly_config.yml"))$sha
+  git_info <- helper_add_git(root, c("src", "orderly_config.yml"))
   sha2 <- create_new_commit(root, new_file = "test.txt", add = "test.txt")
 
   q <- start_queue_with_workers(root, 2)
 
-  task_id1 <- q$submit("data", ref = sha1)
-  task_id2 <- q$submit("data", ref = sha2)
+  task_id1 <- q$submit("data", ref = git_info$sha, branch = git_info$branch)
+  task_id2 <- q$submit("data", ref = sha2, branch = git_info$branch)
   expect_worker_task_complete(task_id1, q$controller, 10)
   expect_worker_task_complete(task_id2, q$controller, 10)
 

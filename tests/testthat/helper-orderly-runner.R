@@ -20,7 +20,7 @@ new_queue_quietly <- function(root, ...) {
 start_queue_workers_quietly <- function(n_workers,
                                         controller, env = parent.frame()) {
   suppressMessages(
-    rrq::rrq_worker_spawn2(n_workers, controller = controller)
+    rrq::rrq_worker_spawn(n_workers, controller = controller)
   )
   withr::defer(rrq::rrq_worker_stop(controller = controller), env = env)
 }
@@ -98,7 +98,7 @@ make_worker_dirs <- function(orderly_root, ids) {
 start_queue_workers_quietly <- function(n_workers,
                                         controller, env = parent.frame()) {
   worker_manager <- suppressMessages(
-    rrq::rrq_worker_spawn2(n_workers, controller = controller)
+    rrq::rrq_worker_spawn(n_workers, controller = controller)
   )
   withr::defer(rrq::rrq_worker_stop(controller = controller), env = env)
   worker_manager
@@ -124,7 +124,7 @@ expect_worker_task_complete <- function(task_id, controller, n_tries) {
   is_task_successful <- rrq::rrq_task_wait(
     task_id, controller = controller, timeout = n_tries
   )
-  expect_equal(is_task_successful, TRUE)
+  expect_true(is_task_successful)
 }
 
 initialise_git_repo <- function() {
