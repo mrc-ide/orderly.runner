@@ -73,7 +73,6 @@ copy_examples <- function(examples, path_src) {
 
 helper_add_git <- function(path, add = ".") {
   gert::git_init(path)
-  orderly2::orderly_gitignore_update("(root)", root = path)
   sha <- git_add_and_commit(path, add)
   branch <- gert::git_branch(repo = path)
   url <- "https://example.com/git"
