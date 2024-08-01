@@ -4,6 +4,9 @@ runner_run <- function(orderly_root, reportname, parameters, branch, ref, ...) {
   worker_path <- file.path(orderly_root, ".packit", "workers", worker_id)
   point_head_to_ref(worker_path, branch, ref)
 
+  # Initial cleanup
+  git_clean(worker_path)
+
   # Run
   withr::with_envvar(
     c(ORDERLY_SRC_ROOT = file.path(worker_path, "src", reportname)),
