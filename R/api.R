@@ -88,5 +88,5 @@ submit_report_run <- function(root, queue, data) {
     parameters = data$parameters
   )
 
-  list(job_id = job_id)
+  list(job_id = scalar(job_id))
 }
