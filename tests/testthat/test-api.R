@@ -1,7 +1,4 @@
 test_that("root data returns sensible, validated, data", {
-  # need this because queue is created when api starts
-  # and it expects an orderly directory
-  repo <- test_prepare_orderly_remote_example("data")
   ## Just hello world for the package really
   endpoint <- orderly_runner_endpoint("GET", "/", repo$local)
   res <- endpoint$run()
@@ -13,8 +10,7 @@ test_that("root data returns sensible, validated, data", {
 
 
 test_that("Can construct the api", {
-  repo <- test_prepare_orderly_remote_example("data")
-  obj <- api(repo$local)
+  obj <- api(root)
   result <- evaluate_promise(value <- obj$request("GET", "/")$status)
   expect_equal(value, 200)
   logs <- lapply(strsplit(result$output, "\n")[[1]], jsonlite::parse_json)
@@ -25,7 +21,10 @@ test_that("Can construct the api", {
 
 test_that("can list orderly reports", {
   repo <- test_prepare_orderly_remote_example(c("data", "parameters"))
-  endpoint <- orderly_runner_endpoint("GET", "/report/list", repo$local)
+  endpoint <- orderly_runner_endpoint(
+    "GET", "/report/list",
+    repo$local, skip_queue_creation = TRUE
+  )
 
   res <- endpoint$run(gert::git_branch(repo$local))
   expect_equal(res$status_code, 200)
@@ -65,9 +64,8 @@ test_that("can list orderly reports", {
 test_that("can get parameters for a report", {
   repo <- test_prepare_orderly_remote_example(c("data", "parameters"))
   endpoint <- orderly_runner_endpoint(
-    "GET",
-    "/report/<name:string>/parameters",
-    repo$local
+    "GET", "/report/<name:string>/parameters",
+    repo$local, skip_queue_creation = TRUE
   )
 
   res <- endpoint$run("HEAD", "data")

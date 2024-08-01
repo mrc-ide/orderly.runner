@@ -1,5 +1,9 @@
-orderly_runner_endpoint <- function(method, path, root, validate = TRUE) {
-  queue <- Queue$new(root)
+orderly_runner_endpoint <- function(
+  method, path, root,
+  validate = TRUE,
+  skip_queue_creation = FALSE
+) {
+  queue <- ifelse(skip_queue_creation, NULL, Queue$new(root))
   porcelain::porcelain_package_endpoint(
     "orderly.runner", method, path,
     state = list(root = root, queue = queue),
