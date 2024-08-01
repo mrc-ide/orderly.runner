@@ -28,5 +28,15 @@
         porcelain::porcelain_state(root = state$root),
         returning = porcelain::porcelain_returning_json("report_parameters"),
         validate = validate)
+    },
+    "POST /report/run" = function(state, validate) {
+      porcelain::porcelain_endpoint$new(
+        "POST",
+        "/report/run",
+        submit_report_run,
+        porcelain::porcelain_input_body_json("data", "report_run_request"),
+        porcelain::porcelain_state(root = state$root, queue = state$queue),
+        returning = porcelain::porcelain_returning_json("report_run_response"),
+        validate = validate)
     })
 }
