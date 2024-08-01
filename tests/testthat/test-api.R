@@ -32,8 +32,13 @@ test_that("can list orderly reports", {
 
   ## Add a report on a 2nd branch
   gert::git_branch_create("other", repo = repo$local)
-  fs::dir_copy(file.path(repo$local, "src", "parameters"), 
+  fs::dir_copy(file.path(repo$local, "src", "parameters"),
                file.path(repo$local, "src", "parameters2"))
+  # have to rename to parameters2.R to recognise it as orderly report
+  file.rename(
+    file.path(repo$local, "src", "parameters2", "parameters.R"),
+    file.path(repo$local, "src", "parameters2", "parameters2.R")
+  )
   sha <- git_add_and_commit(repo$local)
 
   ## Can list items from this sha

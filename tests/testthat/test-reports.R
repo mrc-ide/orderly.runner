@@ -3,7 +3,7 @@ test_that("can get orderly script name", {
   git_info <- helper_add_git(root)
   expect_equal(get_orderly_script_path("data", "HEAD", root), "src/data/data.R")
   expect_equal(get_orderly_script_path("parameters", "HEAD", root), 
-               "src/parameters/orderly.R")
+               "src/parameters/parameters.R")
   
   file.copy(file.path(root, "src", "data", "data.R"),
             file.path(root, "src", "data", "orderly.R"))
@@ -28,7 +28,7 @@ test_that("can get report parameters", {
                             c = NULL))
   
   ## Works with a specific git hash
-  params_src <- file.path(root, "src", "parameters", "orderly.R")
+  params_src <- file.path(root, "src", "parameters", "parameters.R")
   contents <- readLines(params_src)
   contents <- c("orderly2::orderly_parameters(a = 'default', b = 2, c = NULL)", 
                 contents[-1])

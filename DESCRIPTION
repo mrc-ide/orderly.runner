@@ -22,7 +22,7 @@ Imports:
     porcelain,
     R6,
     redux,
-    rrq,
+    rrq (>= 0.7.15),
     withr
 Suggests:
     fs,

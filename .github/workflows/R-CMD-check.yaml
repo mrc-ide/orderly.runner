@@ -47,6 +47,11 @@ jobs:
           extra-packages: any::rcmdcheck
           needs: check
 
+      - name: Start Redis
+        if: ${{ matrix.config.os != 'macos-latest' }}
+        run: |
+          ./scripts/redis start
+
       - uses: r-lib/actions/check-r-package@v2
         with:
           upload-snapshots: true

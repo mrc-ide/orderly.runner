@@ -20,7 +20,7 @@ new_queue_quietly <- function(root, ...) {
 start_queue_workers_quietly <- function(n_workers,
                                         controller, env = parent.frame()) {
   suppressMessages(
-    rrq::rrq_worker_spawn2(n_workers, controller = controller)
+    rrq::rrq_worker_spawn(n_workers, controller = controller)
   )
   withr::defer(rrq::rrq_worker_stop(controller = controller), env = env)
 }
@@ -67,15 +67,65 @@ copy_examples <- function(examples, path_src) {
 }
 
 
-helper_add_git <- function(path) {
+helper_add_git <- function(path, add = ".") {
   gert::git_init(path)
-  sha <- git_add_and_commit(path)
+  sha <- git_add_and_commit(path, add)
   branch <- gert::git_branch(repo = path)
   url <- "https://example.com/git"
   gert::git_remote_add(url, repo = path)
   list(path = path, branch = branch, sha = sha, url = url)
 }
 
+new_queue_quietly <- function(root, ...) {
+  suppressMessages(Queue$new(root, ...))
+}
+
+make_worker_dirs <- function(orderly_root, ids) {
+  packit_path <- file.path(orderly_root, ".packit")
+  dir.create(packit_path)
+  workers <- file.path(packit_path, "workers")
+  dir.create(workers)
+  lapply(ids, function(id) {
+    worker_path <- file.path(workers, id)
+    dir.create(worker_path)
+    gert::git_clone(orderly_root, path = worker_path)
+    gert::git_config_set("user.name", id, repo = worker_path)
+    gert::git_config_set("user.email", id, repo = worker_path)
+  })
+
+}
+
+start_queue_workers_quietly <- function(n_workers,
+                                        controller, env = parent.frame()) {
+  worker_manager <- suppressMessages(
+    rrq::rrq_worker_spawn(n_workers, controller = controller)
+  )
+  withr::defer(rrq::rrq_worker_stop(controller = controller), env = env)
+  worker_manager
+}
+
+start_queue_with_workers <- function(root, n_workers, env = parent.frame()) {
+  q <- new_queue_quietly(root)
+  worker_manager <- start_queue_workers_quietly(n_workers, q$controller,
+                                                env = env)
+  make_worker_dirs(root, worker_manager$id)
+  q
+}
+
+skip_if_no_redis <- function() {
+  available <- redux::redis_available()
+  if (!available) {
+    testthat::skip("Skipping test as redis is not available")
+  }
+  invisible(available)
+}
+
+expect_worker_task_complete <- function(task_id, controller, n_tries) {
+  is_task_successful <- rrq::rrq_task_wait(
+    task_id, controller = controller, timeout = n_tries
+  )
+  expect_true(is_task_successful)
+}
 
 initialise_git_repo <- function() {
   t <- tempfile()
@@ -85,16 +135,25 @@ initialise_git_repo <- function() {
 }
 
 
-git_add_and_commit <- function(path) {
-  gert::git_add(".", repo = path)
+create_new_commit <- function(path, new_file = "new", message = "new message",
+                              add = ".") {
+  writeLines("new file", file.path(path, new_file))
+  gert::git_add(add, repo = path)
   user <- "author <author@example.com>"
   gert::git_commit("new commit", author = user, committer = user, repo = path)
 }
 
 
-create_new_commit <- function(path, new_file = "new") {
+git_add_and_commit <- function(path, add = ".") {
+  gert::git_add(add, repo = path)
+  user <- "author <author@example.com>"
+  gert::git_commit("new commit", author = user, committer = user, repo = path)
+}
+
+
+create_new_commit <- function(path, new_file = "new", add = ".") {
   writeLines("new file", file.path(path, new_file))
-  git_add_and_commit(path)
+  git_add_and_commit(path, add)
 }
 
 
