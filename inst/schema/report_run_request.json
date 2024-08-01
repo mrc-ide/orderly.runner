@@ -1,0 +1,25 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+        "name": {
+            "type": "string"
+        },
+        "branch": {
+            "type": "string"
+        },
+        "hash": {
+            "type": "string"
+        },
+        "parameters": {
+            "oneOf": [
+                { "type": "null" },
+                {
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": true
+                }
+            ]
+        }
+    }
+}
