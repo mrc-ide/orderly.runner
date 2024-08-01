@@ -3,7 +3,11 @@ orderly_runner_endpoint <- function(
   validate = TRUE,
   skip_queue_creation = FALSE
 ) {
-  queue <- ifelse(skip_queue_creation, NULL, Queue$new(root))
+  if (skip_queue_creation) {
+    queue <- NULL
+  } else {
+    queue <- Queue$new(root)
+  }
   porcelain::porcelain_package_endpoint(
     "orderly.runner", method, path,
     state = list(root = root, queue = queue),
@@ -51,11 +55,9 @@ test_prepare_orderly_example <- function(examples, ...) {
 }
 
 
-test_prepare_orderly_remote_example <- function(
-  examples, orderly_gitignore = FALSE, ...
-) {
+test_prepare_orderly_remote_example <- function(examples, ...) {
   path_remote <- test_prepare_orderly_example(examples, ...)
-  helper_add_git(path_remote, orderly_gitignore)
+  helper_add_git(path_remote, orderly_gitignore = TRUE)
   path_local <- tempfile()
   withr::defer_parent(unlink(path_local, recursive = TRUE))
   gert::git_clone(path_remote, path_local)

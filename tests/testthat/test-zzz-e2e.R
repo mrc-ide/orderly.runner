@@ -1,6 +1,6 @@
 skip_if_not_installed("httr")
 root <- test_prepare_orderly_example(c("data", "parameters"))
-repo <- helper_add_git(root)
+repo <- helper_add_git(root, orderly_gitignore = TRUE)
 bg <- porcelain::porcelain_background$new(api, list(root))
 bg$start()
 on.exit(bg$stop())

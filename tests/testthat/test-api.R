@@ -12,7 +12,7 @@ test_that("root data returns sensible, validated, data", {
 
 test_that("Can construct the api", {
   root <- create_temporary_root(use_file_store = TRUE)
-  obj <- api(root)
+  obj <- api(root, skip_queue_creation = TRUE)
   result <- evaluate_promise(value <- obj$request("GET", "/")$status)
   expect_equal(value, 200)
   logs <- lapply(strsplit(result$output, "\n")[[1]], jsonlite::parse_json)
@@ -64,9 +64,7 @@ test_that("can list orderly reports", {
 
 
 test_that("can get parameters for a report", {
-  repo <- test_prepare_orderly_remote_example(
-    c("data", "parameters"), orderly_gitignore = TRUE
-  )
+  repo <- test_prepare_orderly_remote_example(c("data", "parameters"))
   endpoint <- orderly_runner_endpoint(
     "GET", "/report/<name:string>/parameters",
     repo$local, skip_queue_creation = TRUE

@@ -15,11 +15,18 @@
 ##'   start the server
 ##'
 ##' @export
-api <- function(root, validate = NULL, log_level = "info") {
+api <- function(
+  root, validate = NULL, log_level = "info",
+  skip_queue_creation = FALSE
+) {
   logger <- porcelain::porcelain_logger(log_level)
 
   # Set ORDERLY_RUNNER_QUEUE_ID to specify existing queue id
-  queue <- Queue$new(root)
+  if (skip_queue_creation) {
+    queue <- NULL
+  } else {
+    queue <- Queue$new(root)
+  }
 
   api <- porcelain::porcelain$new(validate = validate, logger = logger)
   api$include_package_endpoints(state = list(root = root, queue = queue))
