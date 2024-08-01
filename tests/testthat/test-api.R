@@ -1,6 +1,6 @@
 test_that("root data returns sensible, validated, data", {
   ## Just hello world for the package really
-  endpoint <- orderly_runner_endpoint("GET", "/", repo$local)
+  endpoint <- orderly_runner_endpoint("GET", "/", NULL)
   res <- endpoint$run()
   expect_true(res$validated)
   expect_true(all(c("orderly2", "orderly.runner") %in%
@@ -82,6 +82,8 @@ test_that("can get parameters for a report", {
 })
 
 test_that("can run orderly reports", {
+  skip_if_no_redis()
+
   queue_id <- "orderly.runner:cute-animal"
   repo <- test_prepare_orderly_example(c("data", "parameters"))
   gert::git_init(repo)
