@@ -1,4 +1,6 @@
 skip_if_not_installed("httr")
+skip_if_no_redis()
+
 root <- test_prepare_orderly_example(c("data", "parameters"))
 repo <- helper_add_git(root, orderly_gitignore = TRUE)
 bg <- porcelain::porcelain_background$new(api, list(root))
