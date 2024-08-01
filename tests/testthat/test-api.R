@@ -1,6 +1,7 @@
 test_that("root data returns sensible, validated, data", {
   ## Just hello world for the package really
-  endpoint <- orderly_runner_endpoint("GET", "/", NULL)
+  endpoint <- orderly_runner_endpoint("GET", "/", NULL,
+                                      skip_queue_creation = TRUE)
   res <- endpoint$run()
   expect_true(res$validated)
   expect_true(all(c("orderly2", "orderly.runner") %in%
@@ -10,6 +11,7 @@ test_that("root data returns sensible, validated, data", {
 
 
 test_that("Can construct the api", {
+  root <- create_temporary_root(use_file_store = TRUE)
   obj <- api(root)
   result <- evaluate_promise(value <- obj$request("GET", "/")$status)
   expect_equal(value, 200)
@@ -62,7 +64,9 @@ test_that("can list orderly reports", {
 
 
 test_that("can get parameters for a report", {
-  repo <- test_prepare_orderly_remote_example(c("data", "parameters"))
+  repo <- test_prepare_orderly_remote_example(
+    c("data", "parameters"), orderly_gitignore = TRUE
+  )
   endpoint <- orderly_runner_endpoint(
     "GET", "/report/<name:string>/parameters",
     repo$local, skip_queue_creation = TRUE
@@ -88,7 +92,7 @@ test_that("can run orderly reports", {
   repo <- test_prepare_orderly_example(c("data", "parameters"))
   gert::git_init(repo)
   orderly2::orderly_gitignore_update("(root)", root = repo)
-  git_add_and_commit(repo, ".")
+  git_add_and_commit(repo)
   queue <- Queue$new(repo, queue_id = queue_id)
   worker_manager <- start_queue_workers_quietly(
     1, queue$controller

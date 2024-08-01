@@ -23,7 +23,9 @@ test_that("can get default branch when remote origin is set", {
 
 test_that("can get files which have been modified", {
   testthat::skip_on_cran()
-  repo <- test_prepare_orderly_remote_example("data")
+  repo <- test_prepare_orderly_remote_example(
+    "data", orderly_gitignore = TRUE
+  )
   copy_examples("parameters", repo$local)
   git_add_and_commit(repo$local)
   
