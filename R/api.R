@@ -11,6 +11,9 @@
 ##' @param log_level Logging level to use. Sensible options are "off",
 ##'   "info" and "all".
 ##'
+##' @param skip_queue_creation Skip queue creation, this is primarily
+##'   used for tests where we can't establish a Redis connection.
+##'
 ##' @return A [porcelain::porcelain] object. Notably this does *not*
 ##'   start the server
 ##'
