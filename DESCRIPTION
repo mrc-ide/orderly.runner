@@ -27,6 +27,7 @@ Imports:
 Suggests:
     fs,
     httr,
+    httr2,
     lgr,
     mockery,
     testthat (>= 3.0.0)

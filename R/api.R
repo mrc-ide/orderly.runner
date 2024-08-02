@@ -91,12 +91,12 @@ report_parameters <- function(root, ref, name) {
 ##'   state queue :: queue
 ##'   body data :: json(report_run_request)
 submit_report_run <- function(root, queue, data) {
+  data <- jsonlite::parse_json(data)
   job_id <- queue$submit(
     data$name,
     branch = data$branch,
     ref = data$hash,
     parameters = data$parameters
   )
-
   list(job_id = scalar(job_id))
 }
