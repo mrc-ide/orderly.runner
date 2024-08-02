@@ -5,11 +5,15 @@ skip_if_no_redis()
 root <- test_prepare_orderly_remote_example(
   c("data", "parameters")
 )
+queue_id <- "orderly.runner:cute-animal"
 queue <- Queue$new(root$local, queue_id = queue_id)
 worker_manager <- start_queue_workers_quietly(1, queue$controller)
 make_worker_dirs(root$local, worker_manager$id)
 
-bg <- porcelain::porcelain_background$new(api, list(root$local))
+bg <- withr::with_envvar(
+  c(ORDERLY_RUNNER_QUEUE_ID = queue_id),
+  porcelain::porcelain_background$new(api, list(root$local))
+)
 bg$start()
 on.exit(bg$stop())
 
