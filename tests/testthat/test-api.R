@@ -103,13 +103,13 @@ test_that("can run orderly reports", {
   )
 
   req <- list(
-    name = "data",
-    branch = gert::git_branch(repo = repo),
-    hash = gert::git_commit_id(repo = repo),
-    parameters = NULL
+    name = scalar("data"),
+    branch = scalar(gert::git_branch(repo = repo)),
+    hash = scalar(gert::git_commit_id(repo = repo)),
+    parameters = scalar(NULL)
   )
 
-  res <- endpoint$run(req)
+  res <- endpoint$run(jsonlite::toJSON(req))
   rrq::rrq_task_wait(res$data$job_id, controller = queue$controller)
   expect_equal(
     rrq::rrq_task_status(res$data$job_id, controller = queue$controller),
@@ -117,13 +117,13 @@ test_that("can run orderly reports", {
   )
 
   req <- list(
-    name = "parameters",
-    branch = gert::git_branch(repo = repo),
-    hash = gert::git_commit_id(repo = repo),
-    parameters = list(a = 1, c = 3)
+    name = scalar("parameters"),
+    branch = scalar(gert::git_branch(repo = repo)),
+    hash = scalar(gert::git_commit_id(repo = repo)),
+    parameters = list(a = scalar(1), c = scalar(3))
   )
 
-  res <- endpoint$run(req)
+  res <- endpoint$run(jsonlite::toJSON(req))
   rrq::rrq_task_wait(res$data$job_id, controller = queue$controller)
   expect_equal(
     rrq::rrq_task_status(res$data$job_id, controller = queue$controller),
