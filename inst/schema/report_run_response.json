@@ -5,5 +5,7 @@
         "job_id": {
             "type": "string"
         }
-    }
+    },
+    "required": ["job_id"],
+    "additionalProperties": false
 }
