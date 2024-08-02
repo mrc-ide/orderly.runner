@@ -74,7 +74,7 @@ test_that("can run report", {
   )
 
   r <- httr2::request(bg$url("/report/run")) |>
-    httr2::req_body_json(list(data = data)) |>
+    httr2::req_body_json(data) |>
     httr2::req_perform()
 
   expect_equal(r$status_code, 200)
