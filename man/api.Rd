@@ -4,7 +4,7 @@
 \alias{api}
 \title{Create orderly runner}
 \usage{
-api(root, validate = NULL, log_level = "info")
+api(root, validate = NULL, log_level = "info", skip_queue_creation = FALSE)
 }
 \arguments{
 \item{root}{Orderly root}
@@ -15,6 +15,9 @@ environments.  See \link[porcelain:porcelain]{porcelain::porcelain} for details}
 
 \item{log_level}{Logging level to use. Sensible options are "off",
 "info" and "all".}
+
+\item{skip_queue_creation}{Skip queue creation, this is primarily
+used for tests where we can't establish a Redis connection.}
 }
 \value{
 A \link[porcelain:porcelain]{porcelain::porcelain} object. Notably this does \emph{not}

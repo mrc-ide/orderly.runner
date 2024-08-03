@@ -1,7 +1,18 @@
-orderly_runner_endpoint <- function(method, path, root, validate = TRUE) {
-  porcelain::porcelain_package_endpoint("orderly.runner", method, path,
-                                        state = list(root = root),
-                                        validate = validate)
+orderly_runner_endpoint <- function(
+  method, path, root,
+  validate = TRUE,
+  skip_queue_creation = FALSE
+) {
+  if (skip_queue_creation) {
+    queue <- NULL
+  } else {
+    queue <- Queue$new(root)
+  }
+  porcelain::porcelain_package_endpoint(
+    "orderly.runner", method, path,
+    state = list(root = root, queue = queue),
+    validate = validate
+  )
 }
 
 
@@ -46,10 +57,11 @@ test_prepare_orderly_example <- function(examples, ...) {
 
 test_prepare_orderly_remote_example <- function(examples, ...) {
   path_remote <- test_prepare_orderly_example(examples, ...)
-  helper_add_git(path_remote)
+  helper_add_git(path_remote, orderly_gitignore = TRUE)
   path_local <- tempfile()
   withr::defer_parent(unlink(path_local, recursive = TRUE))
   gert::git_clone(path_remote, path_local)
+  orderly2::orderly_init(root = path_local, force = TRUE)
   list(
     remote = path_remote,
     local = path_local
@@ -67,8 +79,11 @@ copy_examples <- function(examples, path_src) {
 }
 
 
-helper_add_git <- function(path, add = ".") {
+helper_add_git <- function(path, add = ".", orderly_gitignore = FALSE) {
   gert::git_init(path)
+  if (orderly_gitignore) {
+    orderly2::orderly_gitignore_update("(root)", root = path)
+  }
   sha <- git_add_and_commit(path, add)
   branch <- gert::git_branch(repo = path)
   url <- "https://example.com/git"
@@ -104,8 +119,10 @@ start_queue_workers_quietly <- function(n_workers,
   worker_manager
 }
 
-start_queue_with_workers <- function(root, n_workers, env = parent.frame()) {
-  q <- new_queue_quietly(root)
+start_queue_with_workers <- function(
+  root, n_workers, env = parent.frame(), queue_id = NULL
+) {
+  q <- new_queue_quietly(root, queue_id = queue_id)
   worker_manager <- start_queue_workers_quietly(n_workers, q$controller,
                                                 env = env)
   make_worker_dirs(root, worker_manager$id)

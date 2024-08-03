@@ -34,6 +34,15 @@ Queue <- R6::R6Class("Queue", #nolint
                                    controller = self$controller)
     },
 
+    #' @description
+    #' Submit a job the Redis queue for runner to run.
+    #'
+    #' @param reportname Name of orderly report.
+    #' @param parameters Parameters to run the report with (default NULL)
+    #' @param branch Name of git branch to checkout the repository
+    #'   (default master)
+    #' @param ref Git commit-ish value (e.g HEAD or commit hash or branch name).
+    #'   We reset hard to this ref and run the report. (default HEAD)
     submit = function(reportname, parameters = NULL,
                       branch = "master", ref = "HEAD") {
       run_args <- list(
