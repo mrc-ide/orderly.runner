@@ -2,17 +2,14 @@ skip_if_not_installed("httr")
 skip_if_not_installed("httr2")
 skip_if_no_redis()
 
+queue_id <- "orderly.runner:cuteasdanimal"
 root <- test_prepare_orderly_remote_example(
   c("data", "parameters")
 )
-queue_id <- "orderly.runner:cute-animal"
-queue <- Queue$new(root$local, queue_id = queue_id)
-worker_manager <- start_queue_workers_quietly(1, queue$controller)
-make_worker_dirs(root$local, worker_manager$id)
-
-bg <- withr::with_envvar(
-  c(ORDERLY_RUNNER_QUEUE_ID = queue_id),
-  porcelain::porcelain_background$new(api, list(root$local))
+queue <- start_queue_with_workers(root$local, 1, queue_id = queue_id)
+bg <- porcelain::porcelain_background$new(
+  api, args = list(root$local),
+  env = c(ORDERLY_RUNNER_QUEUE_ID = queue_id)
 )
 bg$start()
 on.exit(bg$stop())
@@ -70,17 +67,47 @@ test_that("can run report", {
     name = "data",
     branch = gert::git_branch(repo = root$local),
     hash = gert::git_commit_id(repo = root$local),
-    parameters = NULL
+    parameters = c(NULL)
   )
 
-  r <- httr2::request(bg$url("/report/run")) |>
-    httr2::req_body_json(data) |>
-    httr2::req_perform()
+  body <- jsonlite::toJSON(data, null = "null", auto_unbox = TRUE)
 
-  expect_equal(r$status_code, 200)
+  r <- bg$request(
+    "POST", "/report/run",
+    body = body,
+    encode = "raw",
+    httr::content_type("application/json")
+  )
 
-  dat <- r |> httr2::resp_body_json()
+  expect_equal(httr::status_code(r), 200)
+  dat <- httr::content(r)
+
   expect_equal(dat$status, "success")
   expect_null(dat$errors)
-  expect_equal(is.character(dat$data$job_id), TRUE)
+  expect_worker_task_complete(dat$data$job_id, queue$controller, 10)
+})
+
+test_that("can run report with params", {
+  data <- list(
+    name = "parameters",
+    branch = gert::git_branch(repo = root$local),
+    hash = gert::git_commit_id(repo = root$local),
+    parameters = list(a = 1, c = 3)
+  )
+
+  body <- jsonlite::toJSON(data, null = "null", auto_unbox = TRUE)
+
+  r <- bg$request(
+    "POST", "/report/run",
+    body = body,
+    encode = "raw",
+    httr::content_type("application/json")
+  )
+
+  expect_equal(httr::status_code(r), 200)
+  dat <- httr::content(r)
+
+  expect_equal(dat$status, "success")
+  expect_null(dat$errors)
+  expect_worker_task_complete(dat$data$job_id, queue$controller, 10)
 })

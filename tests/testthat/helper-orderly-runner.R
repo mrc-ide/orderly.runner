@@ -119,8 +119,10 @@ start_queue_workers_quietly <- function(n_workers,
   worker_manager
 }
 
-start_queue_with_workers <- function(root, n_workers, env = parent.frame()) {
-  q <- new_queue_quietly(root)
+start_queue_with_workers <- function(
+  root, n_workers, env = parent.frame(), queue_id = NULL
+) {
+  q <- new_queue_quietly(root, queue_id = queue_id)
   worker_manager <- start_queue_workers_quietly(n_workers, q$controller,
                                                 env = env)
   make_worker_dirs(root, worker_manager$id)
