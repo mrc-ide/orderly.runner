@@ -1,5 +1,4 @@
 skip_if_not_installed("httr")
-skip_if_not_installed("httr2")
 skip_if_no_redis()
 
 queue_id <- "orderly.runner:cuteasdanimal"
