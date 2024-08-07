@@ -31,11 +31,17 @@ orderly.runner.worker <path>"
 
 main_worker <- function(args = commandArgs(TRUE)) {
   dat <- parse_main_worker(args)
+
   # assumes ORDERLY_RUNNER_QUEUE_ID is set
   queue <- Queue$new(dat$path)
+
   worker <- rrq::rrq_worker$new(
     queue$controller$queue_id,
     con = queue$controller$con
   )
+  worker_path <- file.path(dat$path, ".packit", "workers", worker$id)
+  fs::dir_create(worker_path)
+  gert::git_clone(dat$path, path = worker_path)
+
   worker$loop()
 }
