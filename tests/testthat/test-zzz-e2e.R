@@ -110,3 +110,25 @@ test_that("can run report with params", {
   expect_null(dat$errors)
   expect_worker_task_complete(dat$data$job_id, queue$controller, 10)
 })
+
+test_that("can get status of report run", {
+  # run report
+  data <- list(
+    name = "data",
+    branch = gert::git_branch(repo = root$local),
+    hash = gert::git_commit_id(repo = root$local),
+    parameters = c(NULL)
+  )
+  r <- bg$request(
+    "POST", "/report/run",
+    body = jsonlite::toJSON(data, null = "null", auto_unbox = TRUE),
+    encode = "raw",
+    httr::content_type("application/json")
+  )
+  job_id <- httr::content(r)$data$job_id
+
+  r <- bg$request(
+    "GET",
+    sprintf("/report/status/%s", job_id)
+  )
+})

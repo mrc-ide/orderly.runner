@@ -26,6 +26,7 @@ Object for managing running jobs on the redis queue
 \item \href{#method-Queue-new}{\code{Queue$new()}}
 \item \href{#method-Queue-submit}{\code{Queue$submit()}}
 \item \href{#method-Queue-number_of_workers}{\code{Queue$number_of_workers()}}
+\item \href{#method-Queue-get_status}{\code{Queue$get_status()}}
 \item \href{#method-Queue-finalize}{\code{Queue$finalize()}}
 }
 }
@@ -82,6 +83,26 @@ We reset hard to this ref and run the report. (default HEAD)}
 \if{html}{\out{<div class="r">}}\preformatted{Queue$number_of_workers()}\if{html}{\out{</div>}}
 }
 
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Queue-get_status"></a>}}
+\if{latex}{\out{\hypertarget{method-Queue-get_status}{}}}
+\subsection{Method \code{get_status()}}{
+Gets status of packet run
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Queue$get_status(job_id)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{job_id}}{Id of redis queue job to get status of.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+status of redis queue job
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Queue-finalize"></a>}}
