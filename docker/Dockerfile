@@ -14,10 +14,7 @@ COPY docker/Rprofile.site /usr/local/lib/R/etc/Rprofile.site
 COPY DESCRIPTION /tmp/DESCRIPTION
 
 RUN install2.r --error remotes &&  \
-        Rscript -e 'remotes::install_deps("/tmp")' && \
-        Rscript -e 'remotes::install_github("mrc-ide/orderly2", upgrade = FALSE)' && \
-        Rscript -e 'remotes::install_github("mrc-ide/rrq", upgrade = FALSE)' && \
-        Rscript -e 'remotes::install_github("reside-ic/porcelain", upgrade = FALSE)'
+        Rscript -e 'remotes::install_deps("/tmp")'
 
 COPY . /src
 RUN R CMD INSTALL --install-tests /src && rm -rf /src
