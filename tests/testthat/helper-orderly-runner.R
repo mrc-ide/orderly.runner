@@ -138,10 +138,22 @@ skip_if_no_redis <- function() {
 }
 
 expect_worker_task_complete <- function(task_id, controller, n_tries) {
-  is_task_successful <- rrq::rrq_task_wait(
+  is_task_successful <- wait_for_task_complete(task_id, controller, n_tries)
+  expect_true(is_task_successful)
+}
+
+wait_for_task_complete <- function(task_id, controller, n_tries) {
+  rrq::rrq_task_wait(
     task_id, controller = controller, timeout = n_tries
   )
-  expect_true(is_task_successful)
+}
+
+get_task_times <- function(task_id, controller) {
+  rrq::rrq_task_times(task_id, controller = controller)
+}
+
+get_task_result <- function(task_id, controller) {
+  rrq::rrq_task_result(task_id, controller = controller)
 }
 
 initialise_git_repo <- function() {

@@ -84,6 +84,7 @@ test_that("can run report", {
   expect_equal(dat$status, "success")
   expect_null(dat$errors)
   expect_worker_task_complete(dat$data$job_id, queue$controller, 10)
+  expect_type(get_task_result(dat$data$job_id, queue$controller), "character")
 })
 
 test_that("can run report with params", {
@@ -109,10 +110,21 @@ test_that("can run report with params", {
   expect_equal(dat$status, "success")
   expect_null(dat$errors)
   expect_worker_task_complete(dat$data$job_id, queue$controller, 10)
+  expect_type(get_task_result(dat$data$job_id, queue$controller), "character")
 })
 
+test_that("retruns error when getting status of run with invalid job_id", {
+  res <- bg$request(
+    "GET",
+    sprintf("/report/status/bad_job_id")
+  )
+  
+  errors <- httr::content(res)$errors
+  expect_equal(httr::status_code(res), 400)
+  expect_equal(errors[[1]]$detail, "Job ID does not exist")
+})
 test_that("can get status of report run", {
-  # run report
+  # run task and wait for finish before getting status
   data <- list(
     name = "data",
     branch = gert::git_branch(repo = root$local),
@@ -126,9 +138,21 @@ test_that("can get status of report run", {
     httr::content_type("application/json")
   )
   job_id <- httr::content(r)$data$job_id
+  task_times <- wait_for_task_complete(job_id, queue$controller, 3)
 
-  r <- bg$request(
+  res <- bg$request(
     "GET",
     sprintf("/report/status/%s", job_id)
   )
+  dat <- httr::content(res)$data
+  task_times <- get_task_times(job_id, queue$controller)
+  expect_equal(httr::status_code(res), 200)
+  expect_equal(dat$status, "COMPLETE")
+  expect_null(dat$queue_positionc)
+  expect_equal(dat$packet_id, get_task_result(job_id, queue$controller))
+  expect_equal(task_times[1], dat$time_queued)
+  expect_equal(task_times[2], dat$time_started)
+  expect_equal(task_times[3], dat$time_complete)
+  # todo: test logs
 })
+

@@ -76,12 +76,12 @@ Queue <- R6::R6Class("Queue", #nolint
       times <- rrq::rrq_task_times(job_id, controller = self$controller)
 
       list(
-        status = status,
-        queue_position = if (status == "PENDING") rrq::rrq_task_position(job_id, controller = self$controller) else NULL,
-        time_queued = times[1],
-        time_started = if (!is.na(times[2])) times[2] else NULL,
-        time_complete = if (!is.na(times[3])) times[3] else NULL,
-        packet_id = if (status == "COMPLETE") rrq::rrq_task_result(job_id, controller = self$controller) else NULL,
+        status = scalar(status),
+        queue_position = if (status == "PENDING") scalar(rrq::rrq_task_position(job_id, controller = self$controller)) else NULL,
+        time_queued = scalar(times[1]),
+        time_started = if (!is.na(times[2])) scalar(times[2]) else NULL,
+        time_complete = if (!is.na(times[3])) scalar(times[3]) else NULL,
+        packet_id = if (status == "COMPLETE") scalar(rrq::rrq_task_result(job_id, controller = self$controller)) else NULL,
         logs = NULL # waiting for rich to complete this work
       )
     },
