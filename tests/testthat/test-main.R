@@ -52,29 +52,33 @@ test_that("Can construct api", {
 
 test_that("Can parse arguments (worker)", {
   expect_mapequal(parse_main_worker("path"),
-                  list(n_workers = 1,
-                       path = "path"))
-  expect_mapequal(parse_main_worker(c("--n-workers=2", "path")),
-                  list(n_workers = 2,
-                       path = "path"))
+                  list(path = "path"))
 })
 
 test_that("Can spawn workers", {
   skip_if_not_installed("mockery")
 
-  mock_queue_new <- mockery::mock(list(controller = "test_controller"))
+  mock_queue_new <- mockery::mock(
+    list(controller = list(
+      queue_id = "test_queue_id",
+      con = "test_con"
+    ))
+  )
   mockery::stub(main_worker, "Queue$new", mock_queue_new)
 
-  mock_rrq_worker_spawn <- mockery::mock()
-  mockery::stub(main_worker, "rrq::rrq_worker_spawn", mock_rrq_worker_spawn)
+  mock_loop <- mockery::mock()
+  mock_rrq_worker_new <- mockery::mock(list(loop = mock_loop))
+  mockery::stub(main_worker, "rrq::rrq_worker$new", mock_rrq_worker_new)
 
-  main_worker(c("--n-workers=8128", "path"))
+  main_worker(c("path"))
 
   mockery::expect_called(mock_queue_new, 1)
   expect_equal(mockery::mock_args(mock_queue_new)[[1]],
                list("path"))
 
-  mockery::expect_called(mock_rrq_worker_spawn, 1)
-  expect_equal(mockery::mock_args(mock_rrq_worker_spawn)[[1]],
-               list(8128, controller = "test_controller"))
+  mockery::expect_called(mock_rrq_worker_new, 1)
+  expect_equal(mockery::mock_args(mock_rrq_worker_new)[[1]],
+               list("test_queue_id", con = "test_con"))
+
+  mockery::expect_called(mock_loop, 1)
 })

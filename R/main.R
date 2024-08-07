@@ -24,18 +24,18 @@ main <- function(args = commandArgs(TRUE)) {
 
 parse_main_worker <- function(args = commandArgs(TRUE)) {
   usage <- "Usage:
-orderly.runner.worker [options] <path>
-
-Options:
-  --n-workers=N_WORKERS    Number of workers to spawn [default: 1]"
+orderly.runner.worker <path>"
   dat <- docopt::docopt(usage, args)
-  list(path = dat$path,
-       n_workers = as.integer(dat$n_workers))
+  list(path = dat$path)
 }
 
 main_worker <- function(args = commandArgs(TRUE)) {
   dat <- parse_main_worker(args)
   # assumes ORDERLY_RUNNER_QUEUE_ID is set
   queue <- Queue$new(dat$path)
-  rrq::rrq_worker_spawn(dat$n_workers, controller = queue$controller)
+  worker <- rrq::rrq_worker$new(
+    queue$controller$queue_id,
+    con = queue$controller$con
+  )
+  worker$loop()
 }
