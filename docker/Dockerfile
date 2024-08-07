@@ -22,6 +22,7 @@ COPY . /src
 RUN R CMD INSTALL --install-tests /src && rm -rf /src
 
 ENV ORDERLY_RUNNER_QUEUE_ID=orderly.runner
+ENV REDIS_CONTAINER_NAME=orderly.runner_redis
 
 COPY docker/bin /usr/local/bin/
 
