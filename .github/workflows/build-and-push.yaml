@@ -56,6 +56,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           push: true
+          file: ./docker/Dockerfile
           tags: |
             ${{env.TAG_DH}}:${{steps.ci-env.outputs.CI_SHA}}
             ${{env.TAG_DH}}:${{steps.ci-env.outputs.CI_BRANCH}}
