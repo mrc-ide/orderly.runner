@@ -17,3 +17,10 @@ RUN install2.r --error remotes &&  \
 
 COPY . /src
 RUN R CMD INSTALL --install-tests /src && rm -rf /src
+
+ENV ORDERLY_RUNNER_QUEUE_ID=orderly.runner
+
+COPY docker/bin /usr/local/bin/
+
+# ENTRYPOINT for server is /usr/local/bin/orderly.runner.server
+# ENTRYPOINT for worker is /usr/local/bin/orderly.runner.worker
