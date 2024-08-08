@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
-set -ex
+set -x
+
 docker kill orderly.runner_redis orderly.runner_server orderly.runner_worker
 docker network rm orderly.runner_network
