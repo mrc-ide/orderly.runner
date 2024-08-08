@@ -80,8 +80,8 @@ Queue <- R6::R6Class("Queue", #nolint
         status = scalar(status),
         queue_position = if (status == "PENDING") scalar(rrq::rrq_task_position(job_id, controller = self$controller)) else NULL,
         time_queued = scalar(times[1]),
-        time_started = if (!is.na(times[2])) scalar(times[2]) else NULL,
-        time_complete = if (!is.na(times[3])) scalar(times[3]) else NULL,
+        time_started = scalar(times[2]),
+        time_complete = scalar(times[3]),
         packet_id = if (status == "COMPLETE") scalar(rrq::rrq_task_result(job_id, controller = self$controller)) else NULL,
         logs = rrq::rrq_task_log(job_id, controller = self$controller)
       )
