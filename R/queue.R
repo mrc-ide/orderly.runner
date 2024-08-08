@@ -29,9 +29,11 @@ Queue <- R6::R6Class("Queue", #nolint
       self$controller <- rrq::rrq_controller(
         queue_id %||% orderly_queue_id()
       )
-      worker_config <- rrq::rrq_worker_config(heartbeat_period = 10)
+      log_dir_name <- "runner-logs"
+      dir.create(log_dir_name, showWarnings = FALSE)
+      worker_config <- rrq::rrq_worker_config(heartbeat_period = 10, logdir = log_dir_name)
       rrq::rrq_worker_config_save("localhost", worker_config,
-                                   controller = self$controller)
+                                  controller = self$controller)
     },
 
     #' @description
@@ -60,6 +62,29 @@ Queue <- R6::R6Class("Queue", #nolint
     # Just until we add queue status for testing
     number_of_workers = function() {
       rrq::rrq_worker_len(self$controller)
+    },
+
+    #' @description
+    #' Gets status of packet run
+    #'
+    #' @param job_id Id of redis queue job to get status of.
+    #' @return status of redis queue job
+    get_status = function(job_id) {
+      if (!rrq::rrq_task_exists(job_id, controller = self$controller)) {
+        porcelain::porcelain_stop("Job ID does not exist")
+      }
+      status <- rrq::rrq_task_status(job_id, controller = self$controller)
+      times <- rrq::rrq_task_times(job_id, controller = self$controller)
+
+      list(
+        status = scalar(status),
+        queue_position = if (status == "PENDING") scalar(rrq::rrq_task_position(job_id, controller = self$controller)) else NULL,
+        time_queued = scalar(times[1]),
+        time_started = scalar(times[2]),
+        time_complete = scalar(times[3]),
+        packet_id = if (status == "COMPLETE") scalar(rrq::rrq_task_result(job_id, controller = self$controller)) else NULL,
+        logs = rrq::rrq_task_log(job_id, controller = self$controller)
+      )
     },
 
     #' @description Destroy queue

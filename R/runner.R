@@ -8,7 +8,7 @@ runner_run <- function(orderly_root, reportname, parameters, branch, ref, ...) {
   git_clean(worker_path)
 
   # Run
-  withr::with_envvar(
+  id <- withr::with_envvar(
     c(ORDERLY_SRC_ROOT = file.path(worker_path, "src", reportname)),
     orderly2::orderly_run(reportname, parameters = parameters,
                           root = orderly_root, ...)
@@ -16,6 +16,8 @@ runner_run <- function(orderly_root, reportname, parameters, branch, ref, ...) {
 
   # Cleanup
   git_clean(worker_path)
+
+  id
 }
 
 point_head_to_ref <- function(worker_path, branch, ref) {
