@@ -67,8 +67,16 @@ test_that("Can spawn workers", {
   mockery::stub(main_worker, "Queue$new", mock_queue_new)
 
   mock_loop <- mockery::mock()
-  mock_rrq_worker_new <- mockery::mock(list(loop = mock_loop))
+  mock_rrq_worker_new <- mockery::mock(
+    list(loop = mock_loop, id = "test_worker_id")
+  )
   mockery::stub(main_worker, "rrq::rrq_worker$new", mock_rrq_worker_new)
+
+  mock_dir_create <- mockery::mock()
+  mockery::stub(main_worker, "fs::dir_create", mock_dir_create)
+
+  mock_git_clone <- mockery::mock()
+  mockery::stub(main_worker, "gert::git_clone", mock_git_clone)
 
   main_worker(c("path"))
 
@@ -79,6 +87,17 @@ test_that("Can spawn workers", {
   mockery::expect_called(mock_rrq_worker_new, 1)
   expect_equal(mockery::mock_args(mock_rrq_worker_new)[[1]],
                list("test_queue_id", con = "test_con"))
+
+  expected_worker_path <- file.path(
+    "path", ".packit", "workers", "test_worker_id"
+  )
+  mockery::expect_called(mock_dir_create, 1)
+  expect_equal(mockery::mock_args(mock_dir_create)[[1]],
+               list(expected_worker_path))
+
+  mockery::expect_called(mock_git_clone, 1)
+  expect_equal(mockery::mock_args(mock_git_clone)[[1]],
+               list("path", path = expected_worker_path))
 
   mockery::expect_called(mock_loop, 1)
 })
