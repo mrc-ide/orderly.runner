@@ -25,5 +25,9 @@ ENV REDIS_CONTAINER_NAME=orderly.runner_redis
 
 COPY docker/bin /usr/local/bin/
 
+RUN git config --global --add safe.directory /orderly-root
+RUN echo ".packit" > /.gitignore
+RUN git config --global core.excludesFile "/.gitignore"
+
 # ENTRYPOINT for server is /usr/local/bin/orderly.runner.server
 # ENTRYPOINT for worker is /usr/local/bin/orderly.runner.worker
