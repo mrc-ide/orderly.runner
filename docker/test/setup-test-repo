@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -ex
+HERE=$(dirname $0)
+
+mkdir -p $HERE/test-repo/src
+cp -r $HERE/examples/. $HERE/test-repo/src
+
+$HERE/setup-orderly-repo
