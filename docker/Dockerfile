@@ -6,7 +6,6 @@ RUN apt-get update &&  apt-get install -y --no-install-recommends \
         zlib1g-dev \
         libhiredis-dev \
         git \
-        redis \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 

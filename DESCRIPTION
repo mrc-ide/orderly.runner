@@ -25,6 +25,7 @@ Imports:
     R6,
     redux,
     rrq (>= 0.7.15),
+    stringr,
     withr
 Suggests:
     fs,
