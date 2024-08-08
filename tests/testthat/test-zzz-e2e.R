@@ -153,6 +153,6 @@ test_that("can get status of report run", {
   expect_equal(task_times[1], dat$time_queued)
   expect_equal(task_times[2], dat$time_started)
   expect_equal(task_times[3], dat$time_complete)
-  # todo: test logs
+  expect_equal(get_task_logs(job_id, queue$controller), unlist(dat$logs))
 })
 

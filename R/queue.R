@@ -29,9 +29,11 @@ Queue <- R6::R6Class("Queue", #nolint
       self$controller <- rrq::rrq_controller(
         queue_id %||% orderly_queue_id()
       )
-      worker_config <- rrq::rrq_worker_config(heartbeat_period = 10)
+      log_dir_name <- "runner-logs"
+      dir.create(log_dir_name, showWarnings = FALSE)
+      worker_config <- rrq::rrq_worker_config(heartbeat_period = 10, logdir = log_dir_name)
       rrq::rrq_worker_config_save("localhost", worker_config,
-                                   controller = self$controller)
+                                  controller = self$controller)
     },
 
     #' @description
@@ -71,7 +73,6 @@ Queue <- R6::R6Class("Queue", #nolint
       if (!rrq::rrq_task_exists(job_id, controller = self$controller)) {
         porcelain::porcelain_stop("Job ID does not exist")
       }
-
       status <- rrq::rrq_task_status(job_id, controller = self$controller)
       times <- rrq::rrq_task_times(job_id, controller = self$controller)
 
@@ -82,7 +83,7 @@ Queue <- R6::R6Class("Queue", #nolint
         time_started = if (!is.na(times[2])) scalar(times[2]) else NULL,
         time_complete = if (!is.na(times[3])) scalar(times[3]) else NULL,
         packet_id = if (status == "COMPLETE") scalar(rrq::rrq_task_result(job_id, controller = self$controller)) else NULL,
-        logs = NULL # waiting for rich to complete this work
+        logs = rrq::rrq_task_log(job_id, controller = self$controller)
       )
     },
 

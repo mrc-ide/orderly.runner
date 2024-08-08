@@ -18,7 +18,10 @@
           "type": ["number", "null"]
         },
         "logs": {
-             "type": ["string", "null"]
+             "type": ["array", "null"],
+             "items": {
+               "type": "string"
+             }
         },
         "status": {
           "type": "string"

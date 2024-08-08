@@ -13,6 +13,15 @@ test_that("Can bring up queue", {
   expect_equal(q$number_of_workers(), 1)
 })
 
+test_that("creates directory for logs & adds to worker config", {
+  skip_if_no_redis()
+
+  root <- create_temporary_root(use_file_store = TRUE)
+  gert::git_init(root)
+  q <- new_queue_quietly(root)
+  expect_true(dir.exists("runner-logs"))
+  expect_equal("runner-logs", rrq::rrq_worker_config_read("localhost", controller = q$controller)$logdir)
+})
 
 test_that("Errors if not git repo", {
   root <- create_temporary_root()
@@ -113,4 +122,19 @@ test_that("Can submit 2 tasks on different commit hashes", {
   worker_id2 <- rrq::rrq_task_info(task_id2, controller = q$controller)$worker
   worker2_txt <- file.path(root, ".packit", "workers", worker_id2, "test.txt")
   expect_equal(file.exists(worker2_txt), TRUE)
+})
+
+test_that("can get status report run", {
+  skip_if_no_redis()
+  root <- test_prepare_orderly_example("data")
+  git_info <- helper_add_git(root, c("src", "orderly_config.yml"))
+  q <- start_queue_with_workers(root, 1)
+  task_id <- q$submit("data", branch = git_info$branch)
+  wait_for_task_complete(task_id, q$controller, 5)
+  
+  status <- q$get_status(task_id)
+  expect_equal(status$status, scalar("COMPLETE"))
+  expect_null(status$queue_position)
+  expect_equal(status$packet_id, scalar(get_task_result(task_id, q$controller)))
+  expect_equal(status$logs, get_task_logs(task_id, q$controller))
 })

@@ -156,6 +156,10 @@ get_task_result <- function(task_id, controller) {
   rrq::rrq_task_result(task_id, controller = controller)
 }
 
+get_task_logs <- function(task_id, controller) {
+  rrq::rrq_task_log(task_id, controller = controller)
+}
+
 initialise_git_repo <- function() {
   t <- tempfile()
   dir.create(t)
