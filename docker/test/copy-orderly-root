@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -x
+HERE=$(dirname $0)
+
+rm -rf $HERE/orderly-root-volume
+mkdir -p $HERE/orderly-root-volume
+
+docker cp orderly.runner_debug:/orderly-root/. $HERE/orderly-root-volume

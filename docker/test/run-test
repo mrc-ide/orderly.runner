@@ -3,6 +3,8 @@ set -ex
 HERE=$(dirname $0)
 ABSOLUTE_PATH=$(realpath $HERE)
 
+$HERE/setup-test-repo
+
 docker network create orderly.runner_network
 
 docker run --rm -d \
@@ -19,7 +21,7 @@ docker run --rm -d --pull=missing \
        ubuntu \
        sleep infinity
 
-docker cp $ABSOLUTE_PATH/test-repo/. orderly.runner_view_root:/orderly-root
+docker cp $ABSOLUTE_PATH/test-repo/. orderly.runner_debug:/orderly-root
 
 docker run --rm -d --pull=always \
        --net=orderly.runner_network \
