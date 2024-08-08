@@ -12,6 +12,8 @@ RoxygenNote: 7.3.1
 Roxygen: list(markdown = TRUE, roclets = c("rd", "namespace", "porcelain::porcelain_roclet"))
 URL: https://github.com/mrc-ide/orderly.runner
 BugReports: https://github.com/mrc-ide/orderly.runner/issues
+Depends:
+    R (>= 4.1.0)
 Imports:
     cli,
     docopt,
