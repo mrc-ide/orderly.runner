@@ -1,7 +1,7 @@
 #' Object for managing running jobs on the redis queue
 #'
 #' @keywords internal
-Queue <- R6::R6Class("Queue", #nolint
+Queue <- R6::R6Class("Queue", # nolint
   cloneable = FALSE,
   public = list(
     #' @field root Orderly root
@@ -21,8 +21,10 @@ Queue <- R6::R6Class("Queue", #nolint
       self$root <- root
       self$config <- orderly2::orderly_config(self$root)
       if (!runner_has_git(self$root)) {
-        cli::cli_abort(paste("Not starting server as orderly",
-                             "root is not version controlled."))
+        cli::cli_abort(paste(
+          "Not starting server as orderly",
+          "root is not version controlled."
+        ))
       }
 
       # Create queue
@@ -33,7 +35,8 @@ Queue <- R6::R6Class("Queue", #nolint
       dir.create(log_dir_name, showWarnings = FALSE)
       worker_config <- rrq::rrq_worker_config(heartbeat_period = 10, logdir = log_dir_name)
       rrq::rrq_worker_config_save("localhost", worker_config,
-                                  controller = self$controller)
+        controller = self$controller
+      )
     },
 
     #' @description
@@ -55,8 +58,9 @@ Queue <- R6::R6Class("Queue", #nolint
         ref
       )
       rrq::rrq_task_create_call(runner_run, run_args,
-                                separate_process = TRUE,
-                                controller = self$controller)
+        separate_process = TRUE,
+        controller = self$controller
+      )
     },
 
     # Just until we add queue status for testing
@@ -67,24 +71,28 @@ Queue <- R6::R6Class("Queue", #nolint
     #' @description
     #' Gets status of packet run
     #'
-    #' @param job_id Id of redis queue job to get status of.
+    #' @param job_ids Id of redis queue job to get status of.
+    #' @param include_logs Whether to include logs in reponse or not
     #' @return status of redis queue job
-    get_status = function(job_id) {
-      if (!rrq::rrq_task_exists(job_id, controller = self$controller)) {
+    get_status = function(job_ids, include_logs = TRUE) {
+      if (!all(rrq::rrq_task_exists(job_ids, controller = self$controller))) {
         porcelain::porcelain_stop("Job ID does not exist")
       }
-      status <- rrq::rrq_task_status(job_id, controller = self$controller)
-      times <- rrq::rrq_task_times(job_id, controller = self$controller)
+      statuses <- rrq::rrq_task_status(job_ids, controller = self$controller)
+      tasks_times <- rrq::rrq_task_times(job_ids, controller = self$controller)
+      queue_positions <- rrq::rrq_task_position(job_ids, controller = self$controller)
 
-      list(
-        status = scalar(status),
-        queue_position = if (status == "PENDING") scalar(rrq::rrq_task_position(job_id, controller = self$controller)) else NULL,
-        time_queued = scalar(times[1]),
-        time_started = scalar(times[2]),
-        time_complete = scalar(times[3]),
-        packet_id = if (status == "COMPLETE") scalar(rrq::rrq_task_result(job_id, controller = self$controller)) else NULL,
-        logs = rrq::rrq_task_log(job_id, controller = self$controller)
-      )
+      lapply(seq_along(job_ids), function(index) {
+        list(
+          status = scalar(statuses[index]),
+          queue_position = if (statuses[index] == "PENDING") scalar(queue_positions[index]) else NULL,
+          time_queued = scalar(tasks_times[job_ids[index], 1]),
+          time_started = scalar(tasks_times[job_ids[index], 2]),
+          time_complete = scalar(tasks_times[job_ids[index], 3]),
+          packet_id = if (statuses[index] == "COMPLETE") scalar(rrq::rrq_task_result(job_ids[index], controller = self$controller)) else NULL,
+          logs = if (include_logs) rrq::rrq_task_log(job_ids[index], controller = self$controller) else NULL
+        )
+      })
     },
 
     #' @description Destroy queue

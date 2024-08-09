@@ -90,13 +90,15 @@ We reset hard to this ref and run the report. (default HEAD)}
 \subsection{Method \code{get_status()}}{
 Gets status of packet run
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Queue$get_status(job_id)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Queue$get_status(job_ids, include_logs = TRUE)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{job_id}}{Id of redis queue job to get status of.}
+\item{\code{job_ids}}{Id of redis queue job to get status of.}
+
+\item{\code{include_logs}}{Whether to include logs in reponse or not}
 }
 \if{html}{\out{</div>}}
 }
