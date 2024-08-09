@@ -102,9 +102,11 @@ submit_report_run <- function(root, queue, data) {
 }
 
 ##' @porcelain
-##'   GET /report/status/<job_ids:string> => json(report_run_status_response)
-##'   query include_logs :: logical
+##'   POST /report/status => json(report_run_status_response)
 ##'   state queue :: queue
-report_run_status <- function(queue, include_logs, job_ids) {
-  queue$get_status(unlist(strsplit(job_ids, ",")), include_logs)
+##'   query include_logs :: logical
+##'   body data :: json(report_run_status_request)
+report_run_status <- function(queue, include_logs, data) {
+  job_ids <- jsonlite::fromJSON(data)
+  queue$get_status(job_ids, include_logs)
 }

@@ -162,10 +162,10 @@ test_that("can get statuses of jobs", {
   # status endpoint
   endpoint <- withr::with_envvar(
     c(ORDERLY_RUNNER_QUEUE_ID = queue_id),
-    orderly_runner_endpoint("GET", "/report/status/<job_ids:string>", repo)
+    orderly_runner_endpoint("POST", "/report/status", repo)
   )
-  dat <- endpoint$run(TRUE, paste(job_ids, collapse = ","))$data
-
+  dat <- endpoint$run(TRUE, jsonlite::toJSON(job_ids))$data
+  
   for (i in seq_along(job_ids)) {
     task_status <- dat[[i]]
     task_times <- get_task_times(job_ids[[i]], queue$controller)

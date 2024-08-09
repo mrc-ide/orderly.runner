@@ -120,8 +120,11 @@ test_that("can run report with params", {
 
 test_that("retruns error when getting status of run with invalid job_id", {
   res <- bg$request(
-    "GET",
-    sprintf("/report/status/bad_job_id?include_logs=TRUE")
+    "POST",
+    "/report/status?include_logs=TRUE",
+    body = jsonlite::toJSON(c("invalid_job_id")),
+    encode = "raw",
+    httr::content_type("application/json")
   )
 
   errors <- httr::content(res)$errors
@@ -131,8 +134,11 @@ test_that("retruns error when getting status of run with invalid job_id", {
 
 test_that("retruns error when getting status when not passing in include_logs", {
   res <- bg$request(
-    "GET",
-    sprintf("/report/status/bad_job_id")
+    "POST",
+    "/report/status",
+    body = jsonlite::toJSON(c("invalid_job_id")),
+    encode = "raw",
+    httr::content_type("application/json")
   )
 
   errors <- httr::content(res)$errors
@@ -158,8 +164,11 @@ test_that("can get status of report run with logs", {
   task_times <- wait_for_task_complete(job_id, queue$controller, 3)
 
   res <- bg$request(
-    "GET",
-    sprintf("/report/status/%s?include_logs=TRUE", job_id)
+    "POST",
+    "/report/status?include_logs=TRUE",
+    body = jsonlite::toJSON(c(job_id)),
+    encode = "raw",
+    httr::content_type("application/json")
   )
   dat <- httr::content(res)$data[[1]]
   task_times <- get_task_times(job_id, queue$controller)
@@ -197,8 +206,11 @@ test_that("can get status of multiple tasks without logs", {
   task_times <- wait_for_task_complete(job_ids, queue$controller, 3)
 
   res <- bg$request(
-    "GET",
-    sprintf("/report/status/%s?include_logs=FALSE", paste(job_ids, collapse = ","))
+    "POST",
+    "/report/status?include_logs=FALSE",
+    body = jsonlite::toJSON(job_ids),
+    encode = "raw",
+    httr::content_type("application/json")
   )
   dat <- httr::content(res)$data
 
