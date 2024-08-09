@@ -130,3 +130,51 @@ test_that("can run orderly reports", {
     "COMPLETE"
   )
 })
+
+test_that("can get statuses of jobs", {
+  # run 2 jobs first and wait for finish
+  skip_if_no_redis()
+  queue_id <- "orderly.runner:bad-animal"
+  repo <- test_prepare_orderly_example(c("data", "parameters"))
+  gert::git_init(repo)
+  orderly2::orderly_gitignore_update("(root)", root = repo)
+  git_add_and_commit(repo)
+  queue <- Queue$new(repo, queue_id = queue_id)
+  worker_manager <- start_queue_workers_quietly(
+    1, queue$controller
+  )
+  make_worker_dirs(repo, worker_manager$id)
+  endpoint <- withr::with_envvar(
+    c(ORDERLY_RUNNER_QUEUE_ID = queue_id),
+    orderly_runner_endpoint("POST", "/report/run", repo)
+  )
+  req <- list(
+    name = scalar("data"),
+    branch = scalar(gert::git_branch(repo = repo)),
+    hash = scalar(gert::git_commit_id(repo = repo)),
+    parameters = scalar(NULL)
+  )
+  dat1 <- endpoint$run(jsonlite::toJSON(req))
+  dat2 <- endpoint$run(jsonlite::toJSON(req))
+  job_ids <- c(dat1$data$job_id, dat2$data$job_id)
+  rrq::rrq_task_wait(job_ids, controller = queue$controller)
+
+  # status endpoint
+  endpoint <- withr::with_envvar(
+    c(ORDERLY_RUNNER_QUEUE_ID = queue_id),
+    orderly_runner_endpoint("GET", "/report/status/<job_ids:string>", repo)
+  )
+  dat <- endpoint$run(TRUE, paste(job_ids, collapse = ","))$data
+
+  for (i in seq_along(job_ids)) {
+    task_status <- dat[[i]]
+    task_times <- get_task_times(job_ids[[i]], queue$controller)
+    expect_equal(task_status$status, scalar("COMPLETE"))
+    expect_null(scalar(task_status$queue_position))
+    expect_equal(task_status$packet_id, scalar(get_task_result(job_ids[[i]], queue$controller)))
+    expect_equal(scalar(task_times[1]), task_status$time_queued)
+    expect_equal(scalar(task_times[2]), task_status$time_started)
+    expect_equal(scalar(task_times[3]), task_status$time_complete)
+    expect_equal(get_task_logs(job_ids[[i]], queue$controller), unlist(task_status$logs))
+  }
+})

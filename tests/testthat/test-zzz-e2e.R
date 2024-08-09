@@ -7,7 +7,8 @@ root <- test_prepare_orderly_remote_example(
 )
 queue <- start_queue_with_workers(root$local, 1, queue_id = queue_id)
 bg <- porcelain::porcelain_background$new(
-  api, args = list(root$local),
+  api,
+  args = list(root$local),
   env = c(ORDERLY_RUNNER_QUEUE_ID = queue_id)
 )
 bg$start()
@@ -20,17 +21,21 @@ test_that("can run server", {
   dat <- httr::content(r)
   expect_equal(dat$status, "success")
   expect_null(dat$errors)
-  expect_equal(dat$data$orderly2,
-               package_version_string("orderly2"))
-  expect_equal(dat$data$orderly.runner,
-               package_version_string("orderly.runner"))
+  expect_equal(
+    dat$data$orderly2,
+    package_version_string("orderly2")
+  )
+  expect_equal(
+    dat$data$orderly.runner,
+    package_version_string("orderly.runner")
+  )
 })
 
 
 test_that("can list reports", {
   r <- bg$request("GET", "/report/list?ref=HEAD")
   expect_equal(httr::status_code(r), 200)
-  
+
   dat <- httr::content(r)
   expect_equal(dat$status, "success")
   expect_null(dat$errors)
@@ -116,14 +121,26 @@ test_that("can run report with params", {
 test_that("retruns error when getting status of run with invalid job_id", {
   res <- bg$request(
     "GET",
-    sprintf("/report/status/bad_job_id")
+    sprintf("/report/status/bad_job_id?include_logs=TRUE")
   )
-  
+
   errors <- httr::content(res)$errors
   expect_equal(httr::status_code(res), 400)
   expect_equal(errors[[1]]$detail, "Job ID does not exist")
 })
-test_that("can get status of report run", {
+
+test_that("retruns error when getting status when not passing in include_logs", {
+  res <- bg$request(
+    "GET",
+    sprintf("/report/status/bad_job_id")
+  )
+
+  errors <- httr::content(res)$errors
+  expect_equal(httr::status_code(res), 400)
+  expect_equal(errors[[1]]$detail, "query parameter 'include_logs' is missing but required")
+})
+
+test_that("can get status of report run with logs", {
   # run task and wait for finish before getting status
   data <- list(
     name = "data",
@@ -142,13 +159,13 @@ test_that("can get status of report run", {
 
   res <- bg$request(
     "GET",
-    sprintf("/report/status/%s", job_id)
+    sprintf("/report/status/%s?include_logs=TRUE", job_id)
   )
-  dat <- httr::content(res)$data
+  dat <- httr::content(res)$data[[1]]
   task_times <- get_task_times(job_id, queue$controller)
   expect_equal(httr::status_code(res), 200)
   expect_equal(dat$status, "COMPLETE")
-  expect_null(dat$queue_positionc)
+  expect_null(dat$queue_position)
   expect_equal(dat$packet_id, get_task_result(job_id, queue$controller))
   expect_equal(task_times[1], dat$time_queued)
   expect_equal(task_times[2], dat$time_started)
@@ -156,3 +173,44 @@ test_that("can get status of report run", {
   expect_equal(get_task_logs(job_id, queue$controller), unlist(dat$logs))
 })
 
+test_that("can get status of multiple tasks without logs", {
+  # run multiple tasks and wait for finish before getting status
+  data <- list(
+    name = "data",
+    branch = gert::git_branch(repo = root$local),
+    hash = gert::git_commit_id(repo = root$local),
+    parameters = c(NULL)
+  )
+  r1 <- bg$request(
+    "POST", "/report/run",
+    body = jsonlite::toJSON(data, null = "null", auto_unbox = TRUE),
+    encode = "raw",
+    httr::content_type("application/json")
+  )
+  r2 <- bg$request(
+    "POST", "/report/run",
+    body = jsonlite::toJSON(data, null = "null", auto_unbox = TRUE),
+    encode = "raw",
+    httr::content_type("application/json")
+  )
+  job_ids <- c(httr::content(r1)$data$job_id, httr::content(r2)$data$job_id)
+  task_times <- wait_for_task_complete(job_ids, queue$controller, 3)
+
+  res <- bg$request(
+    "GET",
+    sprintf("/report/status/%s?include_logs=FALSE", paste(job_ids, collapse = ","))
+  )
+  dat <- httr::content(res)$data
+
+  for (i in seq_along(job_ids)) {
+    task_status <- dat[[i]]
+    task_times <- get_task_times(job_ids[[i]], queue$controller)
+    expect_equal(task_status$status, "COMPLETE")
+    expect_null(task_status$queue_position)
+    expect_equal(task_status$packet_id, get_task_result(job_ids[[i]], queue$controller))
+    expect_equal(task_times[1], task_status$time_queued)
+    expect_equal(task_times[2], task_status$time_started)
+    expect_equal(task_times[3], task_status$time_complete)
+    expect_null(task_status$logs)
+  }
+})
