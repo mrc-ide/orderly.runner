@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+set -exu
+
+export CONTAINER_NAMESPACE=orderly.runner
+
+export NETWORK="$CONTAINER_NAMESPACE-network"
+export REDIS=$CONTAINER_NAMESPACE-redis
+export DEBUG=$CONTAINER_NAMESPACE-debug
+export SERVER=$CONTAINER_NAMESPACE-server
+export WORKER=$CONTAINER_NAMESPACE-worker
+
+export ORDERLY_RUNNER_QUEUE_ID=orderly.runner.queue
+
+export ORDERLY_VOLUME=$CONTAINER_NAMESPACE-orderly-root
+
+export ORDERLY_RUNNER_IMAGE=ghcr.io/mrc-ide/orderly.runner:mrc-5146-container-gh-actions
+
+export CONTAINER_ORDERLY_ROOT_PATH=/orderly-root

@@ -1,11 +1,11 @@
 FROM rocker/r-ver:4.1
 
 RUN apt-get update &&  apt-get install -y --no-install-recommends \
+        git \
         libcurl4-openssl-dev \
+        libhiredis-dev \
         libssl-dev \
         zlib1g-dev \
-        libhiredis-dev \
-        git \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -20,12 +20,9 @@ RUN install2.r --error remotes &&  \
 COPY . /src
 RUN R CMD INSTALL --install-tests /src && rm -rf /src
 
-ENV ORDERLY_RUNNER_QUEUE_ID=orderly.runner
-ENV REDIS_CONTAINER_NAME=orderly.runner_redis
-
 COPY docker/bin /usr/local/bin/
 
-RUN git config --global --add safe.directory /orderly-root
+RUN git config --global --add safe.directory "*"
 RUN echo ".packit" > /.gitignore
 RUN git config --global core.excludesFile "/.gitignore"
 

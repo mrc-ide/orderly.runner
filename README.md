@@ -25,6 +25,11 @@ To run the full docker setup:
 1. To view the orderly root directory in the docker container (you may want to do this after workers have run orderly reports for example), run `docker/test/copy-orderly-root` and this will copy the contents to `docker/test/orderly-root-volume`
 1. Finally to clear docker and remove `test-repo` and `orderly-root-volume` directories run `docker/test/clear-test`
 
+
+## Notes for deploying
+
+When running the server or worker containers, you should have `REDIS_CONTAINER_NAME` env var set to connect to the redis container from the server and worker containers. You should also set the `ORDERLY_RUNNER_QUEUE_ID` to the same thing between server and worker containers so they connect to the same queue.
+
 ## License
 
 MIT © Imperial College of Science, Technology and Medicine

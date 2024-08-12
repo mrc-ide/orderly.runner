@@ -2,21 +2,17 @@
 set -x
 HERE=$(dirname $0)
 
-docker kill \
-    orderly.runner_redis \
-    orderly.runner_server \
-    orderly.runner_worker \
-    orderly.runner_debug
+. $HERE/common
 
-docker rm \
-    orderly.runner_redis \
-    orderly.runner_server \
-    orderly.runner_worker \
-    orderly.runner_debug
+docker rm -f \
+    $REDIS \
+    $SERVER \
+    $WORKER \
+    $DEBUG
 
-docker network rm orderly.runner_network
+docker network rm $NETWORK
 
-docker volume rm orderly-root-volume
+docker volume rm $ORDERLY_VOLUME
 
 rm -rf $HERE/test-repo
 rm -rf $HERE/orderly-root-volume

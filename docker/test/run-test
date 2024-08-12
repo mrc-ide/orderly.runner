@@ -1,41 +1,47 @@
 #!/usr/bin/env bash
-set -ex
+set -exu
 HERE=$(dirname $0)
 ABSOLUTE_PATH=$(realpath $HERE)
 
+. $HERE/common
+
 $HERE/setup-test-repo
 
-docker network create orderly.runner_network
+docker network create $NETWORK
 
 docker run --rm -d \
-       --net=orderly.runner_network \
-       --name=orderly.runner_redis \
+       --net=$NETWORK \
+       --name=$REDIS \
        -p 127.0.0.1:6379:6379 \
        redis
 
-docker volume create orderly-root-volume
+docker volume create $ORDERLY_VOLUME
 
 docker run --rm -d --pull=missing \
-       --name=orderly.runner_debug \
-       -v orderly-root-volume:/orderly-root \
+       --name=$DEBUG \
+       -v $ORDERLY_VOLUME:$CONTAINER_ORDERLY_ROOT_PATH \
        ubuntu \
        sleep infinity
 
-docker cp $ABSOLUTE_PATH/test-repo/. orderly.runner_debug:/orderly-root
+docker cp $ABSOLUTE_PATH/test-repo/. $DEBUG:$CONTAINER_ORDERLY_ROOT_PATH
 
 docker run --rm -d --pull=always \
-       --net=orderly.runner_network \
-       --name=orderly.runner_server \
+       --net=$NETWORK \
+       --name=$SERVER \
        --entrypoint="/usr/local/bin/orderly.runner.server" \
+       --env=ORDERLY_RUNNER_QUEUE_ID=$ORDERLY_RUNNER_QUEUE_ID \
+       --env=REDIS_CONTAINER_NAME=$REDIS \
        -p 127.0.0.1:8001:8001 \
-       -v orderly-root-volume:/orderly-root \
-       ghcr.io/mrc-ide/orderly.runner:mrc-5146-container-gh-actions \
-       /orderly-root
+       -v $ORDERLY_VOLUME:$CONTAINER_ORDERLY_ROOT_PATH \
+       $ORDERLY_RUNNER_IMAGE \
+       $CONTAINER_ORDERLY_ROOT_PATH
 
 docker run --rm -d --pull=always \
-       --net=orderly.runner_network \
-       --name=orderly.runner_worker \
+       --net=$NETWORK \
+       --name=$WORKER \
        --entrypoint="/usr/local/bin/orderly.runner.worker" \
-       -v orderly-root-volume:/orderly-root \
-       ghcr.io/mrc-ide/orderly.runner:mrc-5146-container-gh-actions \
-       /orderly-root
+       --env=ORDERLY_RUNNER_QUEUE_ID=$ORDERLY_RUNNER_QUEUE_ID \
+       --env=REDIS_CONTAINER_NAME=$REDIS \
+       -v $ORDERLY_VOLUME:$CONTAINER_ORDERLY_ROOT_PATH \
+       $ORDERLY_RUNNER_IMAGE \
+       $CONTAINER_ORDERLY_ROOT_PATH
