@@ -3,7 +3,7 @@ set -exu
 
 export CONTAINER_NAMESPACE=orderly.runner
 
-export NETWORK="$CONTAINER_NAMESPACE-network"
+export NETWORK=$CONTAINER_NAMESPACE-network
 export REDIS=$CONTAINER_NAMESPACE-redis
 export DEBUG=$CONTAINER_NAMESPACE-debug
 export SERVER=$CONTAINER_NAMESPACE-server
