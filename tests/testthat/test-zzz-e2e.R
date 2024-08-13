@@ -118,21 +118,7 @@ test_that("can run report with params", {
   expect_type(get_task_result(dat$data$job_id, queue$controller), "character")
 })
 
-test_that("retruns error when getting status of run with invalid job_id", {
-  res <- bg$request(
-    "POST",
-    "/report/status?include_logs=TRUE",
-    body = jsonlite::toJSON(c("invalid_job_id")),
-    encode = "raw",
-    httr::content_type("application/json")
-  )
-
-  errors <- httr::content(res)$errors
-  expect_equal(httr::status_code(res), 400)
-  expect_equal(errors[[1]]$detail, "Job ID does not exist")
-})
-
-test_that("retruns error when getting status when not passing in include_logs", {
+test_that("returns error when getting status when not passing in include_logs", {
   res <- bg$request(
     "POST",
     "/report/status",
@@ -225,4 +211,31 @@ test_that("can get status of multiple tasks without logs", {
     expect_equal(task_times[3], task_status$time_complete)
     expect_null(task_status$logs)
   }
+})
+
+test_that("returns status of only job ids that exist", {
+  # run report
+  data <- list(
+    name = "data",
+    branch = gert::git_branch(repo = root$local),
+    hash = gert::git_commit_id(repo = root$local),
+    parameters = c(NULL)
+  )
+  r1 <- bg$request(
+    "POST", "/report/run",
+    body = jsonlite::toJSON(data, null = "null", auto_unbox = TRUE),
+    encode = "raw",
+    httr::content_type("application/json")
+  )
+  job_ids <- c(httr::content(r1)$data$job_id, "non-existant-id")
+  
+  res <- bg$request(
+    "POST",
+    "/report/status?include_logs=FALSE",
+    body = jsonlite::toJSON(job_ids),
+    encode = "raw",
+    httr::content_type("application/json")
+  )
+  
+  expect_equal(length(httr::content(res)$data) , 1)
 })

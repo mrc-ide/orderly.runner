@@ -98,7 +98,7 @@ Gets status of packet run
 \describe{
 \item{\code{job_ids}}{Id of redis queue job to get status of.}
 
-\item{\code{include_logs}}{Whether to include logs in reponse or not}
+\item{\code{include_logs}}{Whether to include logs in response or not}
 }
 \if{html}{\out{</div>}}
 }

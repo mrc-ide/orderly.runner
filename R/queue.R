@@ -71,22 +71,23 @@ Queue <- R6::R6Class("Queue", #nolint
     #' @param include_logs Whether to include logs in response or not
     #' @return status of redis queue job
     get_status = function(job_ids, include_logs = TRUE) {
-      if (!all(rrq::rrq_task_exists(job_ids, controller = self$controller))) {
-        porcelain::porcelain_stop("Job ID does not exist")
+      valid_job_ids <- job_ids[rrq::rrq_task_exists(job_ids, controller = self$controller)]
+      if (length(valid_job_ids) != length(job_ids)) {
+        cli::cli_warn("Some job ids do not exist in the queue")
       }
-      statuses <- rrq::rrq_task_status(job_ids, controller = self$controller)
-      tasks_times <- rrq::rrq_task_times(job_ids, controller = self$controller)
-      queue_positions <- rrq::rrq_task_position(job_ids, controller = self$controller)
+      statuses <- rrq::rrq_task_status(valid_job_ids, controller = self$controller)
+      tasks_times <- rrq::rrq_task_times(valid_job_ids, controller = self$controller)
+      queue_positions <- rrq::rrq_task_position(valid_job_ids, controller = self$controller)
 
-      lapply(seq_along(job_ids), function(index) {
+      lapply(seq_along(valid_job_ids), function(index) {
         list(
           status = scalar(statuses[index]),
           queue_position = if (statuses[index] == "PENDING") scalar(queue_positions[index]) else NULL,
-          time_queued = scalar(tasks_times[job_ids[index], 1]),
-          time_started = scalar(tasks_times[job_ids[index], 2]),
-          time_complete = scalar(tasks_times[job_ids[index], 3]),
-          packet_id = if (statuses[index] == "COMPLETE") scalar(rrq::rrq_task_result(job_ids[index], controller = self$controller)) else NULL,
-          logs = if (include_logs) rrq::rrq_task_log(job_ids[index], controller = self$controller) else NULL
+          time_queued = scalar(tasks_times[valid_job_ids[index], 1]),
+          time_started = scalar(tasks_times[valid_job_ids[index], 2]),
+          time_complete = scalar(tasks_times[valid_job_ids[index], 3]),
+          packet_id = if (statuses[index] == "COMPLETE") scalar(rrq::rrq_task_result(valid_job_ids[index], controller = self$controller)) else NULL,
+          logs = if (include_logs) rrq::rrq_task_log(valid_job_ids[index], controller = self$controller) else NULL
         )
       })
     },

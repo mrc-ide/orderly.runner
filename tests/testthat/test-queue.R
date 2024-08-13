@@ -150,7 +150,7 @@ test_that("can get statuses on complete report runs with logs", {
   }
 })
 
-test_that("can get statuses wihtout logs if include_logs = flase", {
+test_that("can get statuses wihtout logs if include_logs = false", {
   # run 2 reports
   skip_if_no_redis()
   root <- test_prepare_orderly_example("data")
