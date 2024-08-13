@@ -1,7 +1,7 @@
 #' Object for managing running jobs on the redis queue
 #'
 #' @keywords internal
-Queue <- R6::R6Class("Queue", # nolint
+Queue <- R6::R6Class("Queue", #nolint
   cloneable = FALSE,
   public = list(
     #' @field root Orderly root
@@ -21,10 +21,8 @@ Queue <- R6::R6Class("Queue", # nolint
       self$root <- root
       self$config <- orderly2::orderly_config(self$root)
       if (!runner_has_git(self$root)) {
-        cli::cli_abort(paste(
-          "Not starting server as orderly",
-          "root is not version controlled."
-        ))
+        cli::cli_abort(paste("Not starting server as orderly",
+                             "root is not version controlled."))
       }
 
       # Create queue
@@ -35,8 +33,7 @@ Queue <- R6::R6Class("Queue", # nolint
       dir.create(log_dir_name, showWarnings = FALSE)
       worker_config <- rrq::rrq_worker_config(heartbeat_period = 10, logdir = log_dir_name)
       rrq::rrq_worker_config_save("localhost", worker_config,
-        controller = self$controller
-      )
+                                  controller = self$controller)
     },
 
     #' @description
@@ -58,9 +55,8 @@ Queue <- R6::R6Class("Queue", # nolint
         ref
       )
       rrq::rrq_task_create_call(runner_run, run_args,
-        separate_process = TRUE,
-        controller = self$controller
-      )
+                                separate_process = TRUE,
+                                controller = self$controller)
     },
 
     # Just until we add queue status for testing
@@ -72,7 +68,7 @@ Queue <- R6::R6Class("Queue", # nolint
     #' Gets status of packet run
     #'
     #' @param job_ids Id of redis queue job to get status of.
-    #' @param include_logs Whether to include logs in reponse or not
+    #' @param include_logs Whether to include logs in response or not
     #' @return status of redis queue job
     get_status = function(job_ids, include_logs = TRUE) {
       if (!all(rrq::rrq_task_exists(job_ids, controller = self$controller))) {
