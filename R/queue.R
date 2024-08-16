@@ -25,9 +25,13 @@ Queue <- R6::R6Class("Queue", #nolint
                              "root is not version controlled."))
       }
 
+      # Connect to Redis
+      con <- redux::hiredis(host = redis_host())
+
       # Create queue
       self$controller <- rrq::rrq_controller(
-        queue_id %||% orderly_queue_id()
+        queue_id %||% orderly_queue_id(),
+        con = con
       )
       log_dir_name <- "runner-logs"
       dir.create(log_dir_name, showWarnings = FALSE)
@@ -101,4 +105,9 @@ runner_has_git <- function(path) {
 orderly_queue_id <- function() {
   id <- Sys.getenv("ORDERLY_RUNNER_QUEUE_ID", "")
   if (nzchar(id)) id else sprintf("orderly.runner:%s", ids::random_id())
+}
+
+redis_host <- function() {
+  name <- Sys.getenv("REDIS_CONTAINER_NAME", "")
+  if (nzchar(name)) name else NULL
 }

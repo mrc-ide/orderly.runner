@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -ex
+HERE=$(dirname $0)
+
+if [ -d "$HERE/test-repo" ]; then
+    echo "Not creating test repo as it already exists"
+    exit 0
+fi
+
+mkdir -p $HERE/test-repo/src
+cp -r $HERE/examples/. $HERE/test-repo/src
+
+$HERE/setup-orderly-repo
+
+cd $HERE/test-repo && git remote add origin remote_url

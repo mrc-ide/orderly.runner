@@ -124,6 +124,7 @@ test_that("Can submit 2 tasks on different commit hashes", {
   expect_equal(file.exists(worker2_txt), TRUE)
 })
 
+
 test_that("can get status on complete report run", {
   skip_if_no_redis()
   root <- test_prepare_orderly_example("data")
@@ -151,4 +152,14 @@ test_that("can get status on pending report run", {
   expect_equal(status$queue_position, scalar(as.integer(1)))
   expect_null(status$packet_id)
   expect_null(status$logs)
+
+test_that("redis_host uses REDIS_CONTAINER_NAME if it exists", {
+  root <- create_temporary_root()
+  gert::git_init(root)
+  id <- ids::random_id()
+  redis_host_name <- withr::with_envvar(
+    c(REDIS_CONTAINER_NAME = id),
+    redis_host()
+  )
+  expect_equal(redis_host_name, id)
 })
