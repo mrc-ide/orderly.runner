@@ -50,7 +50,7 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">api</span><span class="op">(</span><span class="va">root</span>, validate <span class="op">=</span> <span class="cn">NULL</span>, log_level <span class="op">=</span> <span class="st">"info"</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">api</span><span class="op">(</span><span class="va">root</span>, validate <span class="op">=</span> <span class="cn">NULL</span>, log_level <span class="op">=</span> <span class="st">"info"</span>, skip_queue_creation <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -70,6 +70,11 @@ environments.  See <a href="https://rdrr.io/pkg/porcelain/man/porcelain.html" cl
 <dt id="arg-log-level">log_level<a class="anchor" aria-label="anchor" href="#arg-log-level"></a></dt>
 <dd><p>Logging level to use. Sensible options are "off",
 "info" and "all".</p></dd>
+
+
+<dt id="arg-skip-queue-creation">skip_queue_creation<a class="anchor" aria-label="anchor" href="#arg-skip-queue-creation"></a></dt>
+<dd><p>Skip queue creation, this is primarily
+used for tests where we can't establish a Redis connection.</p></dd>
 
 </dl></div>
     <div id="value">
