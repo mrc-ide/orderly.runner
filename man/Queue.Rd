@@ -24,6 +24,7 @@ Object for managing running jobs on the redis queue
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-Queue-new}{\code{Queue$new()}}
+\item \href{#method-Queue-submit}{\code{Queue$submit()}}
 \item \href{#method-Queue-number_of_workers}{\code{Queue$number_of_workers()}}
 \item \href{#method-Queue-finalize}{\code{Queue$finalize()}}
 }
@@ -44,6 +45,31 @@ Create object, read configuration and setup Redis connection.
 
 \item{\code{queue_id}}{ID of an existing queue to connect to, creates a new one
 if NULL (default NULL)}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Queue-submit"></a>}}
+\if{latex}{\out{\hypertarget{method-Queue-submit}{}}}
+\subsection{Method \code{submit()}}{
+Submit a job the Redis queue for runner to run.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Queue$submit(reportname, parameters = NULL, branch = "master", ref = "HEAD")}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{reportname}}{Name of orderly report.}
+
+\item{\code{parameters}}{Parameters to run the report with (default NULL)}
+
+\item{\code{branch}}{Name of git branch to checkout the repository
+(default master)}
+
+\item{\code{ref}}{Git commit-ish value (e.g HEAD or commit hash or branch name).
+We reset hard to this ref and run the report. (default HEAD)}
 }
 \if{html}{\out{</div>}}
 }

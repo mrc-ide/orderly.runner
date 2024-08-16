@@ -1,6 +1,7 @@
 test_that("root data returns sensible, validated, data", {
   ## Just hello world for the package really
-  endpoint <- orderly_runner_endpoint("GET", "/", NULL)
+  endpoint <- orderly_runner_endpoint("GET", "/", NULL,
+                                      skip_queue_creation = TRUE)
   res <- endpoint$run()
   expect_true(res$validated)
   expect_true(all(c("orderly2", "orderly.runner") %in%
@@ -11,7 +12,7 @@ test_that("root data returns sensible, validated, data", {
 
 test_that("Can construct the api", {
   root <- create_temporary_root(use_file_store = TRUE)
-  obj <- api(root)
+  obj <- api(root, skip_queue_creation = TRUE)
   result <- evaluate_promise(value <- obj$request("GET", "/")$status)
   expect_equal(value, 200)
   logs <- lapply(strsplit(result$output, "\n")[[1]], jsonlite::parse_json)
@@ -22,7 +23,10 @@ test_that("Can construct the api", {
 
 test_that("can list orderly reports", {
   repo <- test_prepare_orderly_remote_example(c("data", "parameters"))
-  endpoint <- orderly_runner_endpoint("GET", "/report/list", repo$local)
+  endpoint <- orderly_runner_endpoint(
+    "GET", "/report/list",
+    repo$local, skip_queue_creation = TRUE
+  )
 
   res <- endpoint$run(gert::git_branch(repo$local))
   expect_equal(res$status_code, 200)
@@ -61,8 +65,10 @@ test_that("can list orderly reports", {
 
 test_that("can get parameters for a report", {
   repo <- test_prepare_orderly_remote_example(c("data", "parameters"))
-  endpoint <- orderly_runner_endpoint("GET", "/report/<name:string>/parameters", 
-                                      repo$local)
+  endpoint <- orderly_runner_endpoint(
+    "GET", "/report/<name:string>/parameters",
+    repo$local, skip_queue_creation = TRUE
+  )
 
   res <- endpoint$run("HEAD", "data")
   expect_equal(res$status_code, 200)
@@ -73,6 +79,54 @@ test_that("can get parameters for a report", {
   expect_equal(res$data, list(
     list(name = scalar("a"), value = NULL),
     list(name = scalar("b"), value = scalar("2")),
-    list(name = scalar("c"), value = NULL))
+    list(name = scalar("c"), value = NULL)
+  ))
+})
+
+test_that("can run orderly reports", {
+  skip_if_no_redis()
+
+  queue_id <- "orderly.runner:cute-animal"
+  repo <- test_prepare_orderly_example(c("data", "parameters"))
+  gert::git_init(repo)
+  orderly2::orderly_gitignore_update("(root)", root = repo)
+  git_add_and_commit(repo)
+  queue <- Queue$new(repo, queue_id = queue_id)
+  worker_manager <- start_queue_workers_quietly(
+    1, queue$controller
+  )
+  make_worker_dirs(repo, worker_manager$id)
+
+  endpoint <- withr::with_envvar(
+    c(ORDERLY_RUNNER_QUEUE_ID = queue_id),
+    orderly_runner_endpoint("POST", "/report/run", repo)
+  )
+
+  req <- list(
+    name = scalar("data"),
+    branch = scalar(gert::git_branch(repo = repo)),
+    hash = scalar(gert::git_commit_id(repo = repo)),
+    parameters = scalar(NULL)
+  )
+
+  res <- endpoint$run(jsonlite::toJSON(req))
+  rrq::rrq_task_wait(res$data$taskId, controller = queue$controller)
+  expect_equal(
+    rrq::rrq_task_status(res$data$taskId, controller = queue$controller),
+    "COMPLETE"
+  )
+
+  req <- list(
+    name = scalar("parameters"),
+    branch = scalar(gert::git_branch(repo = repo)),
+    hash = scalar(gert::git_commit_id(repo = repo)),
+    parameters = list(a = scalar(1), c = scalar(3))
+  )
+
+  res <- endpoint$run(jsonlite::toJSON(req))
+  rrq::rrq_task_wait(res$data$taskId, controller = queue$controller)
+  expect_equal(
+    rrq::rrq_task_status(res$data$taskId, controller = queue$controller),
+    "COMPLETE"
   )
 })

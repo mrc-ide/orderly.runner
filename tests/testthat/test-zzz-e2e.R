@@ -1,7 +1,15 @@
 skip_if_not_installed("httr")
-root <- test_prepare_orderly_example(c("data", "parameters"))
-repo <- helper_add_git(root)
-bg <- porcelain::porcelain_background$new(api, list(root))
+skip_if_no_redis()
+
+queue_id <- "orderly.runner:cuteasdanimal"
+root <- test_prepare_orderly_remote_example(
+  c("data", "parameters")
+)
+queue <- start_queue_with_workers(root$local, 1, queue_id = queue_id)
+bg <- porcelain::porcelain_background$new(
+  api, args = list(root$local),
+  env = c(ORDERLY_RUNNER_QUEUE_ID = queue_id)
+)
 bg$start()
 on.exit(bg$stop())
 
@@ -51,4 +59,54 @@ test_that("can get parameters", {
     list(name = "b", value = "2"),
     list(name = "c", value = NULL)
   ))
+})
+
+test_that("can run report", {
+  data <- list(
+    name = "data",
+    branch = gert::git_branch(repo = root$local),
+    hash = gert::git_commit_id(repo = root$local),
+    parameters = c(NULL)
+  )
+
+  body <- jsonlite::toJSON(data, null = "null", auto_unbox = TRUE)
+
+  r <- bg$request(
+    "POST", "/report/run",
+    body = body,
+    encode = "raw",
+    httr::content_type("application/json")
+  )
+
+  expect_equal(httr::status_code(r), 200)
+  dat <- httr::content(r)
+
+  expect_equal(dat$status, "success")
+  expect_null(dat$errors)
+  expect_worker_task_complete(dat$data$taskId, queue$controller, 10)
+})
+
+test_that("can run report with params", {
+  data <- list(
+    name = "parameters",
+    branch = gert::git_branch(repo = root$local),
+    hash = gert::git_commit_id(repo = root$local),
+    parameters = list(a = 1, c = 3)
+  )
+
+  body <- jsonlite::toJSON(data, null = "null", auto_unbox = TRUE)
+
+  r <- bg$request(
+    "POST", "/report/run",
+    body = body,
+    encode = "raw",
+    httr::content_type("application/json")
+  )
+
+  expect_equal(httr::status_code(r), 200)
+  dat <- httr::content(r)
+
+  expect_equal(dat$status, "success")
+  expect_null(dat$errors)
+  expect_worker_task_complete(dat$data$taskId, queue$controller, 10)
 })

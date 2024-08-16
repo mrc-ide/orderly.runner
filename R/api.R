@@ -11,14 +11,28 @@
 ##' @param log_level Logging level to use. Sensible options are "off",
 ##'   "info" and "all".
 ##'
+##' @param skip_queue_creation Skip queue creation, this is primarily
+##'   used for tests where we can't establish a Redis connection.
+##'
 ##' @return A [porcelain::porcelain] object. Notably this does *not*
 ##'   start the server
 ##'
 ##' @export
-api <- function(root, validate = NULL, log_level = "info") {
+api <- function(
+  root, validate = NULL, log_level = "info",
+  skip_queue_creation = FALSE
+) {
   logger <- porcelain::porcelain_logger(log_level)
+
+  # Set ORDERLY_RUNNER_QUEUE_ID to specify existing queue id
+  if (skip_queue_creation) {
+    queue <- NULL
+  } else {
+    queue <- Queue$new(root)
+  }
+
   api <- porcelain::porcelain$new(validate = validate, logger = logger)
-  api$include_package_endpoints(state = list(root = root))
+  api$include_package_endpoints(state = list(root = root, queue = queue))
   api
 }
 
@@ -69,4 +83,20 @@ report_parameters <- function(root, ref, name) {
       value = if (is.null(value)) value else scalar(as.character(value))
     )
   })
+}
+
+##' @porcelain
+##'   POST /report/run => json(report_run_response)
+##'   state root :: root
+##'   state queue :: queue
+##'   body data :: json(report_run_request)
+submit_report_run <- function(root, queue, data) {
+  data <- jsonlite::parse_json(data)
+  task_id <- queue$submit(
+    data$name,
+    branch = data$branch,
+    ref = data$hash,
+    parameters = data$parameters
+  )
+  list(taskId = scalar(task_id))
 }
