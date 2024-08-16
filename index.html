@@ -75,6 +75,26 @@
 <code class="sourceCode R"><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"mrc-ide/orderly.runner"</span>, upgrade <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
+<h2 id="testing-and-development">Testing and development<a class="anchor" aria-label="anchor" href="#testing-and-development"></a>
+</h2>
+<p>To run the full docker setup:</p>
+<ol style="list-style-type: decimal">
+<li>Optionally modify <code>docker/test/examples</code> orderly reports. These will be used as reports in the container</li>
+<li>Run <code>docker/test/run-test</code> - this will produce a <code>test-repo</code> directory to show you what was copied into the docker containers (you can create just this directory without running the docker containers by running <code>docker/test/setup-test-repo</code> if you want)</li>
+<li>The server will be available at <code>localhost:8001</code>
+</li>
+<li>To view the orderly root directory in the docker container (you may want to do this after workers have run orderly reports for example), run <code>docker/test/copy-orderly-root</code> and this will copy the contents to <code>docker/test/orderly-root-volume</code>
+</li>
+<li>Finally to clear docker and remove <code>test-repo</code> and <code>orderly-root-volume</code> directories run <code>docker/test/clear-test</code>
+</li>
+</ol>
+</div>
+<div class="section level2">
+<h2 id="notes-for-deploying">Notes for deploying<a class="anchor" aria-label="anchor" href="#notes-for-deploying"></a>
+</h2>
+<p>When running the server or worker containers, you should have <code>REDIS_CONTAINER_NAME</code> env var set to connect to the redis container from the server and worker containers. You should also set the <code>ORDERLY_RUNNER_QUEUE_ID</code> to the same thing between server and worker containers so they connect to the same queue.</p>
+</div>
+<div class="section level2">
 <h2 id="license">License<a class="anchor" aria-label="anchor" href="#license"></a>
 </h2>
 <p>MIT © Imperial College of Science, Technology and Medicine</p>
