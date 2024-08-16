@@ -83,7 +83,7 @@ test_that("can run report", {
 
   expect_equal(dat$status, "success")
   expect_null(dat$errors)
-  expect_worker_task_complete(dat$data$job_id, queue$controller, 10)
+  expect_worker_task_complete(dat$data$taskId, queue$controller, 10)
 })
 
 test_that("can run report with params", {
@@ -108,5 +108,5 @@ test_that("can run report with params", {
 
   expect_equal(dat$status, "success")
   expect_null(dat$errors)
-  expect_worker_task_complete(dat$data$job_id, queue$controller, 10)
+  expect_worker_task_complete(dat$data$taskId, queue$controller, 10)
 })
