@@ -8,3 +8,5 @@ rm -rf $HERE/orderly-root-volume
 mkdir -p $HERE/orderly-root-volume
 
 docker cp $DEBUG:$CONTAINER_ORDERLY_ROOT_PATH/. $HERE/orderly-root-volume
+
+docker cp $DEBUG:$LOGS_DIR/. $HERE/logs-volume
