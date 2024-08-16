@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+set -x
+HERE=$(dirname $0)
+
+. $HERE/common
+
+docker rm -f \
+    $REDIS \
+    $SERVER \
+    $WORKER \
+    $DEBUG
+
+docker network rm $NETWORK
+
+docker volume rm $ORDERLY_VOLUME
+
+rm -rf $HERE/test-repo
+rm -rf $HERE/orderly-root-volume

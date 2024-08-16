@@ -114,3 +114,14 @@ test_that("Can submit 2 tasks on different commit hashes", {
   worker2_txt <- file.path(root, ".packit", "workers", worker_id2, "test.txt")
   expect_equal(file.exists(worker2_txt), TRUE)
 })
+
+test_that("redis_host uses REDIS_CONTAINER_NAME if it exists", {
+  root <- create_temporary_root()
+  gert::git_init(root)
+  id <- ids::random_id()
+  redis_host_name <- withr::with_envvar(
+    c(REDIS_CONTAINER_NAME = id),
+    redis_host()
+  )
+  expect_equal(redis_host_name, id)
+})
