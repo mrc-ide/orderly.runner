@@ -83,6 +83,7 @@ test_that("can run report", {
 
   expect_equal(dat$status, "success")
   expect_null(dat$errors)
+
   expect_worker_task_complete(dat$data$job_id, queue$controller, 10)
   expect_type(get_task_result(dat$data$job_id, queue$controller), "character")
 })

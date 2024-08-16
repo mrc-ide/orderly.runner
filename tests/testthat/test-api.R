@@ -110,9 +110,9 @@ test_that("can run orderly reports", {
   )
 
   res <- endpoint$run(jsonlite::toJSON(req))
-  rrq::rrq_task_wait(res$data$job_id, controller = queue$controller)
+  rrq::rrq_task_wait(res$data$taskId, controller = queue$controller)
   expect_equal(
-    rrq::rrq_task_status(res$data$job_id, controller = queue$controller),
+    rrq::rrq_task_status(res$data$taskId, controller = queue$controller),
     "COMPLETE"
   )
 
@@ -124,9 +124,9 @@ test_that("can run orderly reports", {
   )
 
   res <- endpoint$run(jsonlite::toJSON(req))
-  rrq::rrq_task_wait(res$data$job_id, controller = queue$controller)
+  rrq::rrq_task_wait(res$data$taskId, controller = queue$controller)
   expect_equal(
-    rrq::rrq_task_status(res$data$job_id, controller = queue$controller),
+    rrq::rrq_task_status(res$data$taskId, controller = queue$controller),
     "COMPLETE"
   )
 })
