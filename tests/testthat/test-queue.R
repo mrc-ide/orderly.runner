@@ -19,8 +19,8 @@ test_that("creates directory for logs & adds to worker config", {
   root <- create_temporary_root(use_file_store = TRUE)
   gert::git_init(root)
   q <- new_queue_quietly(root)
-  expect_true(dir.exists("runner-logs"))
-  expect_equal("runner-logs", rrq::rrq_worker_config_read("localhost", controller = q$controller)$logdir)
+  expect_true(dir.exists("logs/worker"))
+  expect_equal("logs/worker", rrq::rrq_worker_config_read("localhost", controller = q$controller)$logdir)
 })
 
 test_that("Errors if not git repo", {
@@ -152,7 +152,7 @@ test_that("can get status on pending report run", {
   expect_equal(status$queue_position, scalar(as.integer(1)))
   expect_null(status$packet_id)
   expect_null(status$logs)
-
+})
 test_that("redis_host uses REDIS_CONTAINER_NAME if it exists", {
   root <- create_temporary_root()
   gert::git_init(root)

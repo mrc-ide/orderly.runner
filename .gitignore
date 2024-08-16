@@ -15,4 +15,4 @@ docs
 .valgrind_ignore
 inst/doc
 pkgdown
-runner-logs
+logs
