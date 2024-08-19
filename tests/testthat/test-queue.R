@@ -145,8 +145,8 @@ test_that("can get statuses on complete report runs with logs", {
   for (i in seq_along(task_ids)) {
     status <- statuses[[i]]
     expect_equal(status$status, scalar("COMPLETE"))
-    expect_null(status$queue_position)
-    expect_equal(status$packet_id, scalar(get_task_result(task_ids[[i]], q$controller)))
+    expect_null(status$queuePosition)
+    expect_equal(status$packetId, scalar(get_task_result(task_ids[[i]], q$controller)))
     expect_equal(status$logs, get_task_logs(task_ids[[i]], q$controller))
   }
 })
@@ -167,8 +167,8 @@ test_that("can get statuses wihtout logs if include_logs = false", {
   for (i in seq_along(task_ids)) {
     status <- statuses[[i]]
     expect_equal(status$status, scalar("COMPLETE"))
-    expect_null(status$queue_position)
-    expect_equal(status$packet_id, scalar(get_task_result(task_ids[[i]], q$controller)))
+    expect_null(status$queuePosition)
+    expect_equal(status$packetId, scalar(get_task_result(task_ids[[i]], q$controller)))
     expect_null(status$logs)
   }
 })
@@ -188,8 +188,8 @@ test_that("can get status on pending report run", {
   for (i in seq_along(task_ids)) {
     status <- statuses[[i]]
     expect_equal(status$status, scalar("PENDING"))
-    expect_equal(status$queue_position, scalar(as.integer(i)))
-    expect_null(status$packet_id)
+    expect_equal(status$queuePosition, scalar(as.integer(i)))
+    expect_null(status$packetId)
     expect_null(status$logs)
   }
 })

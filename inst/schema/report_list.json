@@ -5,10 +5,10 @@
       "type": "object",
       "properties": {
         "name": { "type": "string" },
-        "updated_time": { "type": "number" },
-        "has_modifications": { "type": "boolean" }
+        "updatedTime": { "type": "number" },
+        "hasModifications": { "type": "boolean" }
       },
       "additionalPropertes": false,
-      "required": [ "name", "updated_time", "has_modifications" ]
+      "required": [ "name", "updatedTime", "hasModifications" ]
     }
 }

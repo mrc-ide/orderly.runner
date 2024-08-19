@@ -29,12 +29,11 @@ test_that("can list orderly reports", {
     repo$local,
     skip_queue_creation = TRUE
   )
-
   res <- endpoint$run(gert::git_branch(repo$local))
   expect_equal(res$status_code, 200)
   expect_setequal(res$data$name, c("data", "parameters"))
-  expect_true(all(res$data$updated_time > (Sys.time() - 100)))
-  expect_false(all(res$data$has_modifications))
+  expect_true(all(res$data$updatedTime > (Sys.time() - 100)))
+  expect_false(all(res$data$hasModifications))
 
   ## Add a report on a 2nd branch
   gert::git_branch_create("other", repo = repo$local)
@@ -56,7 +55,7 @@ test_that("can list orderly reports", {
   existing <- other_res$data[other_res$data$name != "parameters2", ]
   expect_equal(existing, res$data)
   expect_equal(nrow(params2), 1)
-  expect_true(params2$has_modifications)
+  expect_true(params2$hasModifications)
 
   ## We can still see all reports on main branch
   commits <- gert::git_log(repo = repo$local)$commit
@@ -115,9 +114,9 @@ test_that("can run orderly reports", {
   )
 
   res <- endpoint$run(jsonlite::toJSON(req))
-  rrq::rrq_task_wait(res$data$task_id, controller = queue$controller)
+  rrq::rrq_task_wait(res$data$taskId, controller = queue$controller)
   expect_equal(
-    rrq::rrq_task_status(res$data$task_id, controller = queue$controller),
+    rrq::rrq_task_status(res$data$taskId, controller = queue$controller),
     "COMPLETE"
   )
 
@@ -129,9 +128,9 @@ test_that("can run orderly reports", {
   )
 
   res <- endpoint$run(jsonlite::toJSON(req))
-  rrq::rrq_task_wait(res$data$task_id, controller = queue$controller)
+  rrq::rrq_task_wait(res$data$taskId, controller = queue$controller)
   expect_equal(
-    rrq::rrq_task_status(res$data$task_id, controller = queue$controller),
+    rrq::rrq_task_status(res$data$taskId, controller = queue$controller),
     "COMPLETE"
   )
 })
@@ -161,7 +160,7 @@ test_that("can get statuses of jobs", {
   )
   dat1 <- endpoint$run(jsonlite::toJSON(req))
   dat2 <- endpoint$run(jsonlite::toJSON(req))
-  task_ids <- c(dat1$data$task_id, dat2$data$task_id)
+  task_ids <- c(dat1$data$taskId, dat2$data$taskId)
   rrq::rrq_task_wait(task_ids, controller = queue$controller)
 
   # status endpoint
@@ -175,11 +174,11 @@ test_that("can get statuses of jobs", {
     task_status <- dat[[i]]
     task_times <- get_task_times(task_ids[[i]], queue$controller)
     expect_equal(task_status$status, scalar("COMPLETE"))
-    expect_null(scalar(task_status$queue_position))
-    expect_equal(task_status$packet_id, scalar(get_task_result(task_ids[[i]], queue$controller)))
-    expect_equal(scalar(task_times[1]), task_status$time_queued)
-    expect_equal(scalar(task_times[2]), task_status$time_started)
-    expect_equal(scalar(task_times[3]), task_status$time_complete)
+    expect_null(scalar(task_status$queuePosition))
+    expect_equal(task_status$packetId, scalar(get_task_result(task_ids[[i]], queue$controller)))
+    expect_equal(scalar(task_times[1]), task_status$timeQueued)
+    expect_equal(scalar(task_times[2]), task_status$timeStarted)
+    expect_equal(scalar(task_times[3]), task_status$timeComplete)
     expect_equal(get_task_logs(task_ids[[i]], queue$controller), unlist(task_status$logs))
   }
 })

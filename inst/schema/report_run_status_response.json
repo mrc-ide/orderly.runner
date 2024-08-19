@@ -4,19 +4,19 @@
     "items": {
         "type": "object",
         "properties": {
-            "time_queued": {
+            "timeQueued": {
                 "type": "number",
                 "description": "time queued in UTC time."
             },
-            "time_started": {
+            "timeStarted": {
                 "type": ["number", "null"],
                 "description": "time started run in UTC time."
             },
-            "time_complete": {
+            "timeComplete": {
                 "type": ["number", "null"],
                 "description": "time completed in UTC time."
             },
-            "queue_position": {
+            "queuePosition": {
                 "type": ["number", "null"]
             },
             "logs": {
@@ -28,11 +28,11 @@
             "status": {
                 "type": "string"
             },
-            "packet_id": {
+            "packetId": {
                 "type": ["string", "null"]
             }
         },
-        "required": ["time_queued", "time_started", "queue_position", "logs", "status", "packet_id"],
+        "required": ["timeQueued", "timeStarted", "queuePosition", "logs", "status", "packetId"],
         "additionalProperties": false
     }
 }

@@ -17,7 +17,7 @@ Queue <- R6::R6Class("Queue", # nolint
     #' @param root Orderly root.
     #' @param queue_id ID of an existing queue to connect to, creates a new one
     #'   if NULL (default NULL)
-    #'   @param logs_dir directory to store worker logs
+    #' @param logs_dir directory to store worker logs
     initialize = function(root, queue_id = NULL, logs_dir = "logs/worker") {
       self$root <- root
       self$config <- orderly2::orderly_config(self$root)
@@ -86,16 +86,16 @@ Queue <- R6::R6Class("Queue", # nolint
       }
       statuses <- rrq::rrq_task_status(valid_task_ids, controller = self$controller)
       tasks_times <- rrq::rrq_task_times(valid_task_ids, controller = self$controller)
-      queue_positions <- rrq::rrq_task_position(valid_task_ids, controller = self$controller)
+      queuePositions <- rrq::rrq_task_position(valid_task_ids, controller = self$controller)
 
       lapply(seq_along(valid_task_ids), function(index) {
         list(
           status = scalar(statuses[index]),
-          queue_position = if (statuses[index] == "PENDING") scalar(queue_positions[index]) else NULL,
-          time_queued = scalar(tasks_times[valid_task_ids[index], 1]),
-          time_started = scalar(tasks_times[valid_task_ids[index], 2]),
-          time_complete = scalar(tasks_times[valid_task_ids[index], 3]),
-          packet_id = if (statuses[index] == "COMPLETE") scalar(rrq::rrq_task_result(valid_task_ids[index], controller = self$controller)) else NULL,
+          queuePosition = if (statuses[index] == "PENDING") scalar(queuePositions[index]) else NULL,
+          timeQueued = scalar(tasks_times[valid_task_ids[index], 1]),
+          timeStarted = scalar(tasks_times[valid_task_ids[index], 2]),
+          timeComplete = scalar(tasks_times[valid_task_ids[index], 3]),
+          packetId = if (statuses[index] == "COMPLETE") scalar(rrq::rrq_task_result(valid_task_ids[index], controller = self$controller)) else NULL,
           logs = if (include_logs) rrq::rrq_task_log(valid_task_ids[index], controller = self$controller) else NULL
         )
       })
