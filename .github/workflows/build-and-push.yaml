@@ -4,7 +4,7 @@ on:
   push:
     branches: [main, master]
   pull_request:
-    branches: [main, master, mrc-5600-status-endpoint]
+    branches: [main, master, mrc-5613-status-accept-list-ids] # TODO: remove branch
 
 name: Build-and-push
 
