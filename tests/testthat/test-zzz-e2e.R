@@ -123,7 +123,7 @@ test_that("returns error when getting status when not passing in include_logs", 
   res <- bg$request(
     "POST",
     "/report/status",
-    body = jsonlite::toJSON(c("invalid_job_id")),
+    body = jsonlite::toJSON(c("invalid_task_id")),
     encode = "raw",
     httr::content_type("application/json")
   )
@@ -153,16 +153,16 @@ test_that("can get status of report run with logs", {
   res <- bg$request(
     "POST",
     "/report/status?include_logs=TRUE",
-    body = jsonlite::toJSON(c(job_id)),
+    body = jsonlite::toJSON(c(task_id)),
     encode = "raw",
     httr::content_type("application/json")
   )
   dat <- httr::content(res)$data[[1]]
-  task_times <- get_task_times(job_id, queue$controller)
+  task_times <- get_task_times(task_id, queue$controller)
   expect_equal(httr::status_code(res), 200)
   expect_equal(dat$status, "COMPLETE")
   expect_null(dat$queue_position)
-  expect_equal(dat$packet_id, get_task_result(job_id, queue$controller))
+  expect_equal(dat$packet_id, get_task_result(task_id, queue$controller))
   expect_equal(task_times[1], dat$time_queued)
   expect_equal(task_times[2], dat$time_started)
   expect_equal(task_times[3], dat$time_complete)
@@ -189,24 +189,24 @@ test_that("can get status of multiple tasks without logs", {
     encode = "raw",
     httr::content_type("application/json")
   )
-  job_ids <- c(httr::content(r1)$data$job_id, httr::content(r2)$data$job_id)
-  task_times <- wait_for_task_complete(job_ids, queue$controller, 3)
+  task_ids <- c(httr::content(r1)$data$task_id, httr::content(r2)$data$task_id)
+  task_times <- wait_for_task_complete(task_ids, queue$controller, 3)
 
   res <- bg$request(
     "POST",
     "/report/status?include_logs=FALSE",
-    body = jsonlite::toJSON(job_ids),
+    body = jsonlite::toJSON(task_ids),
     encode = "raw",
     httr::content_type("application/json")
   )
   dat <- httr::content(res)$data
 
-  for (i in seq_along(job_ids)) {
+  for (i in seq_along(task_ids)) {
     task_status <- dat[[i]]
-    task_times <- get_task_times(job_ids[[i]], queue$controller)
+    task_times <- get_task_times(task_ids[[i]], queue$controller)
     expect_equal(task_status$status, "COMPLETE")
     expect_null(task_status$queue_position)
-    expect_equal(task_status$packet_id, get_task_result(job_ids[[i]], queue$controller))
+    expect_equal(task_status$packet_id, get_task_result(task_ids[[i]], queue$controller))
     expect_equal(task_times[1], task_status$time_queued)
     expect_equal(task_times[2], task_status$time_started)
     expect_equal(task_times[3], task_status$time_complete)
@@ -228,12 +228,12 @@ test_that("returns status of only job ids that exist", {
     encode = "raw",
     httr::content_type("application/json")
   )
-  job_ids <- c(httr::content(r1)$data$job_id, "non-existant-id")
+  task_ids <- c(httr::content(r1)$data$task_id, "non-existant-id")
   
   res <- bg$request(
     "POST",
     "/report/status?include_logs=FALSE",
-    body = jsonlite::toJSON(job_ids),
+    body = jsonlite::toJSON(task_ids),
     encode = "raw",
     httr::content_type("application/json")
   )

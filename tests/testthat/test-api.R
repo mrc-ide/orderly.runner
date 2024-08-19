@@ -144,7 +144,7 @@ test_that("can get statuses of jobs", {
   gert::git_init(repo)
   orderly2::orderly_gitignore_update("(root)", root = repo)
   git_add_and_commit(repo)
-  queue <- Queue$new(repo, queue_id = queue_id)
+  queue <- Queue$new(repo, queue_id = queue_id, logs_dir = tempfile())
   worker_manager <- start_queue_workers_quietly(
     1, queue$controller
   )
@@ -161,25 +161,25 @@ test_that("can get statuses of jobs", {
   )
   dat1 <- endpoint$run(jsonlite::toJSON(req))
   dat2 <- endpoint$run(jsonlite::toJSON(req))
-  job_ids <- c(dat1$data$job_id, dat2$data$job_id)
-  rrq::rrq_task_wait(job_ids, controller = queue$controller)
+  task_ids <- c(dat1$data$task_id, dat2$data$task_id)
+  rrq::rrq_task_wait(task_ids, controller = queue$controller)
 
   # status endpoint
   endpoint <- withr::with_envvar(
     c(ORDERLY_RUNNER_QUEUE_ID = queue_id),
     orderly_runner_endpoint("POST", "/report/status", repo)
   )
-  dat <- endpoint$run(TRUE, jsonlite::toJSON(job_ids))$data
+  dat <- endpoint$run(TRUE, jsonlite::toJSON(task_ids))$data
   
-  for (i in seq_along(job_ids)) {
+  for (i in seq_along(task_ids)) {
     task_status <- dat[[i]]
-    task_times <- get_task_times(job_ids[[i]], queue$controller)
+    task_times <- get_task_times(task_ids[[i]], queue$controller)
     expect_equal(task_status$status, scalar("COMPLETE"))
     expect_null(scalar(task_status$queue_position))
-    expect_equal(task_status$packet_id, scalar(get_task_result(job_ids[[i]], queue$controller)))
+    expect_equal(task_status$packet_id, scalar(get_task_result(task_ids[[i]], queue$controller)))
     expect_equal(scalar(task_times[1]), task_status$time_queued)
     expect_equal(scalar(task_times[2]), task_status$time_started)
     expect_equal(scalar(task_times[3]), task_status$time_complete)
-    expect_equal(get_task_logs(job_ids[[i]], queue$controller), unlist(task_status$logs))
+    expect_equal(get_task_logs(task_ids[[i]], queue$controller), unlist(task_status$logs))
   }
 })
