@@ -17,7 +17,8 @@ Queue <- R6::R6Class("Queue", # nolint
     #' @param root Orderly root.
     #' @param queue_id ID of an existing queue to connect to, creates a new one
     #'   if NULL (default NULL)
-    initialize = function(root, queue_id = NULL) {
+    #'   @param logs_dir directory to store worker logs 
+    initialize = function(root, queue_id = NULL, logs_dir = "logs/worker") {
       self$root <- root
       self$config <- orderly2::orderly_config(self$root)
       if (!runner_has_git(self$root)) {
@@ -35,9 +36,8 @@ Queue <- R6::R6Class("Queue", # nolint
         queue_id %||% orderly_queue_id(),
         con = con
       )
-      log_dir_name <- "logs/worker"
-      dir.create(log_dir_name, showWarnings = FALSE)
-      worker_config <- rrq::rrq_worker_config(heartbeat_period = 10, logdir = log_dir_name)
+      dir.create(logs_dir, showWarnings = FALSE)
+      worker_config <- rrq::rrq_worker_config(heartbeat_period = 10, logdir = logs_dir)
       rrq::rrq_worker_config_save("localhost", worker_config,
         controller = self$controller
       )

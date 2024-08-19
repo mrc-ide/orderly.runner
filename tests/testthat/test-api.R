@@ -96,7 +96,7 @@ test_that("can run orderly reports", {
   gert::git_init(repo)
   orderly2::orderly_gitignore_update("(root)", root = repo)
   git_add_and_commit(repo)
-  queue <- Queue$new(repo, queue_id = queue_id)
+  queue <- Queue$new(repo, queue_id = queue_id, logs_dir = tempfile())
   worker_manager <- start_queue_workers_quietly(
     1, queue$controller
   )
