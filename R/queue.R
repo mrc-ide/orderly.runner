@@ -80,8 +80,9 @@ Queue <- R6::R6Class("Queue", # nolint
     #' @return status of redis queue job
     get_status = function(task_ids, include_logs = TRUE) {
       valid_task_ids <- task_ids[rrq::rrq_task_exists(task_ids, controller = self$controller)]
-      if (length(valid_task_ids) != length(task_ids)) {
-        cli::cli_warn("Some job ids do not exist in the queue")
+      invalid_task_ids <- setdiff(task_ids, valid_task_ids)
+      if (length(invalid_task_ids) > 0) {
+        cli::cli_warn(paste("Job ids", paste(invalid_task_ids, collapse = ", "), "do not exist in the queue"))
       }
       statuses <- rrq::rrq_task_status(valid_task_ids, controller = self$controller)
       tasks_times <- rrq::rrq_task_times(valid_task_ids, controller = self$controller)
