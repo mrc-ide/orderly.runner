@@ -2,10 +2,10 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "type": "object",
     "properties": {
-        "job_id": {
+        "task_id": {
             "type": "string"
         }
     },
-    "required": ["job_id"],
+    "required": ["task_id"],
     "additionalProperties": false
 }

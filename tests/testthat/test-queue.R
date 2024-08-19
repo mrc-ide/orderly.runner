@@ -18,9 +18,10 @@ test_that("creates directory for logs & adds to worker config", {
 
   root <- create_temporary_root(use_file_store = TRUE)
   gert::git_init(root)
-  q <- new_queue_quietly(root)
-  expect_true(dir.exists("runner-logs"))
-  expect_equal("runner-logs", rrq::rrq_worker_config_read("localhost", controller = q$controller)$logdir)
+  logs_dir <- tempfile()
+  q <- new_queue_quietly(root, logs_dir = logs_dir)
+  expect_true(dir.exists(logs_dir))
+  expect_equal(logs_dir, rrq::rrq_worker_config_read("localhost", controller = q$controller)$logdir)
 })
 
 test_that("Errors if not git repo", {
@@ -128,8 +129,8 @@ test_that("Can submit 2 tasks on different commit hashes", {
   expect_equal(file.exists(worker2_txt), TRUE)
 })
 
+
 test_that("can get statuses on complete report runs with logs", {
-  # run 2 reports
   skip_if_no_redis()
   root <- test_prepare_orderly_example("data")
   git_info <- helper_add_git(root, c("src", "orderly_config.yml"))
@@ -191,4 +192,14 @@ test_that("can get status on pending report run", {
     expect_null(status$packet_id)
     expect_null(status$logs)
   }
+})
+test_that("redis_host uses REDIS_CONTAINER_NAME if it exists", {
+  root <- create_temporary_root()
+  gert::git_init(root)
+  id <- ids::random_id()
+  redis_host_name <- withr::with_envvar(
+    c(REDIS_CONTAINER_NAME = id),
+    redis_host()
+  )
+  expect_equal(redis_host_name, id)
 })

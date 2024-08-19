@@ -1,7 +1,9 @@
-FROM rocker/r-ver:4.0.4
+FROM rocker/r-ver:4.1
 
 RUN apt-get update &&  apt-get install -y --no-install-recommends \
+        git \
         libcurl4-openssl-dev \
+        libhiredis-dev \
         libssl-dev \
         zlib1g-dev \
     && apt-get clean \
@@ -17,3 +19,12 @@ RUN install2.r --error remotes &&  \
 
 COPY . /src
 RUN R CMD INSTALL --install-tests /src && rm -rf /src
+
+COPY docker/bin /usr/local/bin/
+
+RUN git config --global --add safe.directory "*"
+RUN echo ".packit" > /.gitignore
+RUN git config --global core.excludesFile "/.gitignore"
+
+# ENTRYPOINT for server is /usr/local/bin/orderly.runner.server
+# ENTRYPOINT for worker is /usr/local/bin/orderly.runner.worker

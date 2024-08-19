@@ -88,8 +88,9 @@ test_that("can run report", {
 
   expect_equal(dat$status, "success")
   expect_null(dat$errors)
-  expect_worker_task_complete(dat$data$job_id, queue$controller, 10)
-  expect_type(get_task_result(dat$data$job_id, queue$controller), "character")
+
+  expect_worker_task_complete(dat$data$task_id, queue$controller, 10)
+  expect_type(get_task_result(dat$data$task_id, queue$controller), "character")
 })
 
 test_that("can run report with params", {
@@ -114,8 +115,8 @@ test_that("can run report with params", {
 
   expect_equal(dat$status, "success")
   expect_null(dat$errors)
-  expect_worker_task_complete(dat$data$job_id, queue$controller, 10)
-  expect_type(get_task_result(dat$data$job_id, queue$controller), "character")
+  expect_worker_task_complete(dat$data$task_id, queue$controller, 10)
+  expect_type(get_task_result(dat$data$task_id, queue$controller), "character")
 })
 
 test_that("returns error when getting status when not passing in include_logs", {
@@ -146,8 +147,8 @@ test_that("can get status of report run with logs", {
     encode = "raw",
     httr::content_type("application/json")
   )
-  job_id <- httr::content(r)$data$job_id
-  task_times <- wait_for_task_complete(job_id, queue$controller, 3)
+  task_id <- httr::content(r)$data$task_id
+  task_times <- wait_for_task_complete(task_id, queue$controller, 3)
 
   res <- bg$request(
     "POST",
@@ -165,7 +166,7 @@ test_that("can get status of report run with logs", {
   expect_equal(task_times[1], dat$time_queued)
   expect_equal(task_times[2], dat$time_started)
   expect_equal(task_times[3], dat$time_complete)
-  expect_equal(get_task_logs(job_id, queue$controller), unlist(dat$logs))
+  expect_equal(get_task_logs(task_id, queue$controller), unlist(dat$logs))
 })
 
 test_that("can get status of multiple tasks without logs", {

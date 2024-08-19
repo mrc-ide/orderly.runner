@@ -1,7 +1,7 @@
 #' Object for managing running jobs on the redis queue
 #'
 #' @keywords internal
-Queue <- R6::R6Class("Queue", #nolint
+Queue <- R6::R6Class("Queue", # nolint
   cloneable = FALSE,
   public = list(
     #' @field root Orderly root
@@ -17,23 +17,30 @@ Queue <- R6::R6Class("Queue", #nolint
     #' @param root Orderly root.
     #' @param queue_id ID of an existing queue to connect to, creates a new one
     #'   if NULL (default NULL)
-    initialize = function(root, queue_id = NULL) {
+    #'   @param logs_dir directory to store worker logs
+    initialize = function(root, queue_id = NULL, logs_dir = "logs/worker") {
       self$root <- root
       self$config <- orderly2::orderly_config(self$root)
       if (!runner_has_git(self$root)) {
-        cli::cli_abort(paste("Not starting server as orderly",
-                             "root is not version controlled."))
+        cli::cli_abort(paste(
+          "Not starting server as orderly",
+          "root is not version controlled."
+        ))
       }
+
+      # Connect to Redis
+      con <- redux::hiredis(host = redis_host())
 
       # Create queue
       self$controller <- rrq::rrq_controller(
-        queue_id %||% orderly_queue_id()
+        queue_id %||% orderly_queue_id(),
+        con = con
       )
-      log_dir_name <- "runner-logs"
-      dir.create(log_dir_name, showWarnings = FALSE)
-      worker_config <- rrq::rrq_worker_config(heartbeat_period = 10, logdir = log_dir_name)
+      dir.create(logs_dir, showWarnings = FALSE)
+      worker_config <- rrq::rrq_worker_config(heartbeat_period = 10, logdir = logs_dir)
       rrq::rrq_worker_config_save("localhost", worker_config,
-                                  controller = self$controller)
+        controller = self$controller
+      )
     },
 
     #' @description
@@ -55,8 +62,9 @@ Queue <- R6::R6Class("Queue", #nolint
         ref
       )
       rrq::rrq_task_create_call(runner_run, run_args,
-                                separate_process = TRUE,
-                                controller = self$controller)
+        separate_process = TRUE,
+        controller = self$controller
+      )
     },
 
     # Just until we add queue status for testing
@@ -67,27 +75,27 @@ Queue <- R6::R6Class("Queue", #nolint
     #' @description
     #' Gets status of packet run
     #'
-    #' @param job_ids Id of redis queue job to get status of.
+    #' @param task_ids Task ids  to get status of.
     #' @param include_logs Whether to include logs in response or not
     #' @return status of redis queue job
-    get_status = function(job_ids, include_logs = TRUE) {
-      valid_job_ids <- job_ids[rrq::rrq_task_exists(job_ids, controller = self$controller)]
-      if (length(valid_job_ids) != length(job_ids)) {
+    get_status = function(task_ids, include_logs = TRUE) {
+      valid_task_ids <- task_ids[rrq::rrq_task_exists(task_ids, controller = self$controller)]
+      if (length(valid_task_ids) != length(task_ids)) {
         cli::cli_warn("Some job ids do not exist in the queue")
       }
-      statuses <- rrq::rrq_task_status(valid_job_ids, controller = self$controller)
-      tasks_times <- rrq::rrq_task_times(valid_job_ids, controller = self$controller)
-      queue_positions <- rrq::rrq_task_position(valid_job_ids, controller = self$controller)
+      statuses <- rrq::rrq_task_status(valid_task_ids, controller = self$controller)
+      tasks_times <- rrq::rrq_task_times(valid_task_ids, controller = self$controller)
+      queue_positions <- rrq::rrq_task_position(valid_task_ids, controller = self$controller)
 
-      lapply(seq_along(valid_job_ids), function(index) {
+      lapply(seq_along(valid_task_ids), function(index) {
         list(
           status = scalar(statuses[index]),
           queue_position = if (statuses[index] == "PENDING") scalar(queue_positions[index]) else NULL,
-          time_queued = scalar(tasks_times[valid_job_ids[index], 1]),
-          time_started = scalar(tasks_times[valid_job_ids[index], 2]),
-          time_complete = scalar(tasks_times[valid_job_ids[index], 3]),
-          packet_id = if (statuses[index] == "COMPLETE") scalar(rrq::rrq_task_result(valid_job_ids[index], controller = self$controller)) else NULL,
-          logs = if (include_logs) rrq::rrq_task_log(valid_job_ids[index], controller = self$controller) else NULL
+          time_queued = scalar(tasks_times[valid_task_ids[index], 1]),
+          time_started = scalar(tasks_times[valid_task_ids[index], 2]),
+          time_complete = scalar(tasks_times[valid_task_ids[index], 3]),
+          packet_id = if (statuses[index] == "COMPLETE") scalar(rrq::rrq_task_result(valid_task_ids[index], controller = self$controller)) else NULL,
+          logs = if (include_logs) rrq::rrq_task_log(valid_task_ids[index], controller = self$controller) else NULL
         )
       })
     },
@@ -106,4 +114,9 @@ runner_has_git <- function(path) {
 orderly_queue_id <- function() {
   id <- Sys.getenv("ORDERLY_RUNNER_QUEUE_ID", "")
   if (nzchar(id)) id else sprintf("orderly.runner:%s", ids::random_id())
+}
+
+redis_host <- function() {
+  name <- Sys.getenv("REDIS_CONTAINER_NAME", "")
+  if (nzchar(name)) name else NULL
 }
