@@ -26,7 +26,8 @@
                 }
             },
             "status": {
-                "type": "string"
+                "type": "string",
+                "enum": ["PENDING", "RUNNING","COMPLETE", "ERROR", "CANCELLED", "DIED", "TIMEOUT", "IMPOSSIBLE","DEFERRED", "MOVED"]
             },
             "packetId": {
                 "type": ["string", "null"]

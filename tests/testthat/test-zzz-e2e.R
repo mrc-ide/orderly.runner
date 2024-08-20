@@ -213,7 +213,7 @@ test_that("can get status of multiple tasks without logs", {
   }
 })
 
-test_that("returns status of only job ids that exist", {
+test_that("returns error with tasks ids of non-extant task ids", {
   # run report
   data <- list(
     name = "data",
@@ -237,5 +237,5 @@ test_that("returns status of only job ids that exist", {
     httr::content_type("application/json")
   )
   
-  expect_equal(length(httr::content(res)$data) , 1)
+  expect_equal(httr::content(res)$errors[[1]]$detail , "Job ids [ non-existant-id ] do not exist in the queue")
 })

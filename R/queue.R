@@ -79,24 +79,23 @@ Queue <- R6::R6Class("Queue", # nolint
     #' @param include_logs Whether to include logs in response or not
     #' @return status of redis queue job
     get_status = function(task_ids, include_logs = TRUE) {
-      valid_task_ids <- task_ids[rrq::rrq_task_exists(task_ids, controller = self$controller)]
-      invalid_task_ids <- setdiff(task_ids, valid_task_ids)
+      invalid_task_ids <- task_ids[!rrq::rrq_task_exists(task_ids, controller = self$controller)]
       if (length(invalid_task_ids) > 0) {
-        cli::cli_warn(paste("Job ids", paste(invalid_task_ids, collapse = ", "), "do not exist in the queue"))
+        porcelain::porcelain_stop(paste("Job ids [", paste(invalid_task_ids, collapse = ", "), "] do not exist in the queue"))
       }
-      statuses <- rrq::rrq_task_status(valid_task_ids, controller = self$controller)
-      tasks_times <- rrq::rrq_task_times(valid_task_ids, controller = self$controller)
-      queuePositions <- rrq::rrq_task_position(valid_task_ids, controller = self$controller)
+      statuses <- rrq::rrq_task_status(task_ids, controller = self$controller)
+      tasks_times <- rrq::rrq_task_times(task_ids, controller = self$controller)
+      queuePositions <- rrq::rrq_task_position(task_ids, controller = self$controller)
 
-      lapply(seq_along(valid_task_ids), function(index) {
+      lapply(seq_along(task_ids), function(index) {
         list(
           status = scalar(statuses[index]),
           queuePosition = if (statuses[index] == "PENDING") scalar(queuePositions[index]) else NULL,
-          timeQueued = scalar(tasks_times[valid_task_ids[index], 1]),
-          timeStarted = scalar(tasks_times[valid_task_ids[index], 2]),
-          timeComplete = scalar(tasks_times[valid_task_ids[index], 3]),
-          packetId = if (statuses[index] == "COMPLETE") scalar(rrq::rrq_task_result(valid_task_ids[index], controller = self$controller)) else NULL,
-          logs = if (include_logs) rrq::rrq_task_log(valid_task_ids[index], controller = self$controller) else NULL
+          timeQueued = scalar(tasks_times[task_ids[index], 1]),
+          timeStarted = scalar(tasks_times[task_ids[index], 2]),
+          timeComplete = scalar(tasks_times[task_ids[index], 3]),
+          packetId = if (statuses[index] == "COMPLETE") scalar(rrq::rrq_task_result(task_ids[index], controller = self$controller)) else NULL,
+          logs = if (include_logs) rrq::rrq_task_log(task_ids[index], controller = self$controller) else NULL
         )
       })
     },
