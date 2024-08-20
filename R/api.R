@@ -19,9 +19,8 @@
 ##'
 ##' @export
 api <- function(
-  root, validate = NULL, log_level = "info",
-  skip_queue_creation = FALSE
-) {
+    root, validate = NULL, log_level = "info",
+    skip_queue_creation = FALSE) {
   logger <- porcelain::porcelain_logger(log_level)
 
   # Set ORDERLY_RUNNER_QUEUE_ID to specify existing queue id
@@ -39,22 +38,25 @@ api <- function(
 
 ##' @porcelain GET / => json(root)
 root <- function() {
-  versions <- list(orderly2 = package_version_string("orderly2"),
-                   orderly.runner = package_version_string("orderly.runner"))
+  versions <- list(
+    orderly2 = package_version_string("orderly2"),
+    orderly.runner = package_version_string("orderly.runner")
+  )
   lapply(versions, scalar)
 }
 
 
-##' @porcelain 
+##' @porcelain
 ##'   GET /report/list => json(report_list)
 ##'   query ref :: string
 ##'   state root :: root
 report_list <- function(root, ref) {
   contents <- gert::git_ls(root, ref = ref)
   re <- "^src/([^/]+)/(\\1|orderly)\\.R$"
-  nms <- sub(re, "\\1", 
-             grep(re, contents$path, value = TRUE, perl = TRUE),
-             perl = TRUE)
+  nms <- sub(re, "\\1",
+    grep(re, contents$path, value = TRUE, perl = TRUE),
+    perl = TRUE
+  )
   last_changed <- function(nm) {
     max(contents$modified[startsWith(contents$path, sprintf("src/%s", nm))])
   }
@@ -64,9 +66,11 @@ report_list <- function(root, ref) {
   has_modifications <- vlapply(nms, function(report_name) {
     report_name %in% modified_reports
   }, USE.NAMES = FALSE)
-  data.frame(name = nms, 
-             updated_time = updated_time,
-             has_modifications = has_modifications)
+  data.frame(
+    name = nms,
+    updated_time = updated_time,
+    has_modifications = has_modifications
+  )
 }
 
 
@@ -98,5 +102,12 @@ submit_report_run <- function(root, queue, data) {
     ref = data$hash,
     parameters = data$parameters
   )
-  list(taskId = scalar(task_id))
+  list(task_id = scalar(task_id))
+}
+
+##' @porcelain
+##'   GET /report/status/<task_id:string> => json(report_run_status_response)
+##'   state queue :: queue
+report_run_status <- function(queue, task_id) {
+  queue$get_status(task_id)
 }

@@ -1,11 +1,12 @@
 test_that("root data returns sensible, validated, data", {
   ## Just hello world for the package really
   endpoint <- orderly_runner_endpoint("GET", "/", NULL,
-                                      skip_queue_creation = TRUE)
+    skip_queue_creation = TRUE
+  )
   res <- endpoint$run()
   expect_true(res$validated)
   expect_true(all(c("orderly2", "orderly.runner") %in%
-                  names(res$data)))
+    names(res$data)))
   expect_match(unlist(res$data), "^[0-9]+\\.[0-9]+\\.[0-9]+$")
 })
 
@@ -25,7 +26,8 @@ test_that("can list orderly reports", {
   repo <- test_prepare_orderly_remote_example(c("data", "parameters"))
   endpoint <- orderly_runner_endpoint(
     "GET", "/report/list",
-    repo$local, skip_queue_creation = TRUE
+    repo$local,
+    skip_queue_creation = TRUE
   )
 
   res <- endpoint$run(gert::git_branch(repo$local))
@@ -36,8 +38,10 @@ test_that("can list orderly reports", {
 
   ## Add a report on a 2nd branch
   gert::git_branch_create("other", repo = repo$local)
-  fs::dir_copy(file.path(repo$local, "src", "parameters"),
-               file.path(repo$local, "src", "parameters2"))
+  fs::dir_copy(
+    file.path(repo$local, "src", "parameters"),
+    file.path(repo$local, "src", "parameters2")
+  )
   # have to rename to parameters2.R to recognise it as orderly report
   file.rename(
     file.path(repo$local, "src", "parameters2", "parameters.R"),
@@ -67,7 +71,8 @@ test_that("can get parameters for a report", {
   repo <- test_prepare_orderly_remote_example(c("data", "parameters"))
   endpoint <- orderly_runner_endpoint(
     "GET", "/report/<name:string>/parameters",
-    repo$local, skip_queue_creation = TRUE
+    repo$local,
+    skip_queue_creation = TRUE
   )
 
   res <- endpoint$run("HEAD", "data")
@@ -91,7 +96,7 @@ test_that("can run orderly reports", {
   gert::git_init(repo)
   orderly2::orderly_gitignore_update("(root)", root = repo)
   git_add_and_commit(repo)
-  queue <- Queue$new(repo, queue_id = queue_id)
+  queue <- Queue$new(repo, queue_id = queue_id, logs_dir = tempfile())
   worker_manager <- start_queue_workers_quietly(
     1, queue$controller
   )
@@ -110,9 +115,9 @@ test_that("can run orderly reports", {
   )
 
   res <- endpoint$run(jsonlite::toJSON(req))
-  rrq::rrq_task_wait(res$data$taskId, controller = queue$controller)
+  rrq::rrq_task_wait(res$data$task_id, controller = queue$controller)
   expect_equal(
-    rrq::rrq_task_status(res$data$taskId, controller = queue$controller),
+    rrq::rrq_task_status(res$data$task_id, controller = queue$controller),
     "COMPLETE"
   )
 
@@ -124,9 +129,9 @@ test_that("can run orderly reports", {
   )
 
   res <- endpoint$run(jsonlite::toJSON(req))
-  rrq::rrq_task_wait(res$data$taskId, controller = queue$controller)
+  rrq::rrq_task_wait(res$data$task_id, controller = queue$controller)
   expect_equal(
-    rrq::rrq_task_status(res$data$taskId, controller = queue$controller),
+    rrq::rrq_task_status(res$data$task_id, controller = queue$controller),
     "COMPLETE"
   )
 })

@@ -83,7 +83,9 @@ test_that("can run report", {
 
   expect_equal(dat$status, "success")
   expect_null(dat$errors)
-  expect_worker_task_complete(dat$data$taskId, queue$controller, 10)
+
+  expect_worker_task_complete(dat$data$task_id, queue$controller, 10)
+  expect_type(get_task_result(dat$data$task_id, queue$controller), "character")
 })
 
 test_that("can run report with params", {
@@ -108,5 +110,50 @@ test_that("can run report with params", {
 
   expect_equal(dat$status, "success")
   expect_null(dat$errors)
-  expect_worker_task_complete(dat$data$taskId, queue$controller, 10)
+  expect_worker_task_complete(dat$data$task_id, queue$controller, 10)
+  expect_type(get_task_result(dat$data$task_id, queue$controller), "character")
 })
+
+test_that("retruns error when getting status of run with invalid task_id", {
+  res <- bg$request(
+    "GET",
+    sprintf("/report/status/bad_task_id")
+  )
+  
+  errors <- httr::content(res)$errors
+  expect_equal(httr::status_code(res), 400)
+  expect_equal(errors[[1]]$detail, "Job ID does not exist")
+})
+test_that("can get status of report run", {
+  # run task and wait for finish before getting status
+  data <- list(
+    name = "data",
+    branch = gert::git_branch(repo = root$local),
+    hash = gert::git_commit_id(repo = root$local),
+    parameters = c(NULL)
+  )
+  r <- bg$request(
+    "POST", "/report/run",
+    body = jsonlite::toJSON(data, null = "null", auto_unbox = TRUE),
+    encode = "raw",
+    httr::content_type("application/json")
+  )
+  task_id <- httr::content(r)$data$task_id
+  task_times <- wait_for_task_complete(task_id, queue$controller, 3)
+
+  res <- bg$request(
+    "GET",
+    sprintf("/report/status/%s", task_id)
+  )
+  dat <- httr::content(res)$data
+  task_times <- get_task_times(task_id, queue$controller)
+  expect_equal(httr::status_code(res), 200)
+  expect_equal(dat$status, "COMPLETE")
+  expect_null(dat$queue_positionc)
+  expect_equal(dat$packet_id, get_task_result(task_id, queue$controller))
+  expect_equal(task_times[1], dat$time_queued)
+  expect_equal(task_times[2], dat$time_started)
+  expect_equal(task_times[3], dat$time_complete)
+  expect_equal(get_task_logs(task_id, queue$controller), unlist(dat$logs))
+})
+

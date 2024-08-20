@@ -38,5 +38,14 @@
         porcelain::porcelain_state(root = state$root, queue = state$queue),
         returning = porcelain::porcelain_returning_json("report_run_response"),
         validate = validate)
+    },
+    "GET /report/status/<task_id:string>" = function(state, validate) {
+      porcelain::porcelain_endpoint$new(
+        "GET",
+        "/report/status/<task_id:string>",
+        report_run_status,
+        porcelain::porcelain_state(queue = state$queue),
+        returning = porcelain::porcelain_returning_json("report_run_status_response"),
+        validate = validate)
     })
 }

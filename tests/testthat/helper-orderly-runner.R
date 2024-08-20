@@ -122,7 +122,7 @@ start_queue_workers_quietly <- function(n_workers,
 start_queue_with_workers <- function(
   root, n_workers, env = parent.frame(), queue_id = NULL
 ) {
-  q <- new_queue_quietly(root, queue_id = queue_id)
+  q <- new_queue_quietly(root, queue_id = queue_id, logs_dir = tempfile())
   worker_manager <- start_queue_workers_quietly(n_workers, q$controller,
                                                 env = env)
   make_worker_dirs(root, worker_manager$id)
@@ -138,10 +138,26 @@ skip_if_no_redis <- function() {
 }
 
 expect_worker_task_complete <- function(task_id, controller, n_tries) {
-  is_task_successful <- rrq::rrq_task_wait(
+  is_task_successful <- wait_for_task_complete(task_id, controller, n_tries)
+  expect_true(is_task_successful)
+}
+
+wait_for_task_complete <- function(task_id, controller, n_tries) {
+  rrq::rrq_task_wait(
     task_id, controller = controller, timeout = n_tries
   )
-  expect_true(is_task_successful)
+}
+
+get_task_times <- function(task_id, controller) {
+  rrq::rrq_task_times(task_id, controller = controller)
+}
+
+get_task_result <- function(task_id, controller) {
+  rrq::rrq_task_result(task_id, controller = controller)
+}
+
+get_task_logs <- function(task_id, controller) {
+  rrq::rrq_task_log(task_id, controller = controller)
 }
 
 initialise_git_repo <- function() {

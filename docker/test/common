@@ -16,3 +16,7 @@ export ORDERLY_VOLUME=$CONTAINER_NAMESPACE-orderly-root
 export ORDERLY_RUNNER_IMAGE=ghcr.io/mrc-ide/orderly.runner:main
 
 export CONTAINER_ORDERLY_ROOT_PATH=/orderly-root
+
+export LOGS_DIR=/logs
+
+export ORDERLY_LOGS_VOLUME=$CONTAINER_NAMESPACE-logs
