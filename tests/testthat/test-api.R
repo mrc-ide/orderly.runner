@@ -175,6 +175,7 @@ test_that("can get statuses of jobs", {
     task_times <- get_task_times(task_ids[[i]], queue$controller)
     expect_equal(task_status$status, scalar("COMPLETE"))
     expect_null(scalar(task_status$queuePosition))
+    expect_equal(task_status$packetId, scalar(get_task_result(task_ids[[i]], queue$controller)))
     expect_equal(scalar(task_times[1]), task_status$timeQueued)
     expect_equal(scalar(task_times[2]), task_status$timeStarted)
     expect_equal(scalar(task_times[3]), task_status$timeComplete)
