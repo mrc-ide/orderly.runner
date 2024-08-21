@@ -84,7 +84,7 @@ report_parameters <- function(root, ref, name) {
     value <- params[[param_name]]
     list(
       name = scalar(param_name),
-      value = if (is.null(value)) value else scalar(as.character(value))
+      value = if (is.null(value)) value else scalar(value)
     )
   })
 }

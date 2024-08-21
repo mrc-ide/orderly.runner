@@ -61,7 +61,7 @@ test_that("can get parameters", {
   expect_null(dat$errors)
   expect_equal(dat$data, list(
     list(name = "a", value = NULL),
-    list(name = "b", value = "2"),
+    list(name = "b", value = 2),
     list(name = "c", value = NULL)
   ))
 })
