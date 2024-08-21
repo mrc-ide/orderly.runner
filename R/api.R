@@ -80,11 +80,12 @@ report_list <- function(root, ref) {
 ##'   state root :: root
 report_parameters <- function(root, ref, name) {
   params <- get_report_parameters(name, ref, root)
+  browser()
   lapply(names(params), function(param_name) {
     value <- params[[param_name]]
     list(
       name = scalar(param_name),
-      value = if (is.null(value)) value else scalar(as.character(value))
+      value = if (is.null(value)) value else scalar(value)
     )
   })
 }

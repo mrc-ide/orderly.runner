@@ -82,7 +82,7 @@ test_that("can get parameters for a report", {
   expect_equal(res$status_code, 200)
   expect_equal(res$data, list(
     list(name = scalar("a"), value = NULL),
-    list(name = scalar("b"), value = scalar("2")),
+    list(name = scalar("b"), value = scalar(2)),
     list(name = scalar("c"), value = NULL)
   ))
 })

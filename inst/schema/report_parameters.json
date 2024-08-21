@@ -5,7 +5,7 @@
         "type": "object",
         "properties": {
             "name": { "type": "string" },
-            "value": { "type": [ "string", "null" ] }
+            "value": { "type": [ "string", "null", "boolean", "number", "integer" ] }
         },
         "required": [ "name", "value" ],
         "additionalProperties": false
