@@ -56,6 +56,5 @@ jobs:
         with:
           upload-snapshots: true
       - name: Setup tmate session
-        if: ${{ matrix.config.r == 'devel' }}
         uses: mxschmitt/action-tmate@v3
 

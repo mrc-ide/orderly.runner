@@ -161,7 +161,7 @@ test_that("can get statuses of jobs", {
   dat1 <- endpoint$run(jsonlite::toJSON(req))
   expect_equal(dat1$status_code, 200)
   dat2 <- endpoint$run(jsonlite::toJSON(req))
-  expect_equal(dat2$status_code, 200)
+  expect_equal(dat1$status_code, 200)
   task_ids <- c(dat1$data$taskId, dat2$data$taskId)
   rrq::rrq_task_wait(task_ids, controller = queue$controller)
 
@@ -171,7 +171,7 @@ test_that("can get statuses of jobs", {
     orderly_runner_endpoint("POST", "/report/status", repo)
   )
   dat <- endpoint$run(TRUE, jsonlite::toJSON(task_ids))$data
-  
+  browser()
   for (i in seq_along(task_ids)) {
     task_status <- dat[[i]]
     task_times <- get_task_times(task_ids[[i]], queue$controller)
