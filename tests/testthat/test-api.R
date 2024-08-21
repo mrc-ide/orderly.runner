@@ -159,7 +159,9 @@ test_that("can get statuses of jobs", {
     parameters = scalar(NULL)
   )
   dat1 <- endpoint$run(jsonlite::toJSON(req))
+  expect_equal(dat1$status_code, 200)
   dat2 <- endpoint$run(jsonlite::toJSON(req))
+  expect_equal(dat2$status_code, 200)
   task_ids <- c(dat1$data$taskId, dat2$data$taskId)
   rrq::rrq_task_wait(task_ids, controller = queue$controller)
 

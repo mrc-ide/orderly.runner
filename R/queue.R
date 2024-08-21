@@ -81,7 +81,7 @@ Queue <- R6::R6Class("Queue", # nolint
     get_status = function(task_ids, include_logs = TRUE) {
       invalid_task_ids <- task_ids[!rrq::rrq_task_exists(task_ids, controller = self$controller)]
       if (length(invalid_task_ids) > 0) {
-        porcelain::porcelain_stop(paste("Job ids [", paste(invalid_task_ids, collapse = ", "), "] do not exist in the queue"))
+        porcelain::porcelain_stop(sprintf("Job ids [%s] do not exist in the queue", paste(invalid_task_ids, collapse = ", ")))
       }
       statuses <- rrq::rrq_task_status(task_ids, controller = self$controller)
       tasks_times <- rrq::rrq_task_times(task_ids, controller = self$controller)

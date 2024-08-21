@@ -237,5 +237,5 @@ test_that("returns error with tasks ids of non-extant task ids", {
     httr::content_type("application/json")
   )
   
-  expect_equal(httr::content(res)$errors[[1]]$detail , "Job ids [ non-existant-id ] do not exist in the queue")
+  expect_equal(httr::content(res)$errors[[1]]$detail , "Job ids [non-existant-id] do not exist in the queue")
 })
