@@ -102,7 +102,7 @@ Queue <- R6::R6Class("Queue", # nolint
 
     #' @description Destroy queue
     finalize = function() {
-      rrq::rrq_destroy(controller = self$controller)
+      #rrq::rrq_destroy(controller = self$controller)
     }
   ),
 )
