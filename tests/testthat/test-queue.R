@@ -26,9 +26,13 @@ test_that("creates directory for logs & adds to worker config", {
 
 test_that("Errors if not git repo", {
   root <- create_temporary_root()
-  expect_error(Queue$new(root), #nolint
-               paste("Not starting server as orderly root",
-                     "is not version controlled."))
+  expect_error(
+    Queue$new(root), # nolint
+    paste(
+      "Not starting server as orderly root",
+      "is not version controlled."
+    )
+  )
 })
 
 
@@ -126,33 +130,68 @@ test_that("Can submit 2 tasks on different commit hashes", {
 })
 
 
-test_that("can get status on complete report run", {
+test_that("can get statuses on complete report runs with logs", {
   skip_if_no_redis()
   root <- test_prepare_orderly_example("data")
   git_info <- helper_add_git(root, c("src", "orderly_config.yml"))
   q <- start_queue_with_workers(root, 1)
-  task_id <- q$submit("data", branch = git_info$branch)
-  wait_for_task_complete(task_id, q$controller, 5)
+  task_id1 <- q$submit("data", branch = git_info$branch)
+  task_id2 <- q$submit("data", branch = git_info$branch)
+  task_ids <- c(task_id1, task_id2)
+  wait_for_task_complete(task_ids, q$controller, 5)
 
-  status <- q$get_status(task_id)
-  expect_equal(status$status, scalar("COMPLETE"))
-  expect_null(status$queue_position)
-  expect_equal(status$packet_id, scalar(get_task_result(task_id, q$controller)))
-  expect_equal(status$logs, get_task_logs(task_id, q$controller))
+  statuses <- q$get_status(task_ids)
+
+  for (i in seq_along(task_ids)) {
+    status <- statuses[[i]]
+    expect_equal(status$status, scalar("COMPLETE"))
+    expect_null(status$queuePosition)
+    expect_equal(status$packetId, scalar(get_task_result(task_ids[[i]], q$controller)))
+    expect_equal(status$logs, get_task_logs(task_ids[[i]], q$controller))
+  }
+})
+
+test_that("can get statuses wihtout logs if include_logs = false", {
+  # run 2 reports
+  skip_if_no_redis()
+  root <- test_prepare_orderly_example("data")
+  git_info <- helper_add_git(root, c("src", "orderly_config.yml"))
+  q <- start_queue_with_workers(root, 1)
+  task_id1 <- q$submit("data", branch = git_info$branch)
+  task_id2 <- q$submit("data", branch = git_info$branch)
+  task_ids <- c(task_id1, task_id2)
+  wait_for_task_complete(task_ids, q$controller, 5)
+
+  statuses <- q$get_status(task_ids, FALSE)
+
+  for (i in seq_along(task_ids)) {
+    status <- statuses[[i]]
+    expect_equal(status$status, scalar("COMPLETE"))
+    expect_null(status$queuePosition)
+    expect_equal(status$packetId, scalar(get_task_result(task_ids[[i]], q$controller)))
+    expect_null(status$logs)
+  }
 })
 
 test_that("can get status on pending report run", {
+  # run 2 reports
   skip_if_no_redis()
   root <- test_prepare_orderly_example("data")
   git_info <- helper_add_git(root, c("src", "orderly_config.yml"))
   q <- new_queue_quietly(root)
-  task_id <- q$submit("data", branch = git_info$branch)
+  task_id1 <- q$submit("data", branch = git_info$branch)
+  task_id2 <- q$submit("data", branch = git_info$branch)
+  task_ids <- c(task_id1, task_id2)
 
-  status <- q$get_status(task_id)
-  expect_equal(status$status, scalar("PENDING"))
-  expect_equal(status$queue_position, scalar(as.integer(1)))
-  expect_null(status$packet_id)
-  expect_null(status$logs)
+  statuses <- q$get_status(task_ids)
+
+  for (i in seq_along(task_ids)) {
+    status <- statuses[[i]]
+    expect_equal(status$status, scalar("PENDING"))
+    expect_equal(status$queuePosition, scalar(as.integer(i)))
+    expect_null(status$packetId)
+    expect_null(status$logs)
+  }
 })
 test_that("redis_host uses REDIS_CONTAINER_NAME if it exists", {
   root <- create_temporary_root()

@@ -36,7 +36,7 @@ Object for managing running jobs on the redis queue
 \subsection{Method \code{new()}}{
 Create object, read configuration and setup Redis connection.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Queue$new(root, queue_id = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Queue$new(root, queue_id = NULL, logs_dir = "logs/worker")}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -46,6 +46,8 @@ Create object, read configuration and setup Redis connection.
 
 \item{\code{queue_id}}{ID of an existing queue to connect to, creates a new one
 if NULL (default NULL)}
+
+\item{\code{logs_dir}}{directory to store worker logs}
 }
 \if{html}{\out{</div>}}
 }
@@ -90,13 +92,15 @@ We reset hard to this ref and run the report. (default HEAD)}
 \subsection{Method \code{get_status()}}{
 Gets status of packet run
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Queue$get_status(job_id)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Queue$get_status(task_ids, include_logs = TRUE)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{job_id}}{Id of redis queue job to get status of.}
+\item{\code{task_ids}}{Task ids  to get status of.}
+
+\item{\code{include_logs}}{Whether to include logs in response or not}
 }
 \if{html}{\out{</div>}}
 }

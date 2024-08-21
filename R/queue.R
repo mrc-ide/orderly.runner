@@ -17,7 +17,7 @@ Queue <- R6::R6Class("Queue", # nolint
     #' @param root Orderly root.
     #' @param queue_id ID of an existing queue to connect to, creates a new one
     #'   if NULL (default NULL)
-    #'   @param logs_dir directory to store worker logs 
+    #' @param logs_dir directory to store worker logs
     initialize = function(root, queue_id = NULL, logs_dir = "logs/worker") {
       self$root <- root
       self$config <- orderly2::orderly_config(self$root)
@@ -75,24 +75,29 @@ Queue <- R6::R6Class("Queue", # nolint
     #' @description
     #' Gets status of packet run
     #'
-    #' @param task_id Id of redis queue job to get status of.
+    #' @param task_ids Task ids  to get status of.
+    #' @param include_logs Whether to include logs in response or not
     #' @return status of redis queue job
-    get_status = function(task_id) {
-      if (!rrq::rrq_task_exists(task_id, controller = self$controller)) {
-        porcelain::porcelain_stop("Job ID does not exist")
+    get_status = function(task_ids, include_logs = TRUE) {
+      invalid_task_ids <- task_ids[!rrq::rrq_task_exists(task_ids, controller = self$controller)]
+      if (length(invalid_task_ids) > 0) {
+        porcelain::porcelain_stop(sprintf("Job ids [%s] do not exist in the queue", paste(invalid_task_ids, collapse = ", ")))
       }
-      status <- rrq::rrq_task_status(task_id, controller = self$controller)
-      times <- rrq::rrq_task_times(task_id, controller = self$controller)
+      statuses <- rrq::rrq_task_status(task_ids, controller = self$controller)
+      tasks_times <- rrq::rrq_task_times(task_ids, controller = self$controller)
+      queuePositions <- rrq::rrq_task_position(task_ids, controller = self$controller)
 
-      list(
-        status = scalar(status),
-        queue_position = if (status == "PENDING") scalar(rrq::rrq_task_position(task_id, controller = self$controller)) else NULL,
-        time_queued = scalar(times[1]),
-        time_started = scalar(times[2]),
-        time_complete = scalar(times[3]),
-        packet_id = if (status == "COMPLETE") scalar(rrq::rrq_task_result(task_id, controller = self$controller)) else NULL,
-        logs = rrq::rrq_task_log(task_id, controller = self$controller)
-      )
+      lapply(seq_along(task_ids), function(index) {
+        list(
+          status = scalar(statuses[index]),
+          queuePosition = if (statuses[index] == "PENDING") scalar(queuePositions[index]) else NULL,
+          timeQueued = scalar(tasks_times[task_ids[index], 1]),
+          timeStarted = scalar(tasks_times[task_ids[index], 2]),
+          timeComplete = scalar(tasks_times[task_ids[index], 3]),
+          packetId = if (statuses[index] == "COMPLETE") scalar(rrq::rrq_task_result(task_ids[index], controller = self$controller)) else NULL,
+          logs = if (include_logs) rrq::rrq_task_log(task_ids[index], controller = self$controller) else NULL
+        )
+      })
     },
 
     #' @description Destroy queue

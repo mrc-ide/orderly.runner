@@ -39,11 +39,13 @@
         returning = porcelain::porcelain_returning_json("report_run_response"),
         validate = validate)
     },
-    "GET /report/status/<task_id:string>" = function(state, validate) {
+    "POST /report/status" = function(state, validate) {
       porcelain::porcelain_endpoint$new(
-        "GET",
-        "/report/status/<task_id:string>",
+        "POST",
+        "/report/status",
         report_run_status,
+        porcelain::porcelain_input_query(include_logs = "logical"),
+        porcelain::porcelain_input_body_json("data", "report_run_status_request"),
         porcelain::porcelain_state(queue = state$queue),
         returning = porcelain::porcelain_returning_json("report_run_status_response"),
         validate = validate)

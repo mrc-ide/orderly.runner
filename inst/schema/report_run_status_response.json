@@ -1,35 +1,39 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "type": "object",
-    "properties": {
-        "time_queued": {
-             "type": "number",
-             "description": "time queued in UTC time."
+    "type": "array",
+    "items": {
+        "type": "object",
+        "properties": {
+            "timeQueued": {
+                "type": "number",
+                "description": "time queued in UTC time."
+            },
+            "timeStarted": {
+                "type": ["number", "null"],
+                "description": "time started run in UTC time."
+            },
+            "timeComplete": {
+                "type": ["number", "null"],
+                "description": "time completed in UTC time."
+            },
+            "queuePosition": {
+                "type": ["number", "null"]
+            },
+            "logs": {
+                "type": ["array", "null"],
+                "items": {
+                    "type": "string"
+                }
+            },
+            "status": {
+                "type": "string",
+                "enum": ["PENDING", "RUNNING","COMPLETE", "ERROR", "CANCELLED", "DIED", "TIMEOUT", "IMPOSSIBLE","DEFERRED", "MOVED"]
+            },
+            "packetId": {
+                "type": ["string", "null"]
+            }
         },
-        "time_started": {
-             "type": ["number", "null"],
-             "description": "time started run in UTC time."
-        },
-        "time_complete": {
-             "type": ["number", "null"],
-             "description": "time completed in UTC time."
-        },
-        "queue_position": {
-          "type": ["number", "null"]
-        },
-        "logs": {
-             "type": ["array", "null"],
-             "items": {
-               "type": "string"
-             }
-        },
-        "status": {
-          "type": "string"
-        },
-        "packet_id": {
-            "type": ["string", "null"]
-        }
-    },
-    "required": ["time_queued", "time_started", "queue_position", "logs", "status", "packet_id"],
-    "additionalProperties": false
+        "required": ["timeQueued", "timeStarted", "queuePosition", "logs", "status", "packetId"],
+        "additionalProperties": false
+    }
 }
