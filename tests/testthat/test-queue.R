@@ -148,6 +148,7 @@ test_that("can get statuses on complete report runs with logs", {
     expect_null(status$queuePosition)
     expect_equal(status$packetId, scalar(get_task_result(task_ids[[i]], q$controller)))
     expect_equal(status$logs, get_task_logs(task_ids[[i]], q$controller))
+    expect_equal(scalar(task_ids[[i]]), status$taskId)
   }
 })
 
@@ -169,6 +170,7 @@ test_that("can get statuses wihtout logs if include_logs = false", {
     expect_equal(status$status, scalar("COMPLETE"))
     expect_null(status$queuePosition)
     expect_equal(status$packetId, scalar(get_task_result(task_ids[[i]], q$controller)))
+    expect_equal(scalar(task_ids[[i]]), status$taskId)
     expect_null(status$logs)
   }
 })
@@ -189,6 +191,7 @@ test_that("can get status on pending report run", {
     status <- statuses[[i]]
     expect_equal(status$status, scalar("PENDING"))
     expect_equal(status$queuePosition, scalar(as.integer(i)))
+    expect_equal(scalar(task_ids[[i]]), status$taskId)
     expect_null(status$packetId)
     expect_null(status$logs)
   }

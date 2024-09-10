@@ -180,5 +180,6 @@ test_that("can get statuses of jobs", {
     expect_equal(scalar(task_times[2]), task_status$timeStarted)
     expect_equal(scalar(task_times[3]), task_status$timeComplete)
     expect_equal(get_task_logs(task_ids[[i]], queue$controller), unlist(task_status$logs))
+    expect_equal(scalar(task_ids[[i]]), task_status$taskId)
   }
 })

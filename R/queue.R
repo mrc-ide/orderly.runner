@@ -95,7 +95,8 @@ Queue <- R6::R6Class("Queue", # nolint
           timeStarted = scalar(tasks_times[task_ids[index], 2]),
           timeComplete = scalar(tasks_times[task_ids[index], 3]),
           packetId = if (statuses[index] == "COMPLETE") scalar(rrq::rrq_task_result(task_ids[index], controller = self$controller)) else NULL,
-          logs = if (include_logs) rrq::rrq_task_log(task_ids[index], controller = self$controller) else NULL
+          logs = if (include_logs) rrq::rrq_task_log(task_ids[index], controller = self$controller) else NULL,
+          taskId = scalar(task_ids[index])
         )
       })
     },
