@@ -31,9 +31,12 @@
             },
             "packetId": {
                 "type": ["string", "null"]
+            },
+            "taskId": {
+              "type": "string"
             }
         },
-        "required": ["timeQueued", "timeStarted", "queuePosition", "logs", "status", "packetId"],
+        "required": ["timeQueued", "timeStarted", "queuePosition", "logs", "status", "packetId", "taskId"],
         "additionalProperties": false
     }
 }

@@ -166,6 +166,7 @@ test_that("can get status of report run with logs", {
   expect_equal(task_times[2], dat$timeStarted)
   expect_equal(task_times[3], dat$timeComplete)
   expect_equal(get_task_logs(task_id, queue$controller), unlist(dat$logs))
+  expect_equal(task_id, dat$taskId)
 })
 
 test_that("can get status of multiple tasks without logs", {
@@ -210,6 +211,7 @@ test_that("can get status of multiple tasks without logs", {
     expect_equal(task_times[2], task_status$timeStarted)
     expect_equal(task_times[3], task_status$timeComplete)
     expect_null(task_status$logs)
+    expect_equal(task_ids[[i]], task_status$taskId)
   }
 })
 
