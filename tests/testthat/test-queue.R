@@ -78,11 +78,10 @@ test_that("Can submit task", {
   skip_if_no_redis()
 
   root <- test_prepare_orderly_example("data")
-  git_info <- helper_add_git(root, c("src", "orderly_config.yml"))
 
   q <- start_queue_with_workers(root, 1)
 
-  task_id <- q$submit("data", branch = git_info$branch)
+  task_id <- q$submit("data", branch = gert::git_branch(root))
   expect_worker_task_complete(task_id, q$controller, 10)
 })
 
@@ -91,7 +90,6 @@ test_that("Can submit 2 tasks on different branches", {
   skip_if_no_redis()
 
   root <- test_prepare_orderly_example("data")
-  git_info <- helper_add_git(root, c("src", "orderly_config.yml"))
 
   gert::git_branch_create("branch", repo = root)
   gert::git_branch_checkout("branch", repo = root)
@@ -99,7 +97,7 @@ test_that("Can submit 2 tasks on different branches", {
 
   q <- start_queue_with_workers(root, 2)
 
-  task_id1 <- q$submit("data", branch = git_info$branch)
+  task_id1 <- q$submit("data", branch = "master")
   task_id2 <- q$submit("data", branch = "branch")
   expect_worker_task_complete(task_id1, q$controller, 10)
   expect_worker_task_complete(task_id2, q$controller, 10)
@@ -114,13 +112,13 @@ test_that("Can submit 2 tasks on different commit hashes", {
   skip_if_no_redis()
 
   root <- test_prepare_orderly_example("data")
-  git_info <- helper_add_git(root, c("src", "orderly_config.yml"))
-  sha2 <- create_new_commit(root, new_file = "test.txt", add = "test.txt")
+  commit1 <- gert::git_commit_id(repo = root)
+  commit2 <- create_new_commit(root, new_file = "test.txt", add = "test.txt")
 
   q <- start_queue_with_workers(root, 2)
 
-  task_id1 <- q$submit("data", ref = git_info$sha, branch = git_info$branch)
-  task_id2 <- q$submit("data", ref = sha2, branch = git_info$branch)
+  task_id1 <- q$submit("data", ref = commit1, branch = gert::git_branch(root))
+  task_id2 <- q$submit("data", ref = commit2, branch = gert::git_branch(root))
   expect_worker_task_complete(task_id1, q$controller, 10)
   expect_worker_task_complete(task_id2, q$controller, 10)
 
@@ -133,10 +131,9 @@ test_that("Can submit 2 tasks on different commit hashes", {
 test_that("can get statuses on complete report runs with logs", {
   skip_if_no_redis()
   root <- test_prepare_orderly_example("data")
-  git_info <- helper_add_git(root, c("src", "orderly_config.yml"))
   q <- start_queue_with_workers(root, 1)
-  task_id1 <- q$submit("data", branch = git_info$branch)
-  task_id2 <- q$submit("data", branch = git_info$branch)
+  task_id1 <- q$submit("data", branch = gert::git_branch(root))
+  task_id2 <- q$submit("data", branch = gert::git_branch(root))
   task_ids <- c(task_id1, task_id2)
   wait_for_task_complete(task_ids, q$controller, 5)
 
@@ -156,10 +153,9 @@ test_that("can get statuses wihtout logs if include_logs = false", {
   # run 2 reports
   skip_if_no_redis()
   root <- test_prepare_orderly_example("data")
-  git_info <- helper_add_git(root, c("src", "orderly_config.yml"))
   q <- start_queue_with_workers(root, 1)
-  task_id1 <- q$submit("data", branch = git_info$branch)
-  task_id2 <- q$submit("data", branch = git_info$branch)
+  task_id1 <- q$submit("data", branch = gert::git_branch(root))
+  task_id2 <- q$submit("data", branch = gert::git_branch(root))
   task_ids <- c(task_id1, task_id2)
   wait_for_task_complete(task_ids, q$controller, 5)
 
@@ -179,10 +175,9 @@ test_that("can get status on pending report run", {
   # run 2 reports
   skip_if_no_redis()
   root <- test_prepare_orderly_example("data")
-  git_info <- helper_add_git(root, c("src", "orderly_config.yml"))
   q <- new_queue_quietly(root)
-  task_id1 <- q$submit("data", branch = git_info$branch)
-  task_id2 <- q$submit("data", branch = git_info$branch)
+  task_id1 <- q$submit("data", branch = gert::git_branch(root))
+  task_id2 <- q$submit("data", branch = gert::git_branch(root))
   task_ids <- c(task_id1, task_id2)
 
   statuses <- q$get_status(task_ids)

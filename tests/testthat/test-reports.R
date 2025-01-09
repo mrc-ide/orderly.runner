@@ -1,6 +1,5 @@
 test_that("can get orderly script name", {
   root <- test_prepare_orderly_example(c("data", "parameters"))
-  git_info <- helper_add_git(root)
   expect_equal(get_orderly_script_path("data", "HEAD", root), "src/data/data.R")
   expect_equal(get_orderly_script_path("parameters", "HEAD", root), 
                "src/parameters/parameters.R")
@@ -17,7 +16,7 @@ test_that("can get orderly script name", {
 
 test_that("can get report parameters", {
   root <- test_prepare_orderly_example(c("data", "parameters"))
-  git_info <- helper_add_git(root)
+  old_sha <- gert::git_commit_id(repo = root)
   
   params <- get_report_parameters("data", "HEAD", root)
   expect_null(params)
@@ -40,6 +39,6 @@ test_that("can get report parameters", {
                                 b = 2,
                                 c = NULL))
   
-  params_old <- get_report_parameters("parameters", git_info$sha, root)
+  params_old <- get_report_parameters("parameters", old_sha, root)
   expect_equal(params, params_old)
 })

@@ -37,7 +37,8 @@ docker run --rm -d --pull=always \
        -v $ORDERLY_VOLUME:$CONTAINER_ORDERLY_ROOT_PATH \
        -v $ORDERLY_LOGS_VOLUME:$LOGS_DIR \
        $ORDERLY_RUNNER_IMAGE \
-       $CONTAINER_ORDERLY_ROOT_PATH
+       $CONTAINER_ORDERLY_ROOT_PATH \
+       /repositories
 
 docker run --rm -d --pull=always \
        --net=$NETWORK \

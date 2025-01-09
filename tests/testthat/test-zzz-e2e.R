@@ -5,10 +5,11 @@ queue_id <- "orderly.runner:cuteasdanimal"
 root <- test_prepare_orderly_remote_example(
   c("data", "parameters")
 )
+repositories <- withr::local_tempdir()
 queue <- start_queue_with_workers(root$local, 1, queue_id = queue_id)
 bg <- porcelain::porcelain_background$new(
   api,
-  args = list(root$local),
+  args = list(root$local, repositories),
   env = c(ORDERLY_RUNNER_QUEUE_ID = queue_id)
 )
 bg$start()

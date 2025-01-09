@@ -1,6 +1,6 @@
 parse_main <- function(args = commandArgs(TRUE)) {
   usage <- "Usage:
-orderly.runner.server [options] <path>
+orderly.runner.server [options] <path> <repositories>
 
 Options:
   --log-level=LEVEL  Log-level (off, info, all) [default: info]
@@ -12,12 +12,13 @@ Options:
        validate = dat$validate,
        port = as.integer(dat$port),
        path = dat$path,
+       repositories = dat$repositories,
        host = dat$host)
 }
 
 main <- function(args = commandArgs(TRUE)) {
   dat <- parse_main(args)
-  api_obj <- api(dat$path, dat$validate, dat$log_level)
+  api_obj <- api(dat$path, dat$repositories, dat$validate, dat$log_level)
   api_obj$run(host = dat$host, port = dat$port)
 }
 

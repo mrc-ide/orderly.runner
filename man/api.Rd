@@ -4,10 +4,18 @@
 \alias{api}
 \title{Create orderly runner}
 \usage{
-api(root, validate = NULL, log_level = "info", skip_queue_creation = FALSE)
+api(
+  root,
+  repositories,
+  validate = NULL,
+  log_level = "info",
+  skip_queue_creation = FALSE
+)
 }
 \arguments{
 \item{root}{Orderly root}
+
+\item{repositories}{Path in which Git repositories are cloned}
 
 \item{validate}{Logical, indicating if validation should be done
 on responses.  This should be \code{FALSE} in production
