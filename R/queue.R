@@ -4,29 +4,18 @@
 Queue <- R6::R6Class("Queue", # nolint
   cloneable = FALSE,
   public = list(
-    #' @field root Orderly root
-    root = NULL,
-    #' @field config Orderly config
-    config = NULL,
     #' @field controller RRQ controller
     controller = NULL,
 
     #' @description
     #' Create object, read configuration and setup Redis connection.
     #'
-    #' @param root Orderly root.
     #' @param queue_id ID of an existing queue to connect to, creates a new one
     #'   if NULL (default NULL)
     #' @param logs_dir directory to store worker logs
-    initialize = function(root, queue_id = NULL, logs_dir = "logs/worker") {
-      self$root <- root
-      self$config <- orderly2::orderly_config(self$root)
-      if (!runner_has_git(self$root)) {
-        cli::cli_abort(paste(
-          "Not starting server as orderly",
-          "root is not version controlled."
-        ))
-      }
+    initialize = function(queue_id = NULL, logs_dir = "logs/worker") {
+      # Connect to Redis
+      con <- redux::hiredis()
 
       # Create queue
       self$controller <- rrq::rrq_controller(queue_id %||% orderly_queue_id())
@@ -40,20 +29,21 @@ Queue <- R6::R6Class("Queue", # nolint
     #' @description
     #' Submit a job the Redis queue for runner to run.
     #'
-    #' @param reportname Name of orderly report.
-    #' @param parameters Parameters to run the report with (default NULL)
-    #' @param branch Name of git branch to checkout the repository
-    #'   (default master)
+    #' @param url The URL of the Git repository containing the reports.
+    #' @param branch Name of git branch to checkout the repository.
     #' @param ref Git commit-ish value (e.g HEAD or commit hash or branch name).
-    #'   We reset hard to this ref and run the report. (default HEAD)
-    submit = function(reportname, parameters = NULL,
-                      branch = "master", ref = "HEAD") {
+    #' @param reportname Name of orderly report.
+    #' @param parameters Parameters to run the report with.
+    #' @param location Location of the outpack repository from which to pull
+    #'   dependencies and push the produced packet.
+    submit = function(url, branch, ref, reportname, parameters, location) {
       run_args <- list(
-        self$root,
+        url,
+        branch,
+        ref,
         reportname,
         parameters,
-        branch,
-        ref
+        location
       )
       rrq::rrq_task_create_call(runner_run, run_args,
         separate_process = TRUE,

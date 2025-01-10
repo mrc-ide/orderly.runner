@@ -1,5 +1,4 @@
-create_api <- function(root = NULL,
-                       repositories = NULL,
+create_api <- function(repositories = NULL,
                        log_level = "off",
                        ...,
                        env = parent.frame()) {
@@ -7,20 +6,13 @@ create_api <- function(root = NULL,
     repositories <- withr::local_tempdir(.local_envir = env)
   }
 
-  api(root, repositories, validate = TRUE, log_level = log_level, ...)
+  api(repositories, validate = TRUE, log_level = log_level, ...)
 }
 
 
 expect_success <- function(res) {
   expect_equal(res$status, 200)
   invisible(jsonlite::fromJSON(res$body)$data)
-}
-
-
-create_temporary_root <- function(...) {
-  path <- tempfile()
-  withr::defer_parent(unlink(path, recursive = TRUE))
-  suppressMessages(orderly2::orderly_init(path, ...))
 }
 
 
@@ -33,26 +25,30 @@ skip_if_no_redis <- function() {
 }
 
 
-test_prepare_orderly_example <- function(examples, ..., env = parent.frame()) {
+create_temporary_root <- function(..., env = parent.frame()) {
   path <- withr::local_tempdir(.local_envir = env)
   suppressMessages(orderly2::orderly_init(path, ...))
-  copy_examples(examples, path)
-
-  helper_add_git(path, orderly_gitignore = TRUE)
-  path
 }
 
 
-test_prepare_orderly_remote_example <- function(examples, ..., env = parent.frame()) {
-  path_remote <- test_prepare_orderly_example(examples, ..., env = env)
-  path_local <- withr::local_tempdir(.local_envir = env)
+test_prepare_orderly_example <- function(examples, ..., env = parent.frame()) {
+  # We explicitly do not initialize this as an orderly location, to mirror the
+  # fact that the source repository (eg. GitHub) is generally distinct from the
+  # upstream outpack repository (eg. Packit).
+  #
+  # We do still need to create orderly_config.yml as the bare minimum source
+  # tree.
 
-  gert::git_clone(path_remote, path_local)
-  orderly2::orderly_init(root = path_local, force = TRUE)
-  list(
-    remote = path_remote,
-    local = path_local
-  )
+  path <- withr::local_tempdir(.local_envir = env)
+  writeLines('minimum_orderly_version: "1.99.0"',
+             file.path(path, "orderly_config.yml"))
+
+  copy_examples(examples, path)
+
+  gert::git_init(path)
+  git_add_and_commit(path, add = ".")
+
+  path
 }
 
 
@@ -66,67 +62,36 @@ copy_examples <- function(examples, path_src) {
 }
 
 
-helper_add_git <- function(path, add = ".", orderly_gitignore = FALSE) {
-  gert::git_init(path)
-  if (orderly_gitignore) {
-    orderly2::orderly_gitignore_update("(root)", root = path)
-  }
-  sha <- git_add_and_commit(path, add)
-  branch <- gert::git_branch(repo = path)
-  url <- "https://example.com/git"
-  gert::git_remote_add(url, repo = path)
-  list(path = path, branch = branch, sha = sha, url = url)
-}
+start_queue_workers <- function(n, controller, env = parent.frame()) {
+  storage <- withr::local_tempdir(.local_envir = env)
 
-new_queue_quietly <- function(root, ...) {
-  suppressMessages(Queue$new(root, ...))
-}
-
-make_worker_dirs <- function(orderly_root, ids) {
-  packit_path <- file.path(orderly_root, ".packit")
-  dir.create(packit_path)
-  workers <- file.path(packit_path, "workers")
-  dir.create(workers)
-  lapply(ids, function(id) {
-    worker_path <- file.path(workers, id)
-    dir.create(worker_path)
-    gert::git_clone(orderly_root, path = worker_path)
-    gert::git_config_set("user.name", id, repo = worker_path)
-    gert::git_config_set("user.email", id, repo = worker_path)
+  ids <- vcapply(seq(n), function(i) {
+    withr::with_envvar(c(ORDERLY_WORKER_STORAGE = fs::dir_create(storage, i)), {
+      w <- suppressMessages(rrq::rrq_worker_spawn(1, controller = controller))
+      w$id
+    })
   })
-
+  withr::defer(rrq::rrq_worker_stop(ids, controller = controller), env = env)
 }
 
-start_queue_workers_quietly <- function(n_workers,
-                                        controller, env = parent.frame()) {
-  worker_manager <- suppressMessages(
-    rrq::rrq_worker_spawn(n_workers, controller = controller)
-  )
-  withr::defer(rrq::rrq_worker_stop(controller = controller), env = env)
-  worker_manager
+
+start_queue <- function(..., env = parent.frame()) {
+  logs_dir <- withr::local_tempdir(.local_envir = env)
+  Queue$new(logs_dir = logs_dir, ...)
 }
 
-start_queue_with_workers <- function(
-  root, n_workers, env = parent.frame(), queue_id = NULL
-) {
-  q <- new_queue_quietly(root, queue_id = queue_id, logs_dir = tempfile())
-  worker_manager <- start_queue_workers_quietly(n_workers, q$controller,
-                                                env = env)
-  make_worker_dirs(root, worker_manager$id)
+
+start_queue_with_workers <- function(n, ..., env = parent.frame()) {
+  q <- start_queue(..., env = env)
+  start_queue_workers(n, q$controller, env = env)
   q
 }
 
-skip_if_no_redis <- function() {
-  available <- redux::redis_available()
-  if (!available) {
-    testthat::skip("Skipping test as redis is not available")
-  }
-  invisible(available)
-}
 
 expect_worker_task_complete <- function(task_id, controller, n_tries) {
   is_task_successful <- wait_for_task_complete(task_id, controller, n_tries)
   expect_true(is_task_successful)
+  invisible(get_task_result(task_id, controller))
 }
 
 wait_for_task_complete <- function(task_id, controller, n_tries) {
@@ -147,11 +112,12 @@ get_task_logs <- function(task_id, controller) {
   rrq::rrq_task_log(task_id, controller = controller)
 }
 
-initialise_git_repo <- function() {
-  t <- tempfile()
-  dir.create(t)
-  writeLines(c("# Example", "", "example repo"), file.path(t, "README.md"))
-  helper_add_git(t)
+initialise_git_repo <- function(env = parent.frame()) {
+  path <- gert::git_init(withr::local_tempdir(.local_envir = env))
+  writeLines(c("# Example", "", "example repo"),
+             file.path(path, "README.md"))
+  git_add_and_commit(path, add = ".")
+  path
 }
 
 

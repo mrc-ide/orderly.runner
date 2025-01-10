@@ -1,6 +1,6 @@
 parse_main <- function(args = commandArgs(TRUE)) {
   usage <- "Usage:
-orderly.runner.server [options] <path> <repositories>
+orderly.runner.server [options] <path>
 
 Options:
   --log-level=LEVEL  Log-level (off, info, all) [default: info]
@@ -11,14 +11,13 @@ Options:
   list(log_level = dat$log_level,
        validate = dat$validate,
        port = as.integer(dat$port),
-       path = dat$path,
-       repositories = dat$repositories,
+       repositories = dat$path,
        host = dat$host)
 }
 
 main <- function(args = commandArgs(TRUE)) {
   dat <- parse_main(args)
-  api_obj <- api(dat$path, dat$repositories, dat$validate, dat$log_level)
+  api_obj <- api(dat$repositories, dat$validate, dat$log_level)
   api_obj$run(host = dat$host, port = dat$port)
 }
 
@@ -33,16 +32,11 @@ orderly.runner.worker <path>"
 main_worker <- function(args = commandArgs(TRUE)) {
   dat <- parse_main_worker(args)
 
-  # assumes ORDERLY_RUNNER_QUEUE_ID is set
-  queue <- Queue$new(dat$path)
+  queue_id <- Sys.getenv("ORDERLY_RUNNER_QUEUE_ID")
+  worker <- rrq::rrq_worker$new(queue_id, timeout_config = 30)
 
-  worker <- rrq::rrq_worker$new(
-    queue$controller$queue_id,
-    con = queue$controller$con
-  )
-  worker_path <- file.path(dat$path, ".packit", "workers", worker$id)
-  fs::dir_create(worker_path)
-  gert::git_clone(dat$path, path = worker_path)
+  fs::dir_create(dat$path)
 
-  worker$loop()
+  # This environment variable is used by the code submitted by the API.
+  withr::with_envvar(c(ORDERLY_WORKER_STORAGE = dat$path), worker$loop())
 }

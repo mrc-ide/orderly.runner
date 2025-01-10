@@ -41,8 +41,8 @@ get_report_parameters <- function(name, ref, root) {
 }
 
 
-get_orderly_script_path <- function(name, ref, root) {
-  contents <- gert::git_ls(root, ref = ref)
+get_orderly_script_path <- function(name, ref, repo) {
+  contents <- gert::git_ls(repo, ref = ref)
   re <- sprintf("^src/%s/(%s|orderly)\\.R$", name, name)
   matches <- grep(re, contents$path, value = TRUE, perl = TRUE)
   if (length(matches) != 1) {

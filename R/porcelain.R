@@ -34,18 +34,18 @@
         "GET",
         "/report/list",
         report_list,
-        porcelain::porcelain_input_query(ref = "string"),
-        porcelain::porcelain_state(root = state$root),
+        porcelain::porcelain_input_query(url = "string", ref = "string"),
+        porcelain::porcelain_state(repositories_base_path = state$repositories_base_path),
         returning = porcelain::porcelain_returning_json("report_list"),
         validate = validate)
     },
-    "GET /report/<name:string>/parameters" = function(state, validate) {
+    "GET /report/parameters" = function(state, validate) {
       porcelain::porcelain_endpoint$new(
         "GET",
-        "/report/<name:string>/parameters",
+        "/report/parameters",
         report_parameters,
-        porcelain::porcelain_input_query(ref = "string"),
-        porcelain::porcelain_state(root = state$root),
+        porcelain::porcelain_input_query(url = "string", ref = "string", name = "string"),
+        porcelain::porcelain_state(repositories_base_path = state$repositories_base_path),
         returning = porcelain::porcelain_returning_json("report_parameters"),
         validate = validate)
     },
@@ -55,7 +55,7 @@
         "/report/run",
         submit_report_run,
         porcelain::porcelain_input_body_json("data", "report_run_request"),
-        porcelain::porcelain_state(root = state$root, queue = state$queue),
+        porcelain::porcelain_state(queue = state$queue),
         returning = porcelain::porcelain_returning_json("report_run_response"),
         validate = validate)
     },
