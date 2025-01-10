@@ -1,22 +1,19 @@
-orderly_runner_endpoint <- function(
-  method, path,
-  root = NULL,
-  repositories = NULL,
-  validate = TRUE,
-  skip_queue_creation = FALSE
-) {
-  if (skip_queue_creation) {
-    queue <- NULL
-  } else {
-    queue <- Queue$new(root)
+create_api <- function(root = NULL,
+                       repositories = NULL,
+                       log_level = "off",
+                       ...,
+                       .local_envir = parent.frame()) {
+  if (is.null(repositories)) {
+    repositories <- withr::local_tempdir()
   }
-  porcelain::porcelain_package_endpoint(
-    "orderly.runner", method, path,
-    state = list(root = root,
-                 repositories_base_path = repositories,
-                 queue = queue),
-    validate = validate
-  )
+
+  api(root, repositories, validate = TRUE, log_level = log_level, ...)
+}
+
+
+expect_success <- function(res) {
+  expect_equal(res$status, 200)
+  invisible(jsonlite::fromJSON(res$body)$data)
 }
 
 
