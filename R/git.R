@@ -110,3 +110,15 @@ git_diff_tree <- function(left, right, repo = NULL) {
     " (?<status>[A-Z])(?<score>\\d+)?\\t(?<src>[^\\t]*)(?:\\t(?<dst>[^\\t]*))?$")
   as.data.frame(stringr::str_match(output, re)[, -1, drop = FALSE])
 }
+
+
+create_temporary_worktree <- function(repo, branch, tmpdir, env = parent.frame()) {
+  path <- withr::local_tempdir(tmpdir = tmpdir, .local_envir = env)
+
+  git_run(c("worktree", "add", path, branch), repo = repo)
+  withr::defer(env = env, {
+    git_run(c("worktree", "remove", "--force", path), repo = repo)
+  })
+
+  path
+}

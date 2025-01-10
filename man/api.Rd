@@ -5,7 +5,6 @@
 \title{Create orderly runner}
 \usage{
 api(
-  root,
   repositories_base_path,
   validate = NULL,
   log_level = "info",
@@ -13,8 +12,6 @@ api(
 )
 }
 \arguments{
-\item{root}{Orderly root}
-
 \item{repositories_base_path}{Path in which Git repositories are
 cloned.}
 

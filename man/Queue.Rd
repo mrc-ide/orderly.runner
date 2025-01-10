@@ -12,10 +12,6 @@ Object for managing running jobs on the redis queue
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
 \describe{
-\item{\code{root}}{Orderly root}
-
-\item{\code{config}}{Orderly config}
-
 \item{\code{controller}}{RRQ controller}
 }
 \if{html}{\out{</div>}}
@@ -35,14 +31,12 @@ Object for managing running jobs on the redis queue
 \subsection{Method \code{new()}}{
 Create object, read configuration and setup Redis connection.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Queue$new(root, queue_id = NULL, logs_dir = "logs/worker")}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Queue$new(queue_id = NULL, logs_dir = "logs/worker")}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{root}}{Orderly root.}
-
 \item{\code{queue_id}}{ID of an existing queue to connect to, creates a new one
 if NULL (default NULL)}
 
@@ -57,21 +51,24 @@ if NULL (default NULL)}
 \subsection{Method \code{submit()}}{
 Submit a job the Redis queue for runner to run.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Queue$submit(reportname, parameters = NULL, branch = "master", ref = "HEAD")}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Queue$submit(url, branch, ref, reportname, parameters, location)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
+\item{\code{url}}{The URL of the Git repository containing the reports.}
+
+\item{\code{branch}}{Name of git branch to checkout the repository.}
+
+\item{\code{ref}}{Git commit-ish value (e.g HEAD or commit hash or branch name).}
+
 \item{\code{reportname}}{Name of orderly report.}
 
-\item{\code{parameters}}{Parameters to run the report with (default NULL)}
+\item{\code{parameters}}{Parameters to run the report with.}
 
-\item{\code{branch}}{Name of git branch to checkout the repository
-(default master)}
-
-\item{\code{ref}}{Git commit-ish value (e.g HEAD or commit hash or branch name).
-We reset hard to this ref and run the report. (default HEAD)}
+\item{\code{location}}{Location of the outpack repository from which to pull
+dependencies and push the produced packet.}
 }
 \if{html}{\out{</div>}}
 }
