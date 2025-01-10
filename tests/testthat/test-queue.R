@@ -196,13 +196,3 @@ test_that("can get status on pending report run", {
     expect_null(status$logs)
   }
 })
-test_that("redis_host uses REDIS_CONTAINER_NAME if it exists", {
-  root <- create_temporary_root()
-  gert::git_init(root)
-  id <- ids::random_id()
-  redis_host_name <- withr::with_envvar(
-    c(REDIS_CONTAINER_NAME = id),
-    redis_host()
-  )
-  expect_equal(redis_host_name, id)
-})

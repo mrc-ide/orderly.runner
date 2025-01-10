@@ -32,7 +32,7 @@ docker run --rm -d --pull=always \
        --name=$SERVER \
        --entrypoint="/usr/local/bin/orderly.runner.server" \
        --env=ORDERLY_RUNNER_QUEUE_ID=$ORDERLY_RUNNER_QUEUE_ID \
-       --env=REDIS_CONTAINER_NAME=$REDIS \
+       --env=REDIS_URL=redis://$REDIS \
        -p 127.0.0.1:8001:8001 \
        -v $ORDERLY_VOLUME:$CONTAINER_ORDERLY_ROOT_PATH \
        -v $ORDERLY_LOGS_VOLUME:$LOGS_DIR \
@@ -44,7 +44,7 @@ docker run --rm -d --pull=always \
        --name=$WORKER \
        --entrypoint="/usr/local/bin/orderly.runner.worker" \
        --env=ORDERLY_RUNNER_QUEUE_ID=$ORDERLY_RUNNER_QUEUE_ID \
-       --env=REDIS_CONTAINER_NAME=$REDIS \
+       --env=REDIS_URL=redis://$REDIS \
        -v $ORDERLY_VOLUME:$CONTAINER_ORDERLY_ROOT_PATH \
        -v $ORDERLY_LOGS_VOLUME:$LOGS_DIR \
        $ORDERLY_RUNNER_IMAGE \
