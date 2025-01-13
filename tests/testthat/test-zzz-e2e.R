@@ -1,7 +1,7 @@
 skip_if_not_installed("httr")
 skip_if_no_redis()
 
-queue_id <- "orderly.runner:cuteasdanimal"
+queue_id <- orderly_queue_id()
 root <- test_prepare_orderly_remote_example(
   c("data", "parameters")
 )
