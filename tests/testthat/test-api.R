@@ -90,7 +90,7 @@ test_that("can get parameters for a report", {
 test_that("can run orderly reports", {
   skip_if_no_redis()
 
-  queue_id <- "orderly.runner:cute-animal"
+  queue_id <- orderly_queue_id()
   repo <- test_prepare_orderly_example(c("data", "parameters"))
   gert::git_init(repo)
   orderly2::orderly_gitignore_update("(root)", root = repo)
@@ -138,7 +138,7 @@ test_that("can run orderly reports", {
 test_that("can get statuses of jobs", {
   # run 2 jobs first and wait for finish
   skip_if_no_redis()
-  queue_id <- "orderly.runner:bad-animal"
+  queue_id <- orderly_queue_id()
   repo <- test_prepare_orderly_example(c("data", "parameters"))
   gert::git_init(repo)
   orderly2::orderly_gitignore_update("(root)", root = repo)

@@ -28,14 +28,8 @@ Queue <- R6::R6Class("Queue", # nolint
         ))
       }
 
-      # Connect to Redis
-      con <- redux::hiredis(host = redis_host())
-
       # Create queue
-      self$controller <- rrq::rrq_controller(
-        queue_id %||% orderly_queue_id(),
-        con = con
-      )
+      self$controller <- rrq::rrq_controller(queue_id %||% orderly_queue_id())
       dir.create(logs_dir, showWarnings = FALSE)
       worker_config <- rrq::rrq_worker_config(heartbeat_period = 10, logdir = logs_dir)
       rrq::rrq_worker_config_save("localhost", worker_config,
@@ -99,11 +93,6 @@ Queue <- R6::R6Class("Queue", # nolint
           taskId = scalar(task_ids[index])
         )
       })
-    },
-
-    #' @description Destroy queue
-    finalize = function() {
-      rrq::rrq_destroy(controller = self$controller)
     }
   ),
 )
@@ -115,9 +104,4 @@ runner_has_git <- function(path) {
 orderly_queue_id <- function() {
   id <- Sys.getenv("ORDERLY_RUNNER_QUEUE_ID", "")
   if (nzchar(id)) id else sprintf("orderly.runner:%s", ids::random_id())
-}
-
-redis_host <- function() {
-  name <- Sys.getenv("REDIS_CONTAINER_NAME", "")
-  if (nzchar(name)) name else NULL
 }

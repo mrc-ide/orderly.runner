@@ -28,7 +28,8 @@ To run the full docker setup:
 
 ## Notes for deploying
 
-When running the server or worker containers, you should have `REDIS_CONTAINER_NAME` env var set to connect to the redis container from the server and worker containers. You should also set the `ORDERLY_RUNNER_QUEUE_ID` to the same thing between server and worker containers so they connect to the same queue.
+When running the server or worker containers, you should set `REDIS_URL` to point to your Redis instance.
+You should also set the `ORDERLY_RUNNER_QUEUE_ID` to the same thing between server and worker containers so they connect to the same queue.
 
 ## License
 

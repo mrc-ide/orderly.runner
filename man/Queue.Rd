@@ -27,7 +27,6 @@ Object for managing running jobs on the redis queue
 \item \href{#method-Queue-submit}{\code{Queue$submit()}}
 \item \href{#method-Queue-number_of_workers}{\code{Queue$number_of_workers()}}
 \item \href{#method-Queue-get_status}{\code{Queue$get_status()}}
-\item \href{#method-Queue-finalize}{\code{Queue$finalize()}}
 }
 }
 \if{html}{\out{<hr>}}
@@ -107,15 +106,5 @@ Gets status of packet run
 \subsection{Returns}{
 status of redis queue job
 }
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Queue-finalize"></a>}}
-\if{latex}{\out{\hypertarget{method-Queue-finalize}{}}}
-\subsection{Method \code{finalize()}}{
-Destroy queue
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Queue$finalize()}\if{html}{\out{</div>}}
-}
-
 }
 }
