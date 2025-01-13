@@ -92,7 +92,7 @@
 <div class="section level2">
 <h2 id="notes-for-deploying">Notes for deploying<a class="anchor" aria-label="anchor" href="#notes-for-deploying"></a>
 </h2>
-<p>When running the server or worker containers, you should have <code>REDIS_CONTAINER_NAME</code> env var set to connect to the redis container from the server and worker containers. You should also set the <code>ORDERLY_RUNNER_QUEUE_ID</code> to the same thing between server and worker containers so they connect to the same queue.</p>
+<p>When running the server or worker containers, you should set <code>REDIS_URL</code> to point to your Redis instance. You should also set the <code>ORDERLY_RUNNER_QUEUE_ID</code> to the same thing between server and worker containers so they connect to the same queue.</p>
 </div>
 <div class="section level2">
 <h2 id="license">License<a class="anchor" aria-label="anchor" href="#license"></a>

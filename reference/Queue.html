@@ -78,7 +78,6 @@ Object for managing running jobs on the redis queue"><!-- mathjax --><script src
 <li><p><a href="#method-Queue-submit"><code>Queue$submit()</code></a></p></li>
 <li><p><a href="#method-Queue-number_of_workers"><code>Queue$number_of_workers()</code></a></p></li>
 <li><p><a href="#method-Queue-get_status"><code>Queue$get_status()</code></a></p></li>
-<li><p><a href="#method-Queue-finalize"><code>Queue$finalize()</code></a></p></li>
 </ul></div><p></p><hr><a id="method-Queue-new"></a><div class="section">
 <h3 id="method-new-">Method <code>new()</code><a class="anchor" aria-label="anchor" href="#method-new-"></a></h3>
 <p>Create object, read configuration and setup Redis connection.</p><div class="section">
@@ -166,14 +165,6 @@ We reset hard to this ref and run the report. (default HEAD)</p></dd>
 <h4 id="returns">Returns<a class="anchor" aria-label="anchor" href="#returns"></a></h4>
 <p>status of redis queue job</p>
 </div>
-
-</div><p></p><hr><a id="method-Queue-finalize"></a><div class="section">
-<h3 id="method-finalize-">Method <code>finalize()</code><a class="anchor" aria-label="anchor" href="#method-finalize-"></a></h3>
-<p>Destroy queue</p><div class="section">
-<h4 id="usage-4">Usage<a class="anchor" aria-label="anchor" href="#usage-4"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Queue</span><span class="op">$</span><span class="fu">finalize</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
-</div>
-
 
 </div>
 
