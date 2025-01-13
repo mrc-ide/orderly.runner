@@ -6,7 +6,7 @@
 \usage{
 api(
   root,
-  repositories,
+  repositories_base_path,
   validate = NULL,
   log_level = "info",
   skip_queue_creation = FALSE
@@ -15,7 +15,8 @@ api(
 \arguments{
 \item{root}{Orderly root}
 
-\item{repositories}{Path in which Git repositories are cloned}
+\item{repositories_base_path}{Path in which Git repositories are
+cloned.}
 
 \item{validate}{Logical, indicating if validation should be done
 on responses.  This should be \code{FALSE} in production

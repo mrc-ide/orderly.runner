@@ -4,7 +4,8 @@
 ##'
 ##' @param root Orderly root
 ##'
-##' @param repositories Path in which Git repositories are cloned
+##' @param repositories_base_path Path in which Git repositories are
+##'   cloned.
 ##'
 ##' @param validate Logical, indicating if validation should be done
 ##'   on responses.  This should be `FALSE` in production
@@ -21,7 +22,7 @@
 ##'
 ##' @export
 api <- function(
-    root, repositories,
+    root, repositories_base_path,
     validate = NULL, log_level = "info",
     skip_queue_creation = FALSE) {
   logger <- porcelain::porcelain_logger(log_level)
@@ -36,7 +37,7 @@ api <- function(
   api <- porcelain::porcelain$new(validate = validate, logger = logger)
   api$include_package_endpoints(state = list(
     root = root,
-    repositories = repositories,
+    repositories_base_path = repositories_base_path,
     queue = queue))
   api
 }
@@ -53,21 +54,21 @@ root <- function() {
 
 
 ##' @porcelain POST /repository/fetch => json(repository_fetch_response)
-##'   state repositories :: repositories
+##'   state repositories_base_path :: repositories_base_path
 ##'   body data :: json(repository_fetch_request)
-repository_fetch <- function(repositories, data) {
+repository_fetch <- function(repositories_base_path, data) {
   data <- jsonlite::parse_json(data)
-  r <- git_sync(repositories, data$url)
+  r <- git_sync(repositories_base_path, data$url)
 
   empty_object()
 }
 
 
 ##' @porcelain GET /repository/branches => json(repository_branches)
-##'   state repositories :: repositories
+##'   state repositories_base_path :: repositories_base_path
 ##'   query url :: string
-repository_branches <- function(repositories, url) {
-  repo <- repository_path(repositories, url)
+repository_branches <- function(repositories_base_path, url) {
+  repo <- repository_path(repositories_base_path, url)
   branches <- git_remote_list_branches(repo)
   message <- vcapply(branches$commit, function(commit) {
     gert::git_commit_info(repo = repo, ref = commit)$message

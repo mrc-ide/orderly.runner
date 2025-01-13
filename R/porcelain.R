@@ -15,7 +15,7 @@
         "/repository/fetch",
         repository_fetch,
         porcelain::porcelain_input_body_json("data", "repository_fetch_request"),
-        porcelain::porcelain_state(repositories = state$repositories),
+        porcelain::porcelain_state(repositories_base_path = state$repositories_base_path),
         returning = porcelain::porcelain_returning_json("repository_fetch_response"),
         validate = validate)
     },
@@ -25,7 +25,7 @@
         "/repository/branches",
         repository_branches,
         porcelain::porcelain_input_query(url = "string"),
-        porcelain::porcelain_state(repositories = state$repositories),
+        porcelain::porcelain_state(repositories_base_path = state$repositories_base_path),
         returning = porcelain::porcelain_returning_json("repository_branches"),
         validate = validate)
     },

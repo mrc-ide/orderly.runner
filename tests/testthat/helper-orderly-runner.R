@@ -13,7 +13,7 @@ orderly_runner_endpoint <- function(
   porcelain::porcelain_package_endpoint(
     "orderly.runner", method, path,
     state = list(root = root,
-                 repositories = repositories,
+                 repositories_base_path = repositories,
                  queue = queue),
     validate = validate
   )
