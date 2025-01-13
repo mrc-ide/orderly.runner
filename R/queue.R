@@ -93,11 +93,6 @@ Queue <- R6::R6Class("Queue", # nolint
           taskId = scalar(task_ids[index])
         )
       })
-    },
-
-    #' @description Destroy queue
-    finalize = function() {
-      rrq::rrq_destroy(controller = self$controller)
     }
   ),
 )
