@@ -1,3 +1,55 @@
+test_that("can get list of reports", {
+  root <- test_prepare_orderly_example(c("data", "parameters"))
+
+  reports <- get_reports(root = root, ref = "HEAD")
+  expect_setequal(reports$name, c("data", "parameters"))
+})
+
+
+test_that("report list includes last modification time", {
+  root <- test_prepare_orderly_example(c("data", "parameters"))
+
+  writeLines("Hello", file.path(root, "src/data/hello.txt"))
+  writeLines("World", file.path(root, "src/parameters/world.txt"))
+
+  t1 <- as.POSIXct("2000-01-01T00:00:00")
+  t2 <- as.POSIXct("2010-01-01T00:00:00")
+
+  gert::git_add("src/data/hello.txt", repo = root)
+  gert::git_commit(
+    "hello",
+    author = gert::git_signature("author", "email", t1),
+    repo = root
+  )
+
+  gert::git_add("src/parameters/world.txt", repo = root)
+  gert::git_commit(
+    "world",
+    author = gert::git_signature("author", "email", t2),
+    repo = root
+  )
+
+  reports <- get_reports(root = root, ref = "HEAD")
+  expect_setequal(reports$name, c("data", "parameters"))
+  expect_equal(reports[reports$name == "data",]$updated_at, t1)
+  expect_equal(reports[reports$name == "parameters",]$updated_at, t2)
+})
+
+
+test_that("report list includes modification status", {
+  root <- test_prepare_orderly_example(c("data", "parameters"))
+
+  writeLines("Hello", file.path(root, "src/data/hello.txt"))
+  git_add_and_commit(root)
+
+  reports <- get_reports(root = root, ref = "HEAD", base = "HEAD^")
+  expect_setequal(reports$name, c("data", "parameters"))
+  expect_true(reports[reports$name == "data",]$has_changes)
+  expect_true(!reports[reports$name == "parameters",]$has_changes)
+
+})
+
+
 test_that("can get orderly script name", {
   root <- test_prepare_orderly_example(c("data", "parameters"))
   expect_equal(get_orderly_script_path("data", "HEAD", root), "src/data/data.R")

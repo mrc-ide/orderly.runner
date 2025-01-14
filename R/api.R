@@ -93,25 +93,13 @@ repository_branches <- function(repositories_base_path, url) {
 ##'   query ref :: string
 ##'   state root :: root
 report_list <- function(root, ref) {
-  contents <- gert::git_ls(root, ref = ref)
-  re <- "^src/([^/]+)/(\\1|orderly)\\.R$"
-  nms <- sub(re, "\\1",
-    grep(re, contents$path, value = TRUE, perl = TRUE),
-    perl = TRUE
-  )
-  last_changed <- function(nm) {
-    max(contents$modified[startsWith(contents$path, sprintf("src/%s", nm))])
-  }
-  updatedTime <- vnapply(nms, last_changed, USE.NAMES = FALSE)
-  modified_sources <- git_get_modified(ref, relative_dir = "src/", repo = root)
-  modified_reports <- unique(first_dirname(modified_sources))
-  hasModifications <- vlapply(nms, function(report_name) {
-    report_name %in% modified_reports
-  }, USE.NAMES = FALSE)
+  base <- git_remote_default_branch_ref(root)
+  reports <- get_reports(root = root, ref = ref, base = base)
+
   data.frame(
-    name = nms,
-    updatedTime = updatedTime,
-    hasModifications = hasModifications
+    name = reports$name,
+    updatedTime = as.numeric(reports$updated_at),
+    hasModifications = reports$has_changes
   )
 }
 
