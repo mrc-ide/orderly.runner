@@ -93,7 +93,7 @@ repository_branches <- function(repositories_base_path, url) {
 ##'   query ref :: string
 ##'   state root :: root
 report_list <- function(root, ref) {
-  base <- git_get_default_branch(root)
+  base <- git_remote_default_branch_ref(root)
   reports <- get_reports(root = root, ref = ref, base = base)
 
   data.frame(

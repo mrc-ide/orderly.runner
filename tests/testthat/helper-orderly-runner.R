@@ -165,16 +165,16 @@ git_add_and_commit <- function(path, add = ".", message = "new commit") {
 }
 
 
-git_add_and_commit <- function(path, add = ".") {
+git_add_and_commit <- function(path, add = ".", message = "new commit") {
   gert::git_add(add, repo = path)
   user <- "author <author@example.com>"
-  gert::git_commit("new commit", author = user, committer = user, repo = path)
+  gert::git_commit(message, author = user, committer = user, repo = path)
 }
 
 
-create_new_commit <- function(path, new_file = "new", add = ".") {
+create_new_commit <- function(path, new_file = "new", add = ".", ...) {
   writeLines(ids::random_id(), file.path(path, new_file))
-  git_add_and_commit(path, add)
+  git_add_and_commit(path, add, ...)
 }
 
 

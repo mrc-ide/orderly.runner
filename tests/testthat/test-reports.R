@@ -1,6 +1,5 @@
 test_that("can get list of reports", {
   root <- test_prepare_orderly_example(c("data", "parameters"))
-  helper_add_git(root)
 
   reports <- get_reports(root = root, ref = "HEAD")
   expect_setequal(reports$name, c("data", "parameters"))
@@ -9,7 +8,6 @@ test_that("can get list of reports", {
 
 test_that("report list includes last modification time", {
   root <- test_prepare_orderly_example(c("data", "parameters"))
-  helper_add_git(root)
 
   writeLines("Hello", file.path(root, "src/data/hello.txt"))
   writeLines("World", file.path(root, "src/parameters/world.txt"))
@@ -40,7 +38,6 @@ test_that("report list includes last modification time", {
 
 test_that("report list includes modification status", {
   root <- test_prepare_orderly_example(c("data", "parameters"))
-  helper_add_git(root)
 
   writeLines("Hello", file.path(root, "src/data/hello.txt"))
   git_add_and_commit(root)
