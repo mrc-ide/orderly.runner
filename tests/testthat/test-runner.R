@@ -1,6 +1,5 @@
 test_that("runner runs as expected", {
   orderly_root <- test_prepare_orderly_example("data")
-  git_info <- helper_add_git(orderly_root, c("src", "orderly_config.yml"))
 
   worker_id <- ids::adjective_animal()
   make_worker_dirs(orderly_root, worker_id)
@@ -8,7 +7,8 @@ test_that("runner runs as expected", {
 
   suppressMessages(withr::with_envvar(
     c(RRQ_WORKER_ID = worker_id),
-    runner_run(orderly_root, "data", NULL, git_info$branch, 
+    runner_run(orderly_root, "data", NULL,
+               gert::git_branch(orderly_root),
                "HEAD", echo = FALSE)
   ))
 
@@ -20,7 +20,6 @@ test_that("runner runs as expected", {
 
 test_that("runner runs as expected with parameters", {
   orderly_root <- test_prepare_orderly_example("parameters")
-  git_info <- helper_add_git(orderly_root, c("src", "orderly_config.yml"))
 
   worker_id <- ids::adjective_animal()
   make_worker_dirs(orderly_root, worker_id)
@@ -30,7 +29,8 @@ test_that("runner runs as expected with parameters", {
   suppressMessages(withr::with_envvar(
     c(RRQ_WORKER_ID = worker_id),
     runner_run(orderly_root, "parameters", parameters,
-               git_info$branch, "HEAD", echo = FALSE)
+               gert::git_branch(orderly_root),
+               "HEAD", echo = FALSE)
   ))
 
   report_archive <- file.path(orderly_root, "archive", "parameters")
@@ -46,7 +46,6 @@ test_that("git clean clears unnecessary files", {
   # and there will also be an empty folder draft/git-clean so we test
   # all components of git_clean
   orderly_root <- test_prepare_orderly_example("git-clean")
-  git_info <- helper_add_git(orderly_root, c("src", "orderly_config.yml"))
 
   worker_id <- ids::adjective_animal()
   make_worker_dirs(orderly_root, worker_id)
@@ -54,7 +53,8 @@ test_that("git clean clears unnecessary files", {
 
   suppressMessages(withr::with_envvar(
     c(RRQ_WORKER_ID = worker_id),
-    runner_run(orderly_root, "git-clean", NULL, git_info$branch, 
+    runner_run(orderly_root, "git-clean", NULL,
+               gert::git_branch(orderly_root),
                "HEAD", echo = FALSE)
   ))
 

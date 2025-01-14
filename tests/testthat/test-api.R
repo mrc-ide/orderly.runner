@@ -13,12 +13,109 @@ test_that("root data returns sensible, validated, data", {
 
 test_that("Can construct the api", {
   root <- create_temporary_root(use_file_store = TRUE)
-  obj <- api(root, skip_queue_creation = TRUE)
+  repositories <- withr::local_tempdir()
+
+  obj <- api(root, repositories, skip_queue_creation = TRUE)
   result <- evaluate_promise(value <- obj$request("GET", "/")$status)
   expect_equal(value, 200)
   logs <- lapply(strsplit(result$output, "\n")[[1]], jsonlite::parse_json)
   expect_length(logs, 2)
   expect_equal(logs[[1]]$logger, "orderly.runner")
+})
+
+
+test_that("can fetch repositories", {
+  upstream_a <- test_prepare_orderly_example("data")
+  upstream_b <- test_prepare_orderly_example("data")
+
+  repositories <- withr::local_tempdir()
+
+  endpoint <- orderly_runner_endpoint(
+    "POST", "/repository/fetch",
+    repositories = repositories,
+    skip_queue_creation = TRUE
+  )
+
+  res <- endpoint$run(jsonlite::toJSON(list(url = scalar(upstream_a))))
+  expect_equal(res$status_code, 200)
+  expect_length(fs::dir_ls(repositories), 1)
+
+  res <- endpoint$run(jsonlite::toJSON(list(url = scalar(upstream_b))))
+  expect_equal(res$status_code, 200)
+  expect_length(fs::dir_ls(repositories), 2)
+})
+
+
+test_that("can list branches in repository", {
+  upstream <- test_prepare_orderly_example("data")
+
+  repositories <- withr::local_tempdir()
+
+  fetch_endpoint <- orderly_runner_endpoint(
+    "POST", "/repository/fetch",
+    repositories = repositories,
+    skip_queue_creation = TRUE
+  )
+  branches_endpoint <- orderly_runner_endpoint(
+    "GET", "/repository/branches",
+    repositories = repositories,
+    skip_queue_creation = TRUE
+  )
+
+
+  # Start with just the initial master branch. Fetch the repo and list its
+  # branches:
+  res <- fetch_endpoint$run(jsonlite::toJSON(list(url = scalar(upstream))))
+  expect_equal(res$status_code, 200)
+
+  res <- branches_endpoint$run(upstream)
+  expect_equal(res$status_code, 200)
+  expect_equal(res$data$default_branch, scalar("master"))
+  expect_equal(nrow(res$data$branches), 1)
+  expect_equal(res$data$branches[1,]$name, "master")
+  expect_equal(res$data$branches[1,]$message, "new commit\n")
+
+
+  # Now create a "new-branch" branch and add a commit to it. Fetch the repo
+  # again and now the two branches should be listed:
+  info <- create_new_branch(upstream, "new-branch", message = "start new branch")
+
+  res <- fetch_endpoint$run(jsonlite::toJSON(list(url = scalar(upstream))))
+  expect_equal(res$status_code, 200)
+
+  res <- branches_endpoint$run(upstream)
+  expect_equal(res$status_code, 200)
+  expect_setequal(res$data$branches$name, c("master", "new-branch"))
+
+  b <- res$data$branches[res$data$branches$name == "new-branch",]
+  expect_equal(b$commit, info$sha)
+  expect_equal(b$message, "start new branch\n")
+
+  # Finally delete the "new-branch". Fetch the repo and check that just the
+  # master branch remains in the list.
+  gert::git_branch_delete("new-branch", upstream)
+
+  res <- fetch_endpoint$run(jsonlite::toJSON(list(url = scalar(upstream))))
+  expect_equal(res$status_code, 200)
+
+  res <- branches_endpoint$run(upstream)
+  expect_equal(nrow(res$data$branches), 1)
+  expect_equal(res$data$branches[1,]$name, "master")
+})
+
+test_that("listing branches fails if repository was not fetched", {
+  upstream <- test_prepare_orderly_example("data")
+
+  repositories <- withr::local_tempdir()
+
+  endpoint <- orderly_runner_endpoint(
+    "GET", "/repository/branches",
+    repositories = repositories,
+    skip_queue_creation = TRUE
+  )
+
+  res <- endpoint$run(upstream)
+  expect_equal(res$status_code, 404)
 })
 
 
@@ -92,9 +189,7 @@ test_that("can run orderly reports", {
 
   queue_id <- orderly_queue_id()
   repo <- test_prepare_orderly_example(c("data", "parameters"))
-  gert::git_init(repo)
-  orderly2::orderly_gitignore_update("(root)", root = repo)
-  git_add_and_commit(repo)
+
   queue <- Queue$new(repo, queue_id = queue_id, logs_dir = tempfile())
   worker_manager <- start_queue_workers_quietly(
     1, queue$controller
@@ -140,9 +235,6 @@ test_that("can get statuses of jobs", {
   skip_if_no_redis()
   queue_id <- orderly_queue_id()
   repo <- test_prepare_orderly_example(c("data", "parameters"))
-  gert::git_init(repo)
-  orderly2::orderly_gitignore_update("(root)", root = repo)
-  git_add_and_commit(repo)
   queue <- Queue$new(repo, queue_id = queue_id, logs_dir = tempfile())
   worker_manager <- start_queue_workers_quietly(
     1, queue$controller

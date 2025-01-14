@@ -1,5 +1,7 @@
 orderly_runner_endpoint <- function(
-  method, path, root,
+  method, path,
+  root = NULL,
+  repositories = NULL,
   validate = TRUE,
   skip_queue_creation = FALSE
 ) {
@@ -10,7 +12,9 @@ orderly_runner_endpoint <- function(
   }
   porcelain::porcelain_package_endpoint(
     "orderly.runner", method, path,
-    state = list(root = root, queue = queue),
+    state = list(root = root,
+                 repositories_base_path = repositories,
+                 queue = queue),
     validate = validate
   )
 }
@@ -23,20 +27,6 @@ create_temporary_root <- function(...) {
 }
 
 
-new_queue_quietly <- function(root, ...) {
-  suppressMessages(Queue$new(root, ...))
-}
-
-
-start_queue_workers_quietly <- function(n_workers,
-                                        controller, env = parent.frame()) {
-  suppressMessages(
-    rrq::rrq_worker_spawn(n_workers, controller = controller)
-  )
-  withr::defer(rrq::rrq_worker_stop(controller = controller), env = env)
-}
-
-
 skip_if_no_redis <- function() {
   available <- redux::redis_available()
   if (!available) {
@@ -46,20 +36,20 @@ skip_if_no_redis <- function() {
 }
 
 
-test_prepare_orderly_example <- function(examples, ...) {
-  tmp <- tempfile()
-  withr::defer_parent(unlink(tmp, recursive = TRUE))
-  suppressMessages(orderly2::orderly_init(tmp, ...))
-  copy_examples(examples, tmp)
-  as.character(fs::path_norm(tmp))
+test_prepare_orderly_example <- function(examples, ..., env = parent.frame()) {
+  path <- withr::local_tempdir(.local_envir = env)
+  suppressMessages(orderly2::orderly_init(path, ...))
+  copy_examples(examples, path)
+
+  helper_add_git(path, orderly_gitignore = TRUE)
+  path
 }
 
 
-test_prepare_orderly_remote_example <- function(examples, ...) {
-  path_remote <- test_prepare_orderly_example(examples, ...)
-  helper_add_git(path_remote, orderly_gitignore = TRUE)
-  path_local <- tempfile()
-  withr::defer_parent(unlink(path_local, recursive = TRUE))
+test_prepare_orderly_remote_example <- function(examples, ..., env = parent.frame()) {
+  path_remote <- test_prepare_orderly_example(examples, ..., env = env)
+  path_local <- withr::local_tempdir(.local_envir = env)
+
   gert::git_clone(path_remote, path_local)
   orderly2::orderly_init(root = path_local, force = TRUE)
   list(
@@ -168,32 +158,23 @@ initialise_git_repo <- function() {
 }
 
 
-create_new_commit <- function(path, new_file = "new", message = "new message",
-                              add = ".") {
-  writeLines("new file", file.path(path, new_file))
+git_add_and_commit <- function(path, add = ".", message = "new commit") {
   gert::git_add(add, repo = path)
   user <- "author <author@example.com>"
-  gert::git_commit("new commit", author = user, committer = user, repo = path)
+  gert::git_commit(message, author = user, committer = user, repo = path)
 }
 
 
-git_add_and_commit <- function(path, add = ".") {
-  gert::git_add(add, repo = path)
-  user <- "author <author@example.com>"
-  gert::git_commit("new commit", author = user, committer = user, repo = path)
-}
-
-
-create_new_commit <- function(path, new_file = "new", add = ".") {
+create_new_commit <- function(path, new_file = "new", add = ".", ...) {
   writeLines("new file", file.path(path, new_file))
-  git_add_and_commit(path, add)
+  git_add_and_commit(path, add, ...)
 }
 
 
-create_new_branch <- function(path, branch_name = "other") {
+create_new_branch <- function(path, branch_name = "other", ...) {
   initial_branch <- gert::git_branch(repo = path)
   gert::git_branch_create(branch_name, repo = path)
-  commit_sha <- create_new_commit(path, branch_name)
+  commit_sha <- create_new_commit(path, branch_name, ...)
   gert::git_branch_checkout(initial_branch, repo = path)
   list(branch = branch_name, sha = commit_sha)
 }

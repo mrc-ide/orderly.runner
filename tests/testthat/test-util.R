@@ -18,3 +18,9 @@ test_that("sys_which", {
   expect_error(sys_which(prog),
                "Did not find 'a-path-that-does-not-exist'")
 })
+
+
+test_that("empty_object serializes correctly", {
+  expect_equal(unclass(jsonlite::toJSON(empty_object())), "{}")
+  expect_equal(unclass(jsonlite::toJSON(empty_object(), null = "null")), "{}")
+})

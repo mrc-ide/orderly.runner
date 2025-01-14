@@ -4,6 +4,9 @@
 ##'
 ##' @param root Orderly root
 ##'
+##' @param repositories_base_path Path in which Git repositories are
+##'   cloned.
+##'
 ##' @param validate Logical, indicating if validation should be done
 ##'   on responses.  This should be `FALSE` in production
 ##'   environments.  See [porcelain::porcelain] for details
@@ -19,7 +22,8 @@
 ##'
 ##' @export
 api <- function(
-    root, validate = NULL, log_level = "info",
+    root, repositories_base_path,
+    validate = NULL, log_level = "info",
     skip_queue_creation = FALSE) {
   logger <- porcelain::porcelain_logger(log_level)
 
@@ -31,7 +35,10 @@ api <- function(
   }
 
   api <- porcelain::porcelain$new(validate = validate, logger = logger)
-  api$include_package_endpoints(state = list(root = root, queue = queue))
+  api$include_package_endpoints(state = list(
+    root = root,
+    repositories_base_path = repositories_base_path,
+    queue = queue))
   api
 }
 
@@ -43,6 +50,41 @@ root <- function() {
     orderly.runner = package_version_string("orderly.runner")
   )
   lapply(versions, scalar)
+}
+
+
+##' @porcelain POST /repository/fetch => json(repository_fetch_response)
+##'   state repositories_base_path :: repositories_base_path
+##'   body data :: json(repository_fetch_request)
+repository_fetch <- function(repositories_base_path, data) {
+  data <- jsonlite::parse_json(data)
+  r <- git_sync(repositories_base_path, data$url)
+
+  empty_object()
+}
+
+
+##' @porcelain GET /repository/branches => json(repository_branches)
+##'   state repositories_base_path :: repositories_base_path
+##'   query url :: string
+repository_branches <- function(repositories_base_path, url) {
+  repo <- repository_path(repositories_base_path, url)
+  branches <- git_remote_list_branches(repo)
+  message <- vcapply(branches$commit, function(commit) {
+    gert::git_commit_info(repo = repo, ref = commit)$message
+  })
+
+  branches$message <- message
+  list(
+    default_branch = scalar(git_remote_default_branch_name(repo)),
+    branches = data.frame(
+      name = branches$name,
+      commit_hash = branches$commit,
+      time = as.numeric(branches$updated),
+      message = message,
+      row.names = NULL
+    )
+  )
 }
 
 

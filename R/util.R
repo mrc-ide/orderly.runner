@@ -7,6 +7,15 @@ scalar <- function(x) {
   jsonlite::unbox(x)
 }
 
+empty_object <- function(x) {
+  # This is needed to get an empty JSON object.
+  # list() is `[]` and NULL may be `null` depending on the options passed to
+  # toJSON.
+  x <- list()
+  names(x) <- character(0)
+  x
+}
+
 
 package_version_string <- function(name) {
   as.character(utils::packageVersion(name))

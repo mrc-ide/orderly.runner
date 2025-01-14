@@ -9,6 +9,26 @@
         returning = porcelain::porcelain_returning_json("root"),
         validate = validate)
     },
+    "POST /repository/fetch" = function(state, validate) {
+      porcelain::porcelain_endpoint$new(
+        "POST",
+        "/repository/fetch",
+        repository_fetch,
+        porcelain::porcelain_input_body_json("data", "repository_fetch_request"),
+        porcelain::porcelain_state(repositories_base_path = state$repositories_base_path),
+        returning = porcelain::porcelain_returning_json("repository_fetch_response"),
+        validate = validate)
+    },
+    "GET /repository/branches" = function(state, validate) {
+      porcelain::porcelain_endpoint$new(
+        "GET",
+        "/repository/branches",
+        repository_branches,
+        porcelain::porcelain_input_query(url = "string"),
+        porcelain::porcelain_state(repositories_base_path = state$repositories_base_path),
+        returning = porcelain::porcelain_returning_json("repository_branches"),
+        validate = validate)
+    },
     "GET /report/list" = function(state, validate) {
       porcelain::porcelain_endpoint$new(
         "GET",
