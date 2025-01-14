@@ -50,7 +50,13 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">api</span><span class="op">(</span><span class="va">root</span>, validate <span class="op">=</span> <span class="cn">NULL</span>, log_level <span class="op">=</span> <span class="st">"info"</span>, skip_queue_creation <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">api</span><span class="op">(</span></span>
+<span>  <span class="va">root</span>,</span>
+<span>  <span class="va">repositories_base_path</span>,</span>
+<span>  validate <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  log_level <span class="op">=</span> <span class="st">"info"</span>,</span>
+<span>  skip_queue_creation <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -59,6 +65,11 @@
 
 <dl><dt id="arg-root">root<a class="anchor" aria-label="anchor" href="#arg-root"></a></dt>
 <dd><p>Orderly root</p></dd>
+
+
+<dt id="arg-repositories-base-path">repositories_base_path<a class="anchor" aria-label="anchor" href="#arg-repositories-base-path"></a></dt>
+<dd><p>Path in which Git repositories are
+cloned.</p></dd>
 
 
 <dt id="arg-validate">validate<a class="anchor" aria-label="anchor" href="#arg-validate"></a></dt>
