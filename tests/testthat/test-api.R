@@ -59,6 +59,7 @@ test_that("can list branches in repository", {
   # branches:
   res <- obj$request("POST", "/repository/fetch",
                      body = jsonlite::toJSON(list(url = scalar(upstream))))
+  print(res)
   data <- expect_success(res)
 
   res <- obj$request("GET", "/repository/branches",
