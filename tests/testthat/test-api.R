@@ -1,26 +1,27 @@
-test_that("root data returns sensible, validated, data", {
-  ## Just hello world for the package really
-  endpoint <- orderly_runner_endpoint("GET", "/", NULL,
-    skip_queue_creation = TRUE
-  )
-  res <- endpoint$run()
-  expect_true(res$validated)
-  expect_true(all(c("orderly2", "orderly.runner") %in%
-    names(res$data)))
-  expect_match(unlist(res$data), "^[0-9]+\\.[0-9]+\\.[0-9]+$")
-})
-
-
 test_that("Can construct the api", {
   root <- create_temporary_root(use_file_store = TRUE)
-  repositories <- withr::local_tempdir()
 
-  obj <- api(root, repositories, skip_queue_creation = TRUE)
-  result <- evaluate_promise(value <- obj$request("GET", "/")$status)
-  expect_equal(value, 200)
+  obj <- create_api(log_level = "info", skip_queue_creation = TRUE)
+
+  result <- evaluate_promise({
+    res <- obj$request("GET", "/")
+  })
+  expect_equal(res$status, 200)
   logs <- lapply(strsplit(result$output, "\n")[[1]], jsonlite::parse_json)
   expect_length(logs, 2)
   expect_equal(logs[[1]]$logger, "orderly.runner")
+})
+
+
+test_that("root data returns sensible data", {
+  ## Just hello world for the package really
+  obj <- create_api(skip_queue_creation = TRUE)
+
+  res <- obj$request("GET", "/")
+  data <- expect_success(res)
+
+  expect_true(all(c("orderly2", "orderly.runner") %in% names(data)))
+  expect_match(unlist(data), "^[0-9]+\\.[0-9]+\\.[0-9]+$")
 })
 
 
@@ -29,19 +30,22 @@ test_that("can fetch repositories", {
   upstream_b <- test_prepare_orderly_example("data")
 
   repositories <- withr::local_tempdir()
+  obj <- create_api(repositories = repositories, skip_queue_creation = TRUE)
 
-  endpoint <- orderly_runner_endpoint(
-    "POST", "/repository/fetch",
-    repositories = repositories,
-    skip_queue_creation = TRUE
-  )
+  res <- obj$request(
+    "POST",
+    "/repository/fetch",
+    body = jsonlite::toJSON(list(url = scalar(upstream_a))))
 
-  res <- endpoint$run(jsonlite::toJSON(list(url = scalar(upstream_a))))
-  expect_equal(res$status_code, 200)
+  expect_success(res)
   expect_length(fs::dir_ls(repositories), 1)
 
-  res <- endpoint$run(jsonlite::toJSON(list(url = scalar(upstream_b))))
-  expect_equal(res$status_code, 200)
+  res <- obj$request(
+    "POST",
+    "/repository/fetch",
+    body = jsonlite::toJSON(list(url = scalar(upstream_b))))
+
+  expect_success(res)
   expect_length(fs::dir_ls(repositories), 2)
 })
 
@@ -49,45 +53,38 @@ test_that("can fetch repositories", {
 test_that("can list branches in repository", {
   upstream <- test_prepare_orderly_example("data")
 
-  repositories <- withr::local_tempdir()
-
-  fetch_endpoint <- orderly_runner_endpoint(
-    "POST", "/repository/fetch",
-    repositories = repositories,
-    skip_queue_creation = TRUE
-  )
-  branches_endpoint <- orderly_runner_endpoint(
-    "GET", "/repository/branches",
-    repositories = repositories,
-    skip_queue_creation = TRUE
-  )
-
+  obj <- create_api(skip_queue_creation = TRUE)
 
   # Start with just the initial master branch. Fetch the repo and list its
   # branches:
-  res <- fetch_endpoint$run(jsonlite::toJSON(list(url = scalar(upstream))))
-  expect_equal(res$status_code, 200)
+  res <- obj$request("POST", "/repository/fetch",
+                     body = jsonlite::toJSON(list(url = scalar(upstream))))
+  data <- expect_success(res)
 
-  res <- branches_endpoint$run(upstream)
-  expect_equal(res$status_code, 200)
-  expect_equal(res$data$default_branch, scalar("master"))
-  expect_equal(nrow(res$data$branches), 1)
-  expect_equal(res$data$branches[1,]$name, "master")
-  expect_equal(res$data$branches[1,]$message, "new commit\n")
+  res <- obj$request("GET", "/repository/branches",
+                     query = list(url = upstream))
+  data <- expect_success(res)
+
+  expect_equal(data$default_branch, "master")
+  expect_equal(nrow(data$branches), 1)
+  expect_equal(data$branches[1,]$name, "master")
+  expect_equal(data$branches[1,]$message, "new commit\n")
 
 
   # Now create a "new-branch" branch and add a commit to it. Fetch the repo
   # again and now the two branches should be listed:
   info <- create_new_branch(upstream, "new-branch", message = "start new branch")
 
-  res <- fetch_endpoint$run(jsonlite::toJSON(list(url = scalar(upstream))))
-  expect_equal(res$status_code, 200)
+  res <- obj$request("POST", "/repository/fetch",
+                     body = jsonlite::toJSON(list(url = scalar(upstream))))
+  data <- expect_success(res)
 
-  res <- branches_endpoint$run(upstream)
-  expect_equal(res$status_code, 200)
-  expect_setequal(res$data$branches$name, c("master", "new-branch"))
+  res <- obj$request("GET", "/repository/branches",
+                     query = list(url = upstream))
+  data <- expect_success(res)
+  expect_setequal(data$branches$name, c("master", "new-branch"))
 
-  b <- res$data$branches[res$data$branches$name == "new-branch",]
+  b <- data$branches[data$branches$name == "new-branch",]
   expect_equal(b$commit, info$sha)
   expect_equal(b$message, "start new branch\n")
 
@@ -95,42 +92,38 @@ test_that("can list branches in repository", {
   # master branch remains in the list.
   gert::git_branch_delete("new-branch", upstream)
 
-  res <- fetch_endpoint$run(jsonlite::toJSON(list(url = scalar(upstream))))
-  expect_equal(res$status_code, 200)
+  res <- obj$request("POST", "/repository/fetch",
+                     body = jsonlite::toJSON(list(url = scalar(upstream))))
+  data <- expect_success(res)
 
-  res <- branches_endpoint$run(upstream)
-  expect_equal(nrow(res$data$branches), 1)
-  expect_equal(res$data$branches[1,]$name, "master")
+  res <- obj$request("GET", "/repository/branches",
+                     query = list(url = upstream))
+  data <- expect_success(res)
+  expect_equal(nrow(data$branches), 1)
+  expect_equal(data$branches[1,]$name, "master")
 })
+
 
 test_that("listing branches fails if repository was not fetched", {
   upstream <- test_prepare_orderly_example("data")
 
-  repositories <- withr::local_tempdir()
-
-  endpoint <- orderly_runner_endpoint(
-    "GET", "/repository/branches",
-    repositories = repositories,
-    skip_queue_creation = TRUE
-  )
-
-  res <- endpoint$run(upstream)
-  expect_equal(res$status_code, 404)
+  obj <- create_api(skip_queue_creation = TRUE)
+  res <- obj$request("GET", "/repository/branches",
+                     query = list(url = upstream))
+  expect_equal(res$status, 404)
 })
 
 
 test_that("can list orderly reports", {
   repo <- test_prepare_orderly_remote_example(c("data", "parameters"))
-  endpoint <- orderly_runner_endpoint(
-    "GET", "/report/list",
-    repo$local,
-    skip_queue_creation = TRUE
-  )
-  res <- endpoint$run(gert::git_branch(repo$local))
-  expect_equal(res$status_code, 200)
-  expect_setequal(res$data$name, c("data", "parameters"))
-  expect_true(all(res$data$updatedTime > (Sys.time() - 100)))
-  expect_false(all(res$data$hasModifications))
+  obj <- create_api(root = repo$local, skip_queue_creation = TRUE)
+
+  res <- obj$request("GET", "/report/list", query = list(ref = "master"))
+  data <- expect_success(res)
+  expect_setequal(data$name, c("data", "parameters"))
+
+  expect_true(all(data$updatedTime > (Sys.time() - 100)))
+  expect_false(all(data$hasModifications))
 
   ## Add a report on a 2nd branch
   gert::git_branch_create("other", repo = repo$local)
@@ -146,60 +139,50 @@ test_that("can list orderly reports", {
   sha <- git_add_and_commit(repo$local)
 
   ## Can list items from this sha
-  other_res <- endpoint$run(sha)
-  expect_equal(other_res$status_code, 200)
-  params2 <- other_res$data[other_res$data$name == "parameters2", ]
-  existing <- other_res$data[other_res$data$name != "parameters2", ]
+  res <- obj$request("GET", "/report/list", query = list(ref = sha))
+  other_data <- expect_success(res)
+  params2 <- other_data[other_data$name == "parameters2", ]
+  existing <- res$data[other_data$name != "parameters2", ]
   expect_equal(existing, res$data)
   expect_equal(nrow(params2), 1)
   expect_true(params2$hasModifications)
 
   ## We can still see all reports on main branch
-  commits <- gert::git_log(repo = repo$local)$commit
-  first_commit <- commits[length(commits)]
-  first_commit_res <- endpoint$run(first_commit)
-  expect_equal(first_commit_res$status_code, 200)
-  expect_equal(first_commit_res$data, res$data)
+  res <- obj$request("GET", "/report/list", query = list(ref = "master"))
+  again_data <- expect_success(res)
+  expect_equal(again_data, data)
 })
 
 
 test_that("can get parameters for a report", {
   repo <- test_prepare_orderly_remote_example(c("data", "parameters"))
-  endpoint <- orderly_runner_endpoint(
-    "GET", "/report/<name:string>/parameters",
-    repo$local,
-    skip_queue_creation = TRUE
-  )
+  obj <- create_api(root = repo$local, skip_queue_creation = TRUE)
 
-  res <- endpoint$run("HEAD", "data")
-  expect_equal(res$status_code, 200)
-  expect_equal(res$data, list())
+  res <- obj$request("GET", "/report/data/parameters", query = list(ref = "HEAD"))
+  data <- expect_success(res)
+  expect_equal(data, list())
 
-  res <- endpoint$run("HEAD", "parameters")
-  expect_equal(res$status_code, 200)
-  expect_equal(res$data, list(
-    list(name = scalar("a"), value = NULL),
-    list(name = scalar("b"), value = scalar(2)),
-    list(name = scalar("c"), value = NULL)
-  ))
+  res <- obj$request("GET", "/report/parameters/parameters", query = list(ref = "HEAD"))
+  data <- expect_success(res)
+  expect_equal(data, data.frame(name = c("a", "b", "c"),
+                                value = c(NA, 2, NA)))
 })
+
 
 test_that("can run orderly reports", {
   skip_if_no_redis()
 
   queue_id <- orderly_queue_id()
+  controller <- rrq::rrq_controller(queue_id)
+
   repo <- test_prepare_orderly_example(c("data", "parameters"))
 
-  queue <- Queue$new(repo, queue_id = queue_id, logs_dir = tempfile())
-  worker_manager <- start_queue_workers_quietly(
-    1, queue$controller
-  )
-  make_worker_dirs(repo, worker_manager$id)
-
-  endpoint <- withr::with_envvar(
+  obj <- withr::with_envvar(
     c(ORDERLY_RUNNER_QUEUE_ID = queue_id),
-    orderly_runner_endpoint("POST", "/report/run", repo)
-  )
+    create_api(root = repo))
+
+  worker_manager <- start_queue_workers_quietly(1, controller)
+  make_worker_dirs(repo, worker_manager$id)
 
   req <- list(
     name = scalar("data"),
@@ -208,10 +191,11 @@ test_that("can run orderly reports", {
     parameters = scalar(NULL)
   )
 
-  res <- endpoint$run(jsonlite::toJSON(req))
-  rrq::rrq_task_wait(res$data$taskId, controller = queue$controller)
+  res <- obj$request("POST", "/report/run", body = jsonlite::toJSON(req))
+  data <- expect_success(res)
+  rrq::rrq_task_wait(data$taskId, controller = controller)
   expect_equal(
-    rrq::rrq_task_status(res$data$taskId, controller = queue$controller),
+    rrq::rrq_task_status(data$taskId, controller = controller),
     "COMPLETE"
   )
 
@@ -222,10 +206,11 @@ test_that("can run orderly reports", {
     parameters = list(a = scalar(1), c = scalar(3))
   )
 
-  res <- endpoint$run(jsonlite::toJSON(req))
-  rrq::rrq_task_wait(res$data$taskId, controller = queue$controller)
+  res <- obj$request("POST", "/report/run", body = jsonlite::toJSON(req))
+  data <- expect_success(res)
+  rrq::rrq_task_wait(data$taskId, controller = controller)
   expect_equal(
-    rrq::rrq_task_status(res$data$taskId, controller = queue$controller),
+    rrq::rrq_task_status(data$taskId, controller = controller),
     "COMPLETE"
   )
 })
@@ -234,44 +219,48 @@ test_that("can get statuses of jobs", {
   # run 2 jobs first and wait for finish
   skip_if_no_redis()
   queue_id <- orderly_queue_id()
+  controller <- rrq::rrq_controller(queue_id)
+
   repo <- test_prepare_orderly_example(c("data", "parameters"))
-  queue <- Queue$new(repo, queue_id = queue_id, logs_dir = tempfile())
-  worker_manager <- start_queue_workers_quietly(
-    1, queue$controller
-  )
-  make_worker_dirs(repo, worker_manager$id)
-  endpoint <- withr::with_envvar(
+
+  obj <- withr::with_envvar(
     c(ORDERLY_RUNNER_QUEUE_ID = queue_id),
-    orderly_runner_endpoint("POST", "/report/run", repo)
-  )
+    create_api(root = repo))
+
+  worker_manager <- start_queue_workers_quietly(1, controller)
+  make_worker_dirs(repo, worker_manager$id)
+
   req <- list(
     name = scalar("data"),
     branch = scalar(gert::git_branch(repo = repo)),
     hash = scalar(gert::git_commit_id(repo = repo)),
     parameters = scalar(NULL)
   )
-  dat1 <- endpoint$run(jsonlite::toJSON(req))
-  dat2 <- endpoint$run(jsonlite::toJSON(req))
-  task_ids <- c(dat1$data$taskId, dat2$data$taskId)
-  rrq::rrq_task_wait(task_ids, controller = queue$controller)
+
+  res1 <- obj$request("POST", "/report/run", body = jsonlite::toJSON(req))
+  res2 <- obj$request("POST", "/report/run", body = jsonlite::toJSON(req))
+
+  dat1 <- expect_success(res1)
+  dat2 <- expect_success(res2)
+  task_ids <- c(dat1$taskId, dat2$taskId)
+  rrq::rrq_task_wait(task_ids, controller = controller)
 
   # status endpoint
-  endpoint <- withr::with_envvar(
-    c(ORDERLY_RUNNER_QUEUE_ID = queue_id),
-    orderly_runner_endpoint("POST", "/report/status", repo)
-  )
-  dat <- endpoint$run(TRUE, jsonlite::toJSON(task_ids))$data
+  res <- obj$request("POST", "/report/status",
+                     body = jsonlite::toJSON(task_ids),
+                     query = list(include_logs = TRUE))
+  dat <- expect_success(res)
 
   for (i in seq_along(task_ids)) {
-    task_status <- dat[[i]]
-    task_times <- get_task_times(task_ids[[i]], queue$controller)
-    expect_equal(task_status$status, scalar("COMPLETE"))
-    expect_null(scalar(task_status$queuePosition))
-    expect_equal(task_status$packetId, scalar(get_task_result(task_ids[[i]], queue$controller)))
-    expect_equal(scalar(task_times[1]), task_status$timeQueued)
-    expect_equal(scalar(task_times[2]), task_status$timeStarted)
-    expect_equal(scalar(task_times[3]), task_status$timeComplete)
-    expect_equal(get_task_logs(task_ids[[i]], queue$controller), unlist(task_status$logs))
-    expect_equal(scalar(task_ids[[i]]), task_status$taskId)
+    task_status <- dat[i,]
+    task_times <- get_task_times(task_ids[[i]], controller)
+    expect_equal(task_status$status, "COMPLETE")
+    expect_true(is.na(task_status$queuePosition))
+    expect_equal(task_status$packetId, get_task_result(task_ids[[i]], controller))
+    expect_equal(task_times[1], task_status$timeQueued)
+    expect_equal(task_times[2], task_status$timeStarted)
+    expect_equal(task_times[3], task_status$timeComplete)
+    expect_equal(get_task_logs(task_ids[[i]], controller), unlist(task_status$logs))
+    expect_equal(task_ids[[i]], task_status$taskId)
   }
 })
