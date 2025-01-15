@@ -43,13 +43,13 @@ git_remote_list_branches <- function(repo) {
   branches
 }
 
-git_run <- function(args, repo = NULL, check = FALSE) {
+git_run <- function(args, repo = NULL) {
   git <- sys_which("git")
   if (!is.null(repo)) {
     args <- c("-C", repo, args)
   }
   res <- system3(git, args)
-  if (check && !res$success) {
+  if (!res$success) {
     stop(sprintf("Error code %d running command:\n%s",
                  res$code, paste0("  > ", res$output, collapse = "\n")))
   }
@@ -76,21 +76,37 @@ git_remote_default_branch_name <- function(repo) {
 }
 
 
-git_get_modified <- function(ref, base = NULL, 
-                             relative_dir = NULL, repo = NULL) {
-  if (is.null(base)) {
-    base <- git_remote_default_branch_ref(repo)
-  }
-  if (is.null(relative_dir)) {
-    relative <- ""
-    additional_args <- ""
-  } else {
-    relative <- sprintf("--relative=%s", relative_dir)
-    additional_args <- sprintf("-- %s", relative_dir)
-  }
-  git_run(
-    c("diff", "--name-only", relative,
-      sprintf("%s...%s", base, gert::git_commit_id(ref, repo = repo)),
-      additional_args),
-    repo = repo, check = TRUE)$output
+#' Get the last commit to have modified the given path.
+#'
+#' If the path is a directory, any modification to files contained within
+#' it are considered.
+#'
+#' @param path path to the file of directory to search for
+#' @param ref the Git commit from which to start the search. Only ancestors of
+#'   that commit will be considered.
+#' @param repo the path to the Git repo to use.
+git_get_latest_commit <- function(path, ref, repo = NULL) {
+  # libgit2 (and thus gert) doesn't really have an interface for this.
+  # See https://github.com/libgit2/libgit2/issues/495
+  git_run(c("rev-list", "--max-count=1", ref, "--", path),
+          repo = repo)$output
+}
+
+
+#' Get the difference between two tree-ish
+#'
+#' @param left the tree-ish to use as the base for the comparison.
+#' @param right the tree-ish to compare to the base.
+#' @param repo the path to the Git repo to use.
+#' @return a dataframe for each differing entry in the trees, with columns
+#'   `mode1`, `mode2`, `hash1`, `hash2`, `status`, `score`, `src` and `dst`.
+git_diff_tree <- function(left, right, repo = NULL) {
+  output <- git_run(c("diff-tree", left, right), repo = repo)$output
+
+  # See https://git-scm.com/docs/git-diff-tree#_raw_output_format for a
+  # description of the format.
+  re <- paste0(
+    "^:(?<mode1>\\d+) (?<mode2>\\d+) (?<hash1>[0-9a-f]+) (?<hash2>[0-9a-f]+)",
+    " (?<status>[A-Z])(?<score>\\d+)?\\t(?<src>[^\\t]*)(?:\\t(?<dst>[^\\t]*))?$")
+  as.data.frame(stringr::str_match(output, re)[, -1, drop = FALSE])
 }
