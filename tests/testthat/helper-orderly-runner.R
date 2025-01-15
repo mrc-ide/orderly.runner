@@ -2,9 +2,9 @@ create_api <- function(root = NULL,
                        repositories = NULL,
                        log_level = "off",
                        ...,
-                       .local_envir = parent.frame()) {
+                       env = parent.frame()) {
   if (is.null(repositories)) {
-    repositories <- withr::local_tempdir()
+    repositories <- withr::local_tempdir(.local_envir = env)
   }
 
   api(root, repositories, validate = TRUE, log_level = log_level, ...)
