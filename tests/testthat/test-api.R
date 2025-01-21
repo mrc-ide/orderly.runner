@@ -33,7 +33,8 @@ test_that("can fetch repositories", {
   res <- obj$request(
     "POST",
     "/repository/fetch",
-    body = jsonlite::toJSON(list(url = scalar(upstream_a))))
+    query = list(url = upstream_a),
+    body = empty_json_object())
 
   expect_success(res)
   expect_length(fs::dir_ls(repositories), 1)
@@ -41,10 +42,27 @@ test_that("can fetch repositories", {
   res <- obj$request(
     "POST",
     "/repository/fetch",
-    body = jsonlite::toJSON(list(url = scalar(upstream_b))))
+    query = list(url = upstream_b),
+    body = empty_json_object())
 
   expect_success(res)
   expect_length(fs::dir_ls(repositories), 2)
+})
+
+
+test_that("can fetch private repositories", {
+  private_repo <- skip_if_no_test_private_repo_ssh_key()
+  repositories <- withr::local_tempdir()
+  obj <- create_api(repositories = repositories, skip_queue_creation = TRUE)
+
+  res <- obj$request(
+    "POST",
+    "/repository/fetch",
+    query = list(url = private_repo$url),
+    body = jsonlite::toJSON(list(ssh_key = private_repo$ssh_key)))
+
+  expect_success(res)
+  expect_length(fs::dir_ls(repositories), 1)
 })
 
 
@@ -56,7 +74,8 @@ test_that("can list branches in repository", {
   # Start with just the initial master branch. Fetch the repo and list its
   # branches:
   res <- obj$request("POST", "/repository/fetch",
-                     body = jsonlite::toJSON(list(url = scalar(upstream))))
+                     query = list(url = upstream),
+                     body = empty_json_object())
   data <- expect_success(res)
 
   res <- obj$request("GET", "/repository/branches",
@@ -74,7 +93,8 @@ test_that("can list branches in repository", {
   info <- create_new_branch(upstream, "new-branch", message = "start new branch")
 
   res <- obj$request("POST", "/repository/fetch",
-                     body = jsonlite::toJSON(list(url = scalar(upstream))))
+                     query = list(url = upstream),
+                     body = empty_json_object())
   data <- expect_success(res)
 
   res <- obj$request("GET", "/repository/branches",
@@ -91,7 +111,8 @@ test_that("can list branches in repository", {
   gert::git_branch_delete("new-branch", upstream)
 
   res <- obj$request("POST", "/repository/fetch",
-                     body = jsonlite::toJSON(list(url = scalar(upstream))))
+                     query = list(url = upstream),
+                     body = empty_json_object())
   data <- expect_success(res)
 
   res <- obj$request("GET", "/repository/branches",
@@ -118,7 +139,8 @@ test_that("can list orderly reports", {
   upstream <- test_prepare_orderly_example(c("data", "parameters"))
 
   res <- obj$request("POST", "/repository/fetch",
-                     body = jsonlite::toJSON(list(url = scalar(upstream))))
+                     query = list(url = upstream),
+                     body = empty_json_object())
   expect_success(res)
 
   res <- obj$request("GET", "/report/list", query = list(url = upstream,
@@ -144,7 +166,8 @@ test_that("can list orderly reports", {
 
   ## Synchronize the local copy of the repository
   res <- obj$request("POST", "/repository/fetch",
-                     body = jsonlite::toJSON(list(url = scalar(upstream))))
+                     query = list(url = upstream),
+                     body = empty_json_object())
   expect_success(res)
 
   ## Can list items from this sha
@@ -171,7 +194,8 @@ test_that("can get parameters for a report", {
   upstream <- test_prepare_orderly_example(c("data", "parameters"))
 
   res <- obj$request("POST", "/repository/fetch",
-                     body = jsonlite::toJSON(list(url = scalar(upstream))))
+                     query = list(url = upstream),
+                     body = empty_json_object())
   expect_success(res)
 
   res <- obj$request("GET", "/report/parameters",
@@ -203,7 +227,6 @@ test_that("can run orderly reports", {
   upstream_outpack <- create_temporary_root(use_file_store = TRUE)
 
   req <- list(
-    url = scalar(upstream_git),
     name = scalar("data"),
     branch = scalar(gert::git_branch(repo = upstream_git)),
     hash = scalar(gert::git_commit_id(repo = upstream_git)),
@@ -216,7 +239,9 @@ test_that("can run orderly reports", {
     )
   )
 
-  res <- obj$request("POST", "/report/run", body = jsonlite::toJSON(req))
+  res <- obj$request("POST", "/report/run",
+                     query = list(url = upstream_git),
+                     body = jsonlite::toJSON(req))
   data <- expect_success(res)
   rrq::rrq_task_wait(data$taskId, controller = controller)
   expect_equal(
@@ -225,7 +250,6 @@ test_that("can run orderly reports", {
   )
 
   req <- list(
-    url = scalar(upstream_git),
     name = scalar("parameters"),
     branch = scalar(gert::git_branch(repo = upstream_git)),
     hash = scalar(gert::git_commit_id(repo = upstream_git)),
@@ -238,7 +262,49 @@ test_that("can run orderly reports", {
     )
   )
 
-  res <- obj$request("POST", "/report/run", body = jsonlite::toJSON(req))
+  res <- obj$request("POST", "/report/run",
+                     query = list(url = upstream_git),
+                     body = jsonlite::toJSON(req))
+  data <- expect_success(res)
+  rrq::rrq_task_wait(data$taskId, controller = controller)
+  expect_equal(
+    rrq::rrq_task_status(data$taskId, controller = controller),
+    "COMPLETE"
+  )
+})
+
+test_that("can run orderly reports from private repositories", {
+  skip_if_no_redis()
+  private_repo <- skip_if_no_test_private_repo_ssh_key()
+
+  queue_id <- orderly_queue_id()
+  controller <- rrq::rrq_controller(queue_id)
+
+  obj <- withr::with_envvar(
+    c(ORDERLY_RUNNER_QUEUE_ID = queue_id),
+    create_api())
+
+  start_queue_workers(1, controller)
+
+  upstream_outpack <- create_temporary_root(use_file_store = TRUE)
+
+  req <- list(
+    ssh_key = scalar(private_repo$ssh_key),
+    name = scalar("data"),
+    branch = scalar("main"),
+    hash = scalar("ee8858c40d025fe658238c9ff9c4e3d6b683f6d9"),
+    parameters = scalar(NULL),
+    location = list(
+      type = scalar("path"),
+      args = list(
+        path = scalar(upstream_outpack)
+      )
+    )
+  )
+
+  res <- obj$request("POST", "/report/run",
+                     query = list(url = private_repo$url),
+                     body = jsonlite::toJSON(req))
   data <- expect_success(res)
   rrq::rrq_task_wait(data$taskId, controller = controller)
   expect_equal(
@@ -263,7 +329,6 @@ test_that("can get statuses of jobs", {
   upstream_outpack <- create_temporary_root(use_file_store = TRUE)
 
   req <- list(
-    url = scalar(upstream_git),
     name = scalar("data"),
     branch = scalar(gert::git_branch(repo = upstream_git)),
     hash = scalar(gert::git_commit_id(repo = upstream_git)),
@@ -276,8 +341,12 @@ test_that("can get statuses of jobs", {
     )
   )
 
-  res1 <- obj$request("POST", "/report/run", body = jsonlite::toJSON(req))
-  res2 <- obj$request("POST", "/report/run", body = jsonlite::toJSON(req))
+  res1 <- obj$request("POST", "/report/run",
+                      query = list(url = upstream_git),
+                      body = jsonlite::toJSON(req))
+  res2 <- obj$request("POST", "/report/run",
+                      query = list(url = upstream_git),
+                      body = jsonlite::toJSON(req))
 
   dat1 <- expect_success(res1)
   dat2 <- expect_success(res2)

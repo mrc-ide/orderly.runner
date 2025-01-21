@@ -1,11 +1,11 @@
-runner_run <- function(url, branch, ref, reportname, parameters, location, ...) {
+runner_run <- function(url, branch, ref, reportname, parameters, location, ssh_key = NULL, ...) {
   storage <- Sys.getenv("ORDERLY_WORKER_STORAGE")
   stopifnot(nzchar(storage) && fs::dir_exists(storage))
 
   repositories <- fs::dir_create(storage, "git")
   worktree_base <- fs::dir_create(storage, "worktrees")
 
-  repo <- git_sync(repositories, url)
+  repo <- git_sync(repositories, url, ssh_key)
 
   # We could create the worktree with a detached HEAD and not bother with
   # creating the branch, but then Orderly's metadata wouldn't be as complete.

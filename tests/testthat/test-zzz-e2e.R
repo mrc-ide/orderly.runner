@@ -16,10 +16,7 @@ bg$start()
 on.exit(bg$stop())
 
 r <- bg$request("POST",
-                "/repository/fetch",
-                body = jsonlite::toJSON(list(url = scalar(upstream_git))),
-                encode = "raw",
-                httr::content_type("application/json"))
+                sprintf("/repository/fetch?url=%s", upstream_git))
 expect_equal(httr::status_code(r), 200)
 
 test_that("can run server", {
@@ -77,7 +74,6 @@ test_that("can get parameters", {
 test_that("can run report", {
   data <- list(
     name = "data",
-    url = upstream_git,
     branch = gert::git_branch(repo = upstream_git),
     hash = gert::git_commit_id(repo = upstream_git),
     parameters = NULL,
@@ -90,7 +86,7 @@ test_that("can run report", {
   body <- jsonlite::toJSON(data, null = "null", auto_unbox = TRUE)
 
   r <- bg$request(
-    "POST", "/report/run",
+    "POST", sprintf("/report/run?url=%s", upstream_git),
     body = body,
     encode = "raw",
     httr::content_type("application/json")
@@ -107,7 +103,6 @@ test_that("can run report", {
 
 test_that("can run report with params", {
   data <- list(
-    url = upstream_git,
     name = "parameters",
     branch = gert::git_branch(repo = upstream_git),
     hash = gert::git_commit_id(repo = upstream_git),
@@ -121,7 +116,7 @@ test_that("can run report with params", {
   body <- jsonlite::toJSON(data, null = "null", auto_unbox = TRUE)
 
   r <- bg$request(
-    "POST", "/report/run",
+    "POST", sprintf("/report/run?url=%s", upstream_git),
     body = body,
     encode = "raw",
     httr::content_type("application/json")
@@ -154,7 +149,6 @@ test_that("can get status of report run with logs", {
   # run task and wait for finish before getting status
   data <- list(
     name = "data",
-    url = upstream_git,
     branch = gert::git_branch(repo = upstream_git),
     hash = gert::git_commit_id(repo = upstream_git),
     parameters = NULL,
@@ -164,7 +158,7 @@ test_that("can get status of report run with logs", {
     )
   )
   r <- bg$request(
-    "POST", "/report/run",
+    "POST", sprintf("/report/run?url=%s", upstream_git),
     body = jsonlite::toJSON(data, null = "null", auto_unbox = TRUE),
     encode = "raw",
     httr::content_type("application/json")
@@ -196,7 +190,6 @@ test_that("can get status of multiple tasks without logs", {
   # run multiple tasks and wait for finish before getting status
   data <- list(
     name = "data",
-    url = upstream_git,
     branch = gert::git_branch(repo = upstream_git),
     hash = gert::git_commit_id(repo = upstream_git),
     parameters = NULL,
@@ -206,13 +199,13 @@ test_that("can get status of multiple tasks without logs", {
     )
   )
   r1 <- bg$request(
-    "POST", "/report/run",
+    "POST", sprintf("/report/run?url=%s", upstream_git),
     body = jsonlite::toJSON(data, null = "null", auto_unbox = TRUE),
     encode = "raw",
     httr::content_type("application/json")
   )
   r2 <- bg$request(
-    "POST", "/report/run",
+    "POST", sprintf("/report/run?url=%s", upstream_git),
     body = jsonlite::toJSON(data, null = "null", auto_unbox = TRUE),
     encode = "raw",
     httr::content_type("application/json")
@@ -249,7 +242,6 @@ test_that("can get status of multiple tasks without logs", {
 test_that("returns error with tasks ids of non-extant task ids", {
   # run report
   data <- list(
-    url = upstream_git,
     name = "data",
     branch = gert::git_branch(repo = upstream_git),
     hash = gert::git_commit_id(repo = upstream_git),
@@ -260,7 +252,7 @@ test_that("returns error with tasks ids of non-extant task ids", {
     )
   )
   r1 <- bg$request(
-    "POST", "/report/run",
+    "POST", sprintf("/report/run?url=%s", upstream_git),
     body = jsonlite::toJSON(data, null = "null", auto_unbox = TRUE),
     encode = "raw",
     httr::content_type("application/json")

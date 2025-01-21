@@ -51,19 +51,20 @@ root <- function() {
 
 
 ##' @porcelain POST /repository/fetch => json(repository_fetch_response)
-##'   state repositories_base_path :: repositories_base_path
+##'   query url :: string
 ##'   body data :: json(repository_fetch_request)
-repository_fetch <- function(repositories_base_path, data) {
+##'   state repositories_base_path :: repositories_base_path
+repository_fetch <- function(repositories_base_path, url, data) {
   data <- jsonlite::parse_json(data)
-  r <- git_sync(repositories_base_path, data$url)
+  r <- git_sync(repositories_base_path, url, data$ssh_key)
 
   empty_object()
 }
 
 
 ##' @porcelain GET /repository/branches => json(repository_branches)
-##'   state repositories_base_path :: repositories_base_path
 ##'   query url :: string
+##'   state repositories_base_path :: repositories_base_path
 repository_branches <- function(repositories_base_path, url) {
   repo <- repository_path(repositories_base_path, url)
   branches <- git_remote_list_branches(repo)
@@ -123,17 +124,19 @@ report_parameters <- function(repositories_base_path, url, ref, name) {
 
 ##' @porcelain
 ##'   POST /report/run => json(report_run_response)
-##'   state queue :: queue
+##'   query url :: string
 ##'   body data :: json(report_run_request)
-submit_report_run <- function(queue, data) {
+##'   state queue :: queue
+submit_report_run <- function(queue, url, data) {
   data <- jsonlite::parse_json(data)
   task_id <- queue$submit(
-    data$name,
-    url = data$url,
+    reportname = data$name,
+    url = url,
     branch = data$branch,
     ref = data$hash,
     parameters = data$parameters,
-    location = data$location
+    location = data$location,
+    ssh_key = data$ssh_key
   )
   list(taskId = scalar(task_id))
 }
