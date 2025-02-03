@@ -76,8 +76,7 @@ test_that("runner cleans up after itself", {
 
   # The only things left in the storage after running should be the local clone
   # of the repository. The worktrees directory should be cleaned up and removed.
-  expect_setequal(fs::dir_ls(storage),
-                  file.path(storage, c("git", "worktrees")))
+  expect_setequal(withr::with_dir(storage, fs::dir_ls()), c("git", "worktrees"))
   expect_length(fs::dir_ls(file.path(storage, "git")), 1)
   expect_length(fs::dir_ls(file.path(storage, "worktrees")), 0)
 })
