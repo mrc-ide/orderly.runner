@@ -30,7 +30,6 @@ skip_if_no_test_private_repo_ssh_key <- function() {
   if (is.na(ssh_key)) {
     testthat::skip("Skipping test as TEST_PRIVATE_REPO_SSH_KEY is not set")
   }
-  ssh_key <- strsplit(ssh_key, "\n")
 
   list(
     ssh_key = ssh_key,

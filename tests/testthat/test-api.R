@@ -59,7 +59,7 @@ test_that("can fetch private repositories", {
     "POST",
     "/repository/fetch",
     query = list(url = private_repo$url),
-    body = jsonlite::toJSON(list(ssh_key = private_repo$ssh_key)))
+    body = jsonlite::toJSON(list(ssh_key = scalar(private_repo$ssh_key))))
 
   expect_success(res)
   expect_length(fs::dir_ls(repositories), 1)
