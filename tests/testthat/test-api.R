@@ -372,3 +372,56 @@ test_that("can get statuses of jobs", {
     expect_equal(task_ids[[i]], task_status$taskId)
   }
 })
+
+
+test_that("errors are included in task logs", {
+  skip_if_no_redis()
+  queue_id <- orderly_queue_id()
+  controller <- rrq::rrq_controller(queue_id)
+
+  obj <- withr::with_envvar(
+    c(ORDERLY_RUNNER_QUEUE_ID = queue_id),
+    create_api())
+
+  start_queue_workers(1, controller)
+
+  upstream_git <- test_prepare_orderly_example("data")
+  writeLines("stop('Oh no!')",
+             file.path(upstream_git, "src", "data", "data.R"))
+  git_add_and_commit(upstream_git)
+
+  upstream_outpack <- create_temporary_root(use_file_store = TRUE)
+
+  req <- list(
+    name = scalar("data"),
+    branch = scalar(gert::git_branch(repo = upstream_git)),
+    hash = scalar(gert::git_commit_id(repo = upstream_git)),
+    parameters = scalar(NULL),
+    location = list(
+      type = scalar("path"),
+      args = list(
+        path = scalar(upstream_outpack)
+      )
+    )
+  )
+
+  res <- obj$request("POST",
+                     "/report/run",
+                     query = list(url = upstream_git),
+                     body = jsonlite::toJSON(req))
+  dat <- expect_success(res)
+
+  rrq::rrq_task_wait(dat$taskId, controller = controller)
+
+  res <- obj$request("POST", "/report/status",
+                     body = jsonlite::toJSON(dat$taskId),
+                     query = list(include_logs = TRUE))
+  dat <- expect_success(res)
+  status <- dat[1,]
+
+  expect_equal(status$status, "ERROR")
+  expect_contains(unlist(status$logs),
+                  c("! Failed to run report",
+                    "Caused by error:",
+                    "! Oh no!"))
+})
