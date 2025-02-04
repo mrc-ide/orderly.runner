@@ -17,7 +17,9 @@ on.exit(bg$stop())
 
 r <- bg$request("POST",
                 "/repository/fetch",
-                query = list(url = upstream_git))
+                query = list(url = upstream_git),
+                body = empty_json_object(),
+                httr::content_type("application/json"))
 expect_equal(httr::status_code(r), 200)
 
 test_that("can run server", {
