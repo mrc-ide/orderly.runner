@@ -16,7 +16,8 @@ bg$start()
 on.exit(bg$stop())
 
 r <- bg$request("POST",
-                sprintf("/repository/fetch?url=%s", upstream_git))
+                "/repository/fetch",
+                query = list(url = upstream_git))
 expect_equal(httr::status_code(r), 200)
 
 test_that("can run server", {
@@ -38,7 +39,7 @@ test_that("can run server", {
 
 
 test_that("can list reports", {
-  r <- bg$request("GET", sprintf("/report/list?url=%s&ref=HEAD", upstream_git))
+  r <- bg$request("GET", "/report/list", query = list(url = upstream_git, ref = "HEAD"))
   expect_equal(httr::status_code(r), 200)
 
   dat <- httr::content(r)
@@ -50,7 +51,9 @@ test_that("can list reports", {
 
 
 test_that("can get parameters", {
-  r <- bg$request("GET", sprintf("/report/parameters?url=%s&ref=HEAD&name=data", upstream_git))
+  r <- bg$request("GET",
+                  "/report/parameters",
+                  query = list(url = upstream_git, ref = "HEAD", name = "data"))
   expect_equal(httr::status_code(r), 200)
 
   dat <- httr::content(r)
@@ -58,7 +61,9 @@ test_that("can get parameters", {
   expect_null(dat$errors)
   expect_equal(dat$data, list())
 
-  r <- bg$request("GET", sprintf("/report/parameters?url=%s&ref=HEAD&name=parameters", upstream_git))
+  r <- bg$request("GET",
+                  "/report/parameters",
+                  query = list(url = upstream_git, ref = "HEAD", name = "parameters"))
   expect_equal(httr::status_code(r), 200)
 
   dat <- httr::content(r)
@@ -86,7 +91,8 @@ test_that("can run report", {
   body <- jsonlite::toJSON(data, null = "null", auto_unbox = TRUE)
 
   r <- bg$request(
-    "POST", sprintf("/report/run?url=%s", upstream_git),
+    "POST", "/report/run",
+    query = list(url = upstream_git),
     body = body,
     encode = "raw",
     httr::content_type("application/json")
@@ -116,7 +122,8 @@ test_that("can run report with params", {
   body <- jsonlite::toJSON(data, null = "null", auto_unbox = TRUE)
 
   r <- bg$request(
-    "POST", sprintf("/report/run?url=%s", upstream_git),
+    "POST", "/report/run",
+    query = list(url = upstream_git),,
     body = body,
     encode = "raw",
     httr::content_type("application/json")
@@ -158,7 +165,8 @@ test_that("can get status of report run with logs", {
     )
   )
   r <- bg$request(
-    "POST", sprintf("/report/run?url=%s", upstream_git),
+    "POST", "/report/run",
+    query = list(url = upstream_git),
     body = jsonlite::toJSON(data, null = "null", auto_unbox = TRUE),
     encode = "raw",
     httr::content_type("application/json")
@@ -168,7 +176,8 @@ test_that("can get status of report run with logs", {
 
   res <- bg$request(
     "POST",
-    "/report/status?include_logs=TRUE",
+    "/report/status",
+    query = list(include_logs = TRUE),
     body = jsonlite::toJSON(c(task_id)),
     encode = "raw",
     httr::content_type("application/json")
@@ -199,13 +208,15 @@ test_that("can get status of multiple tasks without logs", {
     )
   )
   r1 <- bg$request(
-    "POST", sprintf("/report/run?url=%s", upstream_git),
+    "POST", "/report/run",
+    query = list(url = upstream_git),
     body = jsonlite::toJSON(data, null = "null", auto_unbox = TRUE),
     encode = "raw",
     httr::content_type("application/json")
   )
   r2 <- bg$request(
-    "POST", sprintf("/report/run?url=%s", upstream_git),
+    "POST", "/report/run",
+    query = list(url = upstream_git),
     body = jsonlite::toJSON(data, null = "null", auto_unbox = TRUE),
     encode = "raw",
     httr::content_type("application/json")
@@ -218,7 +229,8 @@ test_that("can get status of multiple tasks without logs", {
 
   res <- bg$request(
     "POST",
-    "/report/status?include_logs=FALSE",
+    "/report/status",
+    query = list(include_logs = FALSE),
     body = jsonlite::toJSON(task_ids),
     encode = "raw",
     httr::content_type("application/json")
@@ -252,7 +264,8 @@ test_that("returns error with tasks ids of non-extant task ids", {
     )
   )
   r1 <- bg$request(
-    "POST", sprintf("/report/run?url=%s", upstream_git),
+    "POST", "/report/run",
+    query = list(url = upstream_git),
     body = jsonlite::toJSON(data, null = "null", auto_unbox = TRUE),
     encode = "raw",
     httr::content_type("application/json")
@@ -262,7 +275,8 @@ test_that("returns error with tasks ids of non-extant task ids", {
   
   res <- bg$request(
     "POST",
-    "/report/status?include_logs=FALSE",
+    "/report/status",
+    query = list(include_logs = FALSE),
     body = jsonlite::toJSON(task_ids),
     encode = "raw",
     httr::content_type("application/json")
