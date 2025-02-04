@@ -2,8 +2,6 @@
 ##'
 ##' @title Create orderly runner
 ##'
-##' @param root Orderly root
-##'
 ##' @param repositories_base_path Path in which Git repositories are
 ##'   cloned.
 ##'
@@ -22,7 +20,7 @@
 ##'
 ##' @export
 api <- function(
-    root, repositories_base_path,
+    repositories_base_path,
     validate = NULL, log_level = "info",
     skip_queue_creation = FALSE) {
   logger <- porcelain::porcelain_logger(log_level)
@@ -31,12 +29,11 @@ api <- function(
   if (skip_queue_creation) {
     queue <- NULL
   } else {
-    queue <- Queue$new(root)
+    queue <- Queue$new()
   }
 
   api <- porcelain::porcelain$new(validate = validate, logger = logger)
   api$include_package_endpoints(state = list(
-    root = root,
     repositories_base_path = repositories_base_path,
     queue = queue))
   api
@@ -90,11 +87,13 @@ repository_branches <- function(repositories_base_path, url) {
 
 ##' @porcelain
 ##'   GET /report/list => json(report_list)
+##'   query url :: string
 ##'   query ref :: string
-##'   state root :: root
-report_list <- function(root, ref) {
-  base <- git_remote_default_branch_ref(root)
-  reports <- get_reports(root = root, ref = ref, base = base)
+##'   state repositories_base_path :: repositories_base_path
+report_list <- function(repositories_base_path, url, ref) {
+  repo <- repository_path(repositories_base_path, url)
+  base <- git_remote_default_branch_ref(repo)
+  reports <- get_reports(root = repo, ref = ref, base = base)
 
   data.frame(
     name = reports$name,
@@ -105,11 +104,14 @@ report_list <- function(root, ref) {
 
 
 ##' @porcelain
-##'   GET /report/<name:string>/parameters => json(report_parameters)
+##'   GET /report/parameters => json(report_parameters)
+##'   query url :: string
 ##'   query ref :: string
-##'   state root :: root
-report_parameters <- function(root, ref, name) {
-  params <- get_report_parameters(name, ref, root)
+##'   query name :: string
+##'   state repositories_base_path :: repositories_base_path
+report_parameters <- function(repositories_base_path, url, ref, name) {
+  repo <- repository_path(repositories_base_path, url)
+  params <- get_report_parameters(name, ref, repo)
   lapply(names(params), function(param_name) {
     value <- params[[param_name]]
     list(
@@ -121,16 +123,17 @@ report_parameters <- function(root, ref, name) {
 
 ##' @porcelain
 ##'   POST /report/run => json(report_run_response)
-##'   state root :: root
 ##'   state queue :: queue
 ##'   body data :: json(report_run_request)
-submit_report_run <- function(root, queue, data) {
+submit_report_run <- function(queue, data) {
   data <- jsonlite::parse_json(data)
   task_id <- queue$submit(
     data$name,
+    url = data$url,
     branch = data$branch,
     ref = data$hash,
-    parameters = data$parameters
+    parameters = data$parameters,
+    location = data$location
   )
   list(taskId = scalar(task_id))
 }

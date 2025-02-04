@@ -2,18 +2,25 @@ skip_if_not_installed("httr")
 skip_if_no_redis()
 
 queue_id <- orderly_queue_id()
-root <- test_prepare_orderly_remote_example(
-  c("data", "parameters")
-)
-repositories <- withr::local_tempdir()
-queue <- start_queue_with_workers(root$local, 1, queue_id = queue_id)
+queue <- start_queue_with_workers(1, queue_id = queue_id)
+
+upstream_git <- test_prepare_orderly_example(c("data", "parameters"))
+upstream_outpack <- create_temporary_root(use_file_store = TRUE)
+
 bg <- porcelain::porcelain_background$new(
   api,
-  args = list(root$local, repositories),
+  args = list(withr::local_tempdir()),
   env = c(ORDERLY_RUNNER_QUEUE_ID = queue_id)
 )
 bg$start()
 on.exit(bg$stop())
+
+r <- bg$request("POST",
+                "/repository/fetch",
+                body = jsonlite::toJSON(list(url = scalar(upstream_git))),
+                encode = "raw",
+                httr::content_type("application/json"))
+expect_equal(httr::status_code(r), 200)
 
 test_that("can run server", {
   r <- bg$request("GET", "/")
@@ -34,7 +41,7 @@ test_that("can run server", {
 
 
 test_that("can list reports", {
-  r <- bg$request("GET", "/report/list?ref=HEAD")
+  r <- bg$request("GET", sprintf("/report/list?url=%s&ref=HEAD", upstream_git))
   expect_equal(httr::status_code(r), 200)
 
   dat <- httr::content(r)
@@ -46,7 +53,7 @@ test_that("can list reports", {
 
 
 test_that("can get parameters", {
-  r <- bg$request("GET", "/report/data/parameters?ref=HEAD")
+  r <- bg$request("GET", sprintf("/report/parameters?url=%s&ref=HEAD&name=data", upstream_git))
   expect_equal(httr::status_code(r), 200)
 
   dat <- httr::content(r)
@@ -54,7 +61,7 @@ test_that("can get parameters", {
   expect_null(dat$errors)
   expect_equal(dat$data, list())
 
-  r <- bg$request("GET", "/report/parameters/parameters?ref=HEAD")
+  r <- bg$request("GET", sprintf("/report/parameters?url=%s&ref=HEAD&name=parameters", upstream_git))
   expect_equal(httr::status_code(r), 200)
 
   dat <- httr::content(r)
@@ -70,9 +77,14 @@ test_that("can get parameters", {
 test_that("can run report", {
   data <- list(
     name = "data",
-    branch = gert::git_branch(repo = root$local),
-    hash = gert::git_commit_id(repo = root$local),
-    parameters = c(NULL)
+    url = upstream_git,
+    branch = gert::git_branch(repo = upstream_git),
+    hash = gert::git_commit_id(repo = upstream_git),
+    parameters = NULL,
+    location = list(
+      type = "path",
+      args = list(path = upstream_outpack)
+    )
   )
 
   body <- jsonlite::toJSON(data, null = "null", auto_unbox = TRUE)
@@ -95,10 +107,15 @@ test_that("can run report", {
 
 test_that("can run report with params", {
   data <- list(
+    url = upstream_git,
     name = "parameters",
-    branch = gert::git_branch(repo = root$local),
-    hash = gert::git_commit_id(repo = root$local),
-    parameters = list(a = 1, c = 3)
+    branch = gert::git_branch(repo = upstream_git),
+    hash = gert::git_commit_id(repo = upstream_git),
+    parameters = list(a = 1, c = 3),
+    location = list(
+      type = "path",
+      args = list(path = upstream_outpack)
+    )
   )
 
   body <- jsonlite::toJSON(data, null = "null", auto_unbox = TRUE)
@@ -137,9 +154,14 @@ test_that("can get status of report run with logs", {
   # run task and wait for finish before getting status
   data <- list(
     name = "data",
-    branch = gert::git_branch(repo = root$local),
-    hash = gert::git_commit_id(repo = root$local),
-    parameters = c(NULL)
+    url = upstream_git,
+    branch = gert::git_branch(repo = upstream_git),
+    hash = gert::git_commit_id(repo = upstream_git),
+    parameters = NULL,
+    location = list(
+      type = "path",
+      args = list(path = upstream_outpack)
+    )
   )
   r <- bg$request(
     "POST", "/report/run",
@@ -174,9 +196,14 @@ test_that("can get status of multiple tasks without logs", {
   # run multiple tasks and wait for finish before getting status
   data <- list(
     name = "data",
-    branch = gert::git_branch(repo = root$local),
-    hash = gert::git_commit_id(repo = root$local),
-    parameters = c(NULL)
+    url = upstream_git,
+    branch = gert::git_branch(repo = upstream_git),
+    hash = gert::git_commit_id(repo = upstream_git),
+    parameters = NULL,
+    location = list(
+      type = "path",
+      args = list(path = upstream_outpack)
+    )
   )
   r1 <- bg$request(
     "POST", "/report/run",
@@ -190,6 +217,9 @@ test_that("can get status of multiple tasks without logs", {
     encode = "raw",
     httr::content_type("application/json")
   )
+  expect_equal(httr::status_code(r1), 200)
+  expect_equal(httr::status_code(r2), 200)
+
   task_ids <- c(httr::content(r1)$data$taskId, httr::content(r2)$data$taskId)
   task_times <- wait_for_task_complete(task_ids, queue$controller, 3)
 
@@ -219,10 +249,15 @@ test_that("can get status of multiple tasks without logs", {
 test_that("returns error with tasks ids of non-extant task ids", {
   # run report
   data <- list(
+    url = upstream_git,
     name = "data",
-    branch = gert::git_branch(repo = root$local),
-    hash = gert::git_commit_id(repo = root$local),
-    parameters = c(NULL)
+    branch = gert::git_branch(repo = upstream_git),
+    hash = gert::git_commit_id(repo = upstream_git),
+    parameters = NULL,
+    location = list(
+      type = "path",
+      args = list(path = upstream_outpack)
+    )
   )
   r1 <- bg$request(
     "POST", "/report/run",
@@ -230,6 +265,7 @@ test_that("returns error with tasks ids of non-extant task ids", {
     encode = "raw",
     httr::content_type("application/json")
   )
+  expect_equal(httr::status_code(r1), 200)
   task_ids <- c(httr::content(r1)$data$taskId, "non-existant-id")
   
   res <- bg$request(

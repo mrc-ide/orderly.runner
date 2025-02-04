@@ -2,52 +2,45 @@ test_that("handle failure", {
   testthat::skip_on_cran()
   repo <- initialise_git_repo()
   expect_error(
-    git_run("unknown-command", repo = repo$path),
+    git_run("unknown-command", repo = repo),
     "'unknown-command' is not a git command", fixed = TRUE)
 })
 
 
-test_that("can get default branch when remote origin is set", {
+test_that("can get default branch of clone", {
   testthat::skip_on_cran()
-  repo <- initialise_git_repo()
+  upstream <- initialise_git_repo()
+  repo <- gert::git_clone(upstream, withr::local_tempdir())
 
-  expect_null(git_remote_default_branch_ref(repo$path))
-  expect_null(git_remote_default_branch_name(repo$path))
+  expect_equal(git_remote_default_branch_ref(repo),
+               "refs/remotes/origin/master")
 
-  git_run(c("symbolic-ref",
-            "refs/remotes/origin/HEAD",
-            "refs/remotes/origin/main"),
-          repo = repo$path)
-
-  expect_equal(git_remote_default_branch_ref(repo$path),
-               "refs/remotes/origin/main")
-
-  expect_equal(git_remote_default_branch_name(repo$path),
-               "main")
+  expect_equal(git_remote_default_branch_name(repo),
+               "master")
 })
 
 test_that("can get last commit for a path", {
   repo <- initialise_git_repo()
-  c1 <- create_new_commit(repo$path, "hello.txt")
-  c2 <- create_new_commit(repo$path, "world.txt")
-  c3 <- create_new_commit(repo$path, "hello.txt")
-  c4 <- create_new_commit(repo$path, "world.txt")
+  c1 <- create_new_commit(repo, "hello.txt")
+  c2 <- create_new_commit(repo, "world.txt")
+  c3 <- create_new_commit(repo, "hello.txt")
+  c4 <- create_new_commit(repo, "world.txt")
 
-  expect_equal(git_get_latest_commit("hello.txt", "HEAD", repo$path), c3)
-  expect_equal(git_get_latest_commit("world.txt", "HEAD", repo$path), c4)
+  expect_equal(git_get_latest_commit("hello.txt", "HEAD", repo), c3)
+  expect_equal(git_get_latest_commit("world.txt", "HEAD", repo), c4)
 
   # If we start at c2, only it and its ancestors (ie. c1) are considered.
-  expect_equal(git_get_latest_commit("hello.txt", c2, repo$path), c1)
-  expect_equal(git_get_latest_commit("world.txt", c2, repo$path), c2)
+  expect_equal(git_get_latest_commit("hello.txt", c2, repo), c1)
+  expect_equal(git_get_latest_commit("world.txt", c2, repo), c2)
 })
 
 
 test_that("can diff trees", {
-   repo <- test_prepare_orderly_remote_example("data")
-   copy_examples("parameters", repo$local)
-   git_add_and_commit(repo$local)
+   repo <- test_prepare_orderly_example("data")
+   copy_examples("parameters", repo)
+   git_add_and_commit(repo)
 
-   result <- git_diff_tree("HEAD^:src", "HEAD:src", repo = repo$local)
+   result <- git_diff_tree("HEAD^:src", "HEAD:src", repo = repo)
    expect_equal(nrow(result), 1)
 
    expect_equal(result$mode1, "000000")
@@ -57,9 +50,9 @@ test_that("can diff trees", {
    expect_equal(result$status, "A")
    expect_equal(result$src, "parameters")
 
-   create_new_commit(repo$local, "src/parameters/hello.txt")
+   create_new_commit(repo, "src/parameters/hello.txt")
 
-   result <- git_diff_tree("HEAD^:src", "HEAD:src", repo = repo$local)
+   result <- git_diff_tree("HEAD^:src", "HEAD:src", repo = repo)
    expect_equal(nrow(result), 1)
 
    expect_equal(result$mode1, "040000")
@@ -69,13 +62,13 @@ test_that("can diff trees", {
    expect_equal(result$status, "M")
    expect_equal(result$src, "parameters")
 
-   fs::file_move(file.path(repo$local, "src", "parameters"),
-                 file.path(repo$local, "src", "zparameters"))
-   git_add_and_commit(repo$local)
+   fs::file_move(file.path(repo, "src", "parameters"),
+                 file.path(repo, "src", "zparameters"))
+   git_add_and_commit(repo)
 
    # diff-tree never detects renames or copies. They are instead represented as
    # a add and delete.
-   result <- git_diff_tree("HEAD^:src", "HEAD:src", repo = repo$local)
+   result <- git_diff_tree("HEAD^:src", "HEAD:src", repo = repo)
    expect_equal(nrow(result), 2)
    expect_equal(result$status[[1]], "D")
    expect_equal(result$src[[1]], "parameters")
