@@ -32,10 +32,13 @@ test_that("git sync clone down private repo", {
   fetch_head_path <- file.path(fs::dir_ls(repositories), "FETCH_HEAD")
   clone_time <- get_time_modified_of_file(fetch_head_path)
 
-  git_sync(repositories, private_repo$url, private_repo$ssh_key)
+  # make sure the fetch and clone times are not the same if the test
+  # runs too fast
+  Sys.sleep(1)
 
+  git_sync(repositories, private_repo$url, private_repo$ssh_key)
   fetch_time <- get_time_modified_of_file(fetch_head_path)
-  
+
   # FETCH_HEAD is always updated on fetch even if there is nothing to
   # fetch so just testing that the fetch branch of git_sync also works
   expect_true(fetch_time > clone_time)
