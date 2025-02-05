@@ -19,6 +19,29 @@ test_that("can get default branch of clone", {
                "master")
 })
 
+
+test_that("git sync clone down private repo", {
+  private_repo <- skip_if_no_test_private_repo_ssh_key()
+  repositories <- withr::local_tempdir()
+
+  git_sync(repositories, private_repo$url, private_repo$ssh_key)
+
+  # has cloned successfully
+  expect_length(fs::dir_ls(repositories), 1)
+
+  fetch_head_path <- file.path(fs::dir_ls(repositories), "FETCH_HEAD")
+  clone_time <- get_time_modified_of_file(fetch_head_path)
+
+  git_sync(repositories, private_repo$url, private_repo$ssh_key)
+
+  fetch_time <- get_time_modified_of_file(fetch_head_path)
+  
+  # FETCH_HEAD is always updated on fetch even if there is nothing to
+  # fetch so just testing that the fetch branch of git_sync also works
+  expect_true(fetch_time > clone_time)
+})
+
+
 test_that("can get last commit for a path", {
   repo <- initialise_git_repo()
   c1 <- create_new_commit(repo, "hello.txt")
