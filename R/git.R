@@ -25,14 +25,19 @@ repository_path <- function(base, url, check = TRUE) {
 #'
 #' @param base the base directory in which all repositories are stored.
 #' @param url the URL of the remote repository.
-#' @param ssh_key private SSH key as a character vector (separated by newline characters)
-#'   for connecting to private repositories (Optional, default is NULL).
+#' @param ssh_key private SSH key for connecting to private repositories
+#'   (Optional, default is NULL).
 #' @return the path to the local clone of the repository.
 git_sync <- function(base, url, ssh_key = NULL) {
   if (!is.null(ssh_key)) {
     ssh_key <- withr::local_tempfile(lines = ssh_key)
   }
   repo <- repository_path(base, url, check = FALSE)
+
+  # We do not have an ssh agent running however R sets SSH_AUTH_SOCK value
+  # which causes gert to try authorising via the ssh agent, causing it to
+  # hang. If we unset this variable then it uses our provided ssh key.
+  # https://github.com/r-lib/gert/blob/d8febbfacad1e8bb582e28f50c7e7092c0c63d21/src/clone.c#L192
   withr::with_envvar(new = c("SSH_AUTH_SOCK" = NA), {
     if (!fs::dir_exists(repo)) {
       gert::git_clone(url = url, path = repo, bare = TRUE, verbose = FALSE, ssh_key = ssh_key)

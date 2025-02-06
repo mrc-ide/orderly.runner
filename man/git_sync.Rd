@@ -11,8 +11,8 @@ git_sync(base, url, ssh_key = NULL)
 
 \item{url}{the URL of the remote repository.}
 
-\item{ssh_key}{private SSH key as a character vector (separated by newline characters)
-for connecting to private repositories (Optional, default is NULL).}
+\item{ssh_key}{private SSH key for connecting to private repositories
+(Optional, default is NULL).}
 }
 \value{
 the path to the local clone of the repository.
