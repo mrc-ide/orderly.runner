@@ -39,7 +39,7 @@ skip_if_no_test_private_repo_ssh_key <- function() {
 
 
 get_time_modified_of_file <- function(path) {
-  as.numeric(system(sprintf("stat -c %%Y %s", path), intern = TRUE))
+  as.numeric(fs::file_info(path)$modification_time)
 }
 
 
