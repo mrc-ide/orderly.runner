@@ -34,9 +34,9 @@ git_sync <- function(base, url, ssh_key = NULL) {
   }
   repo <- repository_path(base, url, check = FALSE)
 
-  # We do not have an ssh agent running however R sets SSH_AUTH_SOCK value
-  # which causes gert to try authorising via the ssh agent, causing it to
-  # hang. If we unset this variable then it uses our provided ssh key.
+  # gert prioritises using an ssh agent over the provided ssh key. In our
+  # case we only ever want to use the provided ssh key, so we prevent any
+  # attempt to use the agent by unsetting `SSH_AUTH_SOCK`.
   # https://github.com/r-lib/gert/blob/d8febbfacad1e8bb582e28f50c7e7092c0c63d21/src/clone.c#L192
   withr::with_envvar(new = c("SSH_AUTH_SOCK" = NA), {
     if (!fs::dir_exists(repo)) {
