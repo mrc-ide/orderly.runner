@@ -78,8 +78,8 @@ Submit a job the Redis queue for runner to run.
 \item{\code{location}}{Location of the outpack repository from which to pull
 dependencies and push the produced packet.}
 
-\item{\code{ssh_key}}{private SSH key as a character vector (separated by newline characters)
-for connecting to private repositories (Optional, default is NULL).}
+\item{\code{ssh_key}}{private SSH key for connecting to private repositories
+(Optional, default is NULL).}
 }
 \if{html}{\out{</div>}}
 }
