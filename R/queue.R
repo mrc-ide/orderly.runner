@@ -36,8 +36,8 @@ Queue <- R6::R6Class("Queue", # nolint
     #' @param parameters Parameters to run the report with.
     #' @param location Location of the outpack repository from which to pull
     #'   dependencies and push the produced packet.
-    #' @param ssh_key private SSH key as a character vector (separated by newline characters)
-    #'   for connecting to private repositories (Optional, default is NULL).
+#' @param ssh_key private SSH key for connecting to private repositories
+#'   (Optional, default is NULL).
     submit = function(url, branch, ref, reportname, parameters, location, ssh_key = NULL) {
       run_args <- list(
         url,
