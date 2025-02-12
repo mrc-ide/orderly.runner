@@ -51,7 +51,15 @@ if NULL (default NULL)}
 \subsection{Method \code{submit()}}{
 Submit a job the Redis queue for runner to run.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Queue$submit(url, branch, ref, reportname, parameters, location)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Queue$submit(
+  url,
+  branch,
+  ref,
+  reportname,
+  parameters,
+  location,
+  ssh_key = NULL
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -69,6 +77,9 @@ Submit a job the Redis queue for runner to run.
 
 \item{\code{location}}{Location of the outpack repository from which to pull
 dependencies and push the produced packet.}
+
+\item{\code{ssh_key}}{private SSH key for connecting to private repositories
+(Optional, default is NULL).}
 }
 \if{html}{\out{</div>}}
 }

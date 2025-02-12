@@ -2,8 +2,8 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "type": "object",
     "properties": {
-        "url": {
-            "type": "string"
+        "ssh_key": {
+            "type": ["string", "null"]
         },
         "branch": {
             "type": "string"
@@ -38,6 +38,6 @@
             }
         }
     },
-    "required": ["url", "branch", "hash", "name", "parameters", "location"],
+    "required": ["branch", "hash", "name", "parameters", "location"],
     "additionalProperties": false
 }

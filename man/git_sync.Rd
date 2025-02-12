@@ -4,12 +4,15 @@
 \alias{git_sync}
 \title{Clone or fetch a remote repository.}
 \usage{
-git_sync(base, url)
+git_sync(base, url, ssh_key = NULL)
 }
 \arguments{
 \item{base}{the base directory in which all repositories are stored.}
 
 \item{url}{the URL of the remote repository.}
+
+\item{ssh_key}{private SSH key for connecting to private repositories
+(Optional, default is NULL).}
 }
 \value{
 the path to the local clone of the repository.

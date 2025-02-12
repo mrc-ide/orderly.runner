@@ -25,14 +25,27 @@ repository_path <- function(base, url, check = TRUE) {
 #'
 #' @param base the base directory in which all repositories are stored.
 #' @param url the URL of the remote repository.
+#' @param ssh_key private SSH key for connecting to private repositories
+#'   (Optional, default is NULL).
 #' @return the path to the local clone of the repository.
-git_sync <- function(base, url) {
-  repo <- repository_path(base, url, check = FALSE)
-  if (!fs::dir_exists(repo)) {
-    gert::git_clone(url = url, path = repo, bare = TRUE, verbose = FALSE)
-  } else {
-    gert::git_fetch(repo = repo, prune = TRUE, verbose = FALSE)
+git_sync <- function(base, url, ssh_key = NULL) {
+  if (!is.null(ssh_key)) {
+    ssh_key <- withr::local_tempfile(lines = ssh_key)
   }
+  repo <- repository_path(base, url, check = FALSE)
+
+  # gert prioritises using an ssh agent over the provided ssh key. In our
+  # case we only ever want to use the provided ssh key, so we prevent any
+  # attempt to use the agent by unsetting `SSH_AUTH_SOCK`.
+  # https://github.com/r-lib/gert/blob/d8febbfacad1e8bb582e28f50c7e7092c0c63d21/src/clone.c#L192
+  withr::with_envvar(new = c("SSH_AUTH_SOCK" = NA), {
+    if (!fs::dir_exists(repo)) {
+      gert::git_clone(url = url, path = repo, bare = TRUE, verbose = FALSE, ssh_key = ssh_key)
+    } else {
+      gert::git_fetch(repo = repo, prune = TRUE, verbose = FALSE, ssh_key = ssh_key)
+    }
+  })
+
   repo
 }
 

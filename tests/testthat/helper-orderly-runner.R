@@ -25,6 +25,29 @@ skip_if_no_redis <- function() {
 }
 
 
+skip_if_no_test_private_repo_ssh_key <- function() {
+  ssh_key <- Sys.getenv("TEST_PRIVATE_REPO_SSH_KEY", unset = NA)
+  if (is.na(ssh_key)) {
+    testthat::skip("Skipping test as TEST_PRIVATE_REPO_SSH_KEY is not set")
+  }
+
+  list(
+    ssh_key = ssh_key,
+    url = "git@github.com:mrc-ide/orderly.runner-private-test-repo.git"
+  )
+}
+
+
+get_time_modified_of_file <- function(path) {
+  as.numeric(fs::file_info(path)$modification_time)
+}
+
+
+empty_json_object <- function() {
+  jsonlite::toJSON(empty_object())
+}
+
+
 create_temporary_root <- function(..., env = parent.frame()) {
   path <- withr::local_tempdir(.local_envir = env)
   suppressMessages(orderly2::orderly_init(path, ...))
