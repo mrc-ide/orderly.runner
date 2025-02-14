@@ -1,4 +1,4 @@
-runner_run <- function(url, branch, ref, reportname, parameters, location, ssh_key = NULL, ...) {
+runner_run_internal <- function(url, branch, ref, reportname, parameters, location, ssh_key = NULL, ...) {
   storage <- Sys.getenv("ORDERLY_WORKER_STORAGE")
   stopifnot(nzchar(storage) && fs::dir_exists(storage))
 
@@ -31,4 +31,15 @@ runner_run <- function(url, branch, ref, reportname, parameters, location, ssh_k
                               location = "upstream", root = worktree, ...)
   orderly2::orderly_location_push(id, "upstream", root = worktree)
   id
+}
+
+# This is a simple wrapper that prints any error that gets thrown.
+# The error is re-thrown after it is logged to ensure the task still fails.
+runner_run <- function(...) {
+  tryCatch(
+    runner_run_internal(...),
+    error = function(e) {
+      print(e)
+      stop(e)
+    })
 }
