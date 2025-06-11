@@ -1,4 +1,4 @@
-FROM rocker/r-ver:4.4
+FROM rocker/r-ver:4
 
 RUN install2.r pak
 
