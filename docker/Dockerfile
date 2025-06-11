@@ -8,6 +8,10 @@ RUN Rscript -e "pak::local_install_deps('/src')"
 COPY . /src
 RUN Rscript -e "pak::local_install('/src')"
 
+VOLUME /library
+
+ENV R_LIBS=/library:/usr/local/lib/R/site-library:/usr/local/lib/R/library
+
 COPY docker/bin /usr/local/bin/
 
 # ENTRYPOINT for server is /usr/local/bin/orderly.runner.server
