@@ -1,5 +1,11 @@
 FROM rocker/r-ver:4
 
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq5 \
+    libproj25 \
+    pandoc \
+    && rm -rf /var/lib/apt/lists/*
+
 RUN install2.r pak
 
 COPY DESCRIPTION /src/DESCRIPTION
