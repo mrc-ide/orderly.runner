@@ -54,7 +54,8 @@ Queue <- R6::R6Class("Queue", # nolint
       )
     },
 
-    # Just until we add queue status for testing
+    #' @description
+    #' Gets the number of workers, only implemented until we add queue status for testing
     number_of_workers = function() {
       rrq::rrq_worker_len(self$controller)
     },
@@ -86,6 +87,20 @@ Queue <- R6::R6Class("Queue", # nolint
           taskId = scalar(task_ids[index])
         )
       })
+    },
+
+    #' @description
+    #' Gets status of packet run
+    #'
+    #' @param task_id A single task to cancel
+    #' @return Nothing, or error if cancellation was not possible
+    cancel = function(task_id) {
+      tryCatch(
+        rrq::rrq_task_cancel(task_id, controller = self$controller),
+        error = function(e) {
+          porcelain::porcelain_stop(conditionMessage(e))
+        }
+      )
     }
   ),
 )

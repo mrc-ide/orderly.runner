@@ -23,6 +23,7 @@ Object for managing running jobs on the redis queue
 \item \href{#method-Queue-submit}{\code{Queue$submit()}}
 \item \href{#method-Queue-number_of_workers}{\code{Queue$number_of_workers()}}
 \item \href{#method-Queue-get_status}{\code{Queue$get_status()}}
+\item \href{#method-Queue-cancel}{\code{Queue$cancel()}}
 }
 }
 \if{html}{\out{<hr>}}
@@ -88,6 +89,7 @@ dependencies and push the produced packet.}
 \if{html}{\out{<a id="method-Queue-number_of_workers"></a>}}
 \if{latex}{\out{\hypertarget{method-Queue-number_of_workers}{}}}
 \subsection{Method \code{number_of_workers()}}{
+Gets the number of workers, only implemented until we add queue status for testing
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Queue$number_of_workers()}\if{html}{\out{</div>}}
 }
@@ -113,6 +115,26 @@ Gets status of packet run
 }
 \subsection{Returns}{
 status of redis queue job
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Queue-cancel"></a>}}
+\if{latex}{\out{\hypertarget{method-Queue-cancel}{}}}
+\subsection{Method \code{cancel()}}{
+Gets status of packet run
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Queue$cancel(task_id)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{task_id}}{A single task to cancel}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Nothing, or error if cancellation was not possible
 }
 }
 }

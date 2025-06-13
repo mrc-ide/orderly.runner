@@ -71,5 +71,15 @@
         porcelain::porcelain_state(queue = state$queue),
         returning = porcelain::porcelain_returning_json("report_run_status_response"),
         validate = validate)
+    },
+    "POST /report/cancel" = function(state, validate) {
+      porcelain::porcelain_endpoint$new(
+        "POST",
+        "/report/cancel",
+        report_run_cancel,
+        porcelain::porcelain_input_body_json("data", "report_run_cancel_request"),
+        porcelain::porcelain_state(queue = state$queue),
+        returning = porcelain::porcelain_returning_json("report_run_cancel_response"),
+        validate = validate)
     })
 }
