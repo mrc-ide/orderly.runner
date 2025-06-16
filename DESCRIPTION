@@ -1,6 +1,6 @@
 Package: orderly.runner
 Title: Run an 'orderly2' Packet
-Version: 0.1.1
+Version: 0.1.2
 Authors@R: c(person("Rich", "FitzJohn", role = c("aut", "cre"),
                     email = "rich.fitzjohn@gmail.com"),
              person("Imperial College of Science, Technology and Medicine",
@@ -38,5 +38,4 @@ Config/testthat/edition: 3
 Remotes:
     mrc-ide/orderly2,
     reside-ic/porcelain,
-    mrc-ide/rrq,
-    r-lib/gert
+    mrc-ide/rrq
