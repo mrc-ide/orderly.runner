@@ -121,7 +121,7 @@ status of redis queue job
 \if{html}{\out{<a id="method-Queue-cancel"></a>}}
 \if{latex}{\out{\hypertarget{method-Queue-cancel}{}}}
 \subsection{Method \code{cancel()}}{
-Gets status of packet run
+Cancels a packet run
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Queue$cancel(task_id)}\if{html}{\out{</div>}}
 }
