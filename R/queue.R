@@ -90,7 +90,7 @@ Queue <- R6::R6Class("Queue", # nolint
     },
 
     #' @description
-    #' Gets status of packet run
+    #' Cancels a packet run
     #'
     #' @param task_id A single task to cancel
     #' @return Nothing, or error if cancellation was not possible
