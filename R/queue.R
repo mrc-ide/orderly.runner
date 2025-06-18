@@ -71,7 +71,7 @@ Queue <- R6::R6Class("Queue", # nolint
       invalid_task_ids <- setdiff(task_ids, valid_task_ids)
 
       if (length(invalid_task_ids) > 0) {
-        sprintf("Job ids [%s] do not exist in the queue", paste(invalid_task_ids, collapse = ", "))
+        warning(sprintf("Job ids [%s] do not exist in the queue", paste(invalid_task_ids, collapse = ", ")))
       }
 
       statuses <- rrq::rrq_task_status(valid_task_ids, controller = self$controller)

@@ -273,7 +273,7 @@ test_that("returns statuses for only existent task ids", {
     httr::content_type("application/json")
   )
   expect_equal(httr::status_code(r1), 200)
-  task_ids <- c("httr::content(r1)$data$taskId", "non-existant-id")
+  task_ids <- c(httr::content(r1)$data$taskId, "non-existent-id")
   
   res <- bg$request(
     "POST",

@@ -166,3 +166,36 @@ test_that("can get status on pending report run", {
     expect_null(status$logs)
   }
 })
+
+test_that("only returns existent status of task_ids", {
+  skip_if_no_redis()
+
+  upstream_git <- test_prepare_orderly_example("data")
+  upstream_outpack <- create_temporary_root(use_file_store = TRUE)
+
+  q <- start_queue_with_workers(1)
+  
+  sha <- gert::git_commit_id(repo = upstream_git)
+  data <- list(
+    name = "data",
+    branch = "master",
+    hash = sha,
+    parameters = NULL,
+    location = list(type = "path", args = list(path = upstream_outpack))
+  )
+  r1 <- q$submit(
+    url = upstream_git,
+    branch = data$branch,
+    ref = data$hash,
+    reportname = data$name,
+    parameters = data$parameters,
+    location = data$location
+  )
+
+  task_ids <- c(r1, "non-existent-id")
+
+  res <- q$get_status(task_ids, include_logs = FALSE)
+
+  expect_length(res, 1)
+  expect_equal(res[[1]]$taskId, task_ids[[1]])
+})
