@@ -197,5 +197,5 @@ test_that("only returns existent status of task_ids", {
   res <- q$get_status(task_ids, include_logs = FALSE)
 
   expect_length(res, 1)
-  expect_equal(res[[1]]$taskId, task_ids[[1]])
+  expect_equal(res[[1]]$taskId, scalar(task_ids[[1]]))
 })
