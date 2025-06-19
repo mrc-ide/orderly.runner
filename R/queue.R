@@ -91,7 +91,7 @@ Queue <- R6::R6Class("Queue", # nolint
         )
       })
 
-      list(statuses = task_statuses, missing_task_ids = missing_task_ids)
+      list(statuses = task_statuses, missingTaskIds = missing_task_ids)
     },
 
     #' @description

@@ -289,6 +289,6 @@ test_that("returns statuses for only existent task ids", {
 
   expect_length(dat$statuses, 1)
   expect_equal(dat$statuses[[1]]$taskId, task_ids[[1]])
-  expect_length(dat$missing_task_ids, 1)
-  expect_equal(dat$missing_task_ids[[1]], "non-existent-id")
+  expect_length(dat$missingTaskIds, 1)
+  expect_equal(dat$missingTaskIds[[1]], "non-existent-id")
 })

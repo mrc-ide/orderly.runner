@@ -43,13 +43,13 @@
                 "additionalProperties": false
             }
         },
-        "missing_task_ids": {
+        "missingTaskIds": {
             "type": "array",
             "items": {
                 "type": "string"
             }
         }
     },
-    "required": ["statuses", "missing_task_ids"],
+    "required": ["statuses", "missingTaskIds"],
     "additionalProperties": false
 }
