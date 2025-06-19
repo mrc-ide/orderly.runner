@@ -184,7 +184,8 @@ test_that("can get status of report run with logs", {
     encode = "raw",
     httr::content_type("application/json")
   )
-  dat <- httr::content(res)$data[[1]]
+
+  dat <- httr::content(res)$data$statuses[[1]]
   task_times <- get_task_times(task_id, queue$controller)
   expect_equal(httr::status_code(res), 200)
   expect_equal(dat$status, "COMPLETE")
