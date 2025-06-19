@@ -105,7 +105,7 @@ test_that("can get statuses on complete report runs with logs", {
   task_ids <- c(task_id1, task_id2)
   wait_for_task_complete(task_ids, q$controller, 5)
 
-  statuses <- q$get_status(task_ids)
+  statuses <- q$get_status(task_ids)$statuses
   for (i in seq_along(task_ids)) {
     status <- statuses[[i]]
     expect_equal(status$status, scalar("COMPLETE"))
@@ -115,7 +115,7 @@ test_that("can get statuses on complete report runs with logs", {
     expect_equal(scalar(task_ids[[i]]), status$taskId)
   }
 
-  statuses <- q$get_status(task_ids, include_logs = FALSE)
+  statuses <- q$get_status(task_ids, include_logs = FALSE)$statuses
   for (i in seq_along(task_ids)) {
     status <- statuses[[i]]
     expect_equal(status$status, scalar("COMPLETE"))
@@ -155,7 +155,7 @@ test_that("can get status on pending report run", {
   )
 
   task_ids <- c(task_id1, task_id2)
-  statuses <- q$get_status(task_ids)
+  statuses <- q$get_status(task_ids)$statuses
 
   for (i in seq_along(task_ids)) {
     status <- statuses[[i]]
@@ -165,4 +165,39 @@ test_that("can get status on pending report run", {
     expect_null(status$packetId)
     expect_null(status$logs)
   }
+})
+
+test_that("only returns existent status of task_ids", {
+  skip_if_no_redis()
+
+  upstream_git <- test_prepare_orderly_example("data")
+  upstream_outpack <- create_temporary_root(use_file_store = TRUE)
+
+  q <- start_queue_with_workers(1)
+  
+  sha <- gert::git_commit_id(repo = upstream_git)
+  data <- list(
+    name = "data",
+    branch = "master",
+    hash = sha,
+    parameters = NULL,
+    location = list(type = "path", args = list(path = upstream_outpack))
+  )
+  r1 <- q$submit(
+    url = upstream_git,
+    branch = data$branch,
+    ref = data$hash,
+    reportname = data$name,
+    parameters = data$parameters,
+    location = data$location
+  )
+
+  task_ids <- c(r1, "non-existent-id")
+
+  res <- q$get_status(task_ids, include_logs = FALSE)
+
+  expect_length(res$statuses, 1)
+  expect_equal(res$statuses[[1]]$taskId, scalar(task_ids[[1]]))
+  expect_length(res$missingTaskIds, 1)
+  expect_equal(res$missingTaskIds[[1]], "non-existent-id")
 })

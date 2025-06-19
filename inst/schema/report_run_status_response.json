@@ -1,42 +1,55 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "type": "array",
-    "items": {
-        "type": "object",
-        "properties": {
-            "timeQueued": {
-                "type": "number",
-                "description": "time queued in UTC time."
-            },
-            "timeStarted": {
-                "type": ["number", "null"],
-                "description": "time started run in UTC time."
-            },
-            "timeComplete": {
-                "type": ["number", "null"],
-                "description": "time completed in UTC time."
-            },
-            "queuePosition": {
-                "type": ["number", "null"]
-            },
-            "logs": {
-                "type": ["array", "null"],
-                "items": {
-                    "type": "string"
-                }
-            },
-            "status": {
-                "type": "string",
-                "enum": ["PENDING", "RUNNING","COMPLETE", "ERROR", "CANCELLED", "DIED", "TIMEOUT", "IMPOSSIBLE","DEFERRED", "MOVED"]
-            },
-            "packetId": {
-                "type": ["string", "null"]
-            },
-            "taskId": {
-              "type": "string"
+    "type": "object",
+    "properties": {
+        "statuses": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "timeQueued": {
+                        "type": "number",
+                        "description": "time queued in UTC time."
+                    },
+                    "timeStarted": {
+                        "type": ["number", "null"],
+                        "description": "time started run in UTC time."
+                    },
+                    "timeComplete": {
+                        "type": ["number", "null"],
+                        "description": "time completed in UTC time."
+                    },
+                    "queuePosition": {
+                        "type": ["number", "null"]
+                    },
+                    "logs": {
+                        "type": ["array", "null"],
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": ["PENDING", "RUNNING","COMPLETE", "ERROR", "CANCELLED", "DIED", "TIMEOUT", "IMPOSSIBLE","DEFERRED", "MOVED"]
+                    },
+                    "packetId": {
+                        "type": ["string", "null"]
+                    },
+                    "taskId": {
+                      "type": "string"
+                    }
+                },
+                "required": ["timeQueued", "timeStarted", "queuePosition", "logs", "status", "packetId", "taskId"],
+                "additionalProperties": false
             }
         },
-        "required": ["timeQueued", "timeStarted", "queuePosition", "logs", "status", "packetId", "taskId"],
-        "additionalProperties": false
-    }
+        "missingTaskIds": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        }
+    },
+    "required": ["statuses", "missingTaskIds"],
+    "additionalProperties": false
 }

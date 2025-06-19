@@ -184,7 +184,8 @@ test_that("can get status of report run with logs", {
     encode = "raw",
     httr::content_type("application/json")
   )
-  dat <- httr::content(res)$data[[1]]
+
+  dat <- httr::content(res)$data$statuses[[1]]
   task_times <- get_task_times(task_id, queue$controller)
   expect_equal(httr::status_code(res), 200)
   expect_equal(dat$status, "COMPLETE")
@@ -237,7 +238,7 @@ test_that("can get status of multiple tasks without logs", {
     encode = "raw",
     httr::content_type("application/json")
   )
-  dat <- httr::content(res)$data
+  dat <- httr::content(res)$data$statuses
 
   for (i in seq_along(task_ids)) {
     task_status <- dat[[i]]
@@ -253,7 +254,7 @@ test_that("can get status of multiple tasks without logs", {
   }
 })
 
-test_that("returns error with tasks ids of non-extant task ids", {
+test_that("returns statuses for only existent task ids", {
   # run report
   data <- list(
     name = "data",
@@ -273,8 +274,8 @@ test_that("returns error with tasks ids of non-extant task ids", {
     httr::content_type("application/json")
   )
   expect_equal(httr::status_code(r1), 200)
-  task_ids <- c(httr::content(r1)$data$taskId, "non-existant-id")
-  
+  task_ids <- c(httr::content(r1)$data$taskId, "non-existent-id")
+
   res <- bg$request(
     "POST",
     "/report/status",
@@ -283,6 +284,12 @@ test_that("returns error with tasks ids of non-extant task ids", {
     encode = "raw",
     httr::content_type("application/json")
   )
-  
-  expect_equal(httr::content(res)$errors[[1]]$detail , "Job ids [non-existant-id] do not exist in the queue")
+
+  expect_equal(httr::status_code(res), 200)
+  dat <- httr::content(res)$data
+
+  expect_length(dat$statuses, 1)
+  expect_equal(dat$statuses[[1]]$taskId, task_ids[[1]])
+  expect_length(dat$missingTaskIds, 1)
+  expect_equal(dat$missingTaskIds[[1]], "non-existent-id")
 })

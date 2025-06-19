@@ -357,10 +357,10 @@ test_that("can get statuses of jobs", {
   res <- obj$request("POST", "/report/status",
                      body = jsonlite::toJSON(task_ids),
                      query = list(include_logs = TRUE))
-  dat <- expect_success(res)
+  statuses <- expect_success(res)$statuses
 
   for (i in seq_along(task_ids)) {
-    task_status <- dat[i,]
+    task_status <- statuses[i,]
     task_times <- get_task_times(task_ids[[i]], controller)
     expect_equal(task_status$status, "COMPLETE")
     expect_true(is.na(task_status$queuePosition))
@@ -416,8 +416,8 @@ test_that("errors are included in task logs", {
   res <- obj$request("POST", "/report/status",
                      body = jsonlite::toJSON(dat$taskId),
                      query = list(include_logs = TRUE))
-  dat <- expect_success(res)
-  status <- dat[1,]
+
+  status <- expect_success(res)$statuses[1, ]
 
   expect_equal(status$status, "ERROR")
   expect_contains(unlist(status$logs),
