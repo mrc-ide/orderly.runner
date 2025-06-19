@@ -105,7 +105,7 @@ test_that("can get statuses on complete report runs with logs", {
   task_ids <- c(task_id1, task_id2)
   wait_for_task_complete(task_ids, q$controller, 5)
 
-  statuses <- q$get_status(task_ids)
+  statuses <- q$get_status(task_ids)$statuses
   for (i in seq_along(task_ids)) {
     status <- statuses[[i]]
     expect_equal(status$status, scalar("COMPLETE"))
@@ -115,7 +115,7 @@ test_that("can get statuses on complete report runs with logs", {
     expect_equal(scalar(task_ids[[i]]), status$taskId)
   }
 
-  statuses <- q$get_status(task_ids, include_logs = FALSE)
+  statuses <- q$get_status(task_ids, include_logs = FALSE)$statuses
   for (i in seq_along(task_ids)) {
     status <- statuses[[i]]
     expect_equal(status$status, scalar("COMPLETE"))
@@ -155,7 +155,7 @@ test_that("can get status on pending report run", {
   )
 
   task_ids <- c(task_id1, task_id2)
-  statuses <- q$get_status(task_ids)
+  statuses <- q$get_status(task_ids)$statuses
 
   for (i in seq_along(task_ids)) {
     status <- statuses[[i]]
@@ -196,6 +196,8 @@ test_that("only returns existent status of task_ids", {
 
   res <- q$get_status(task_ids, include_logs = FALSE)
 
-  expect_length(res, 1)
-  expect_equal(res[[1]]$taskId, scalar(task_ids[[1]]))
+  expect_length(res$statuses, 1)
+  expect_equal(res$statuses[[1]]$taskId, scalar(task_ids[[1]]))
+  expect_length(res$missing_task_ids, 1)
+  expect_equal(res$missing_task_ids[[1]], "non-existent-id")
 })

@@ -78,7 +78,7 @@ Queue <- R6::R6Class("Queue", # nolint
       tasks_times <- rrq::rrq_task_times(found_task_ids, controller = self$controller)
       queuePositions <- rrq::rrq_task_position(found_task_ids, controller = self$controller)
 
-      lapply(seq_along(found_task_ids), function(index) {
+      task_statuses <- lapply(seq_along(found_task_ids), function(index) {
         list(
           status = scalar(statuses[index]),
           queuePosition = if (statuses[index] == "PENDING") scalar(queuePositions[index]) else NULL,
@@ -90,6 +90,8 @@ Queue <- R6::R6Class("Queue", # nolint
           taskId = scalar(found_task_ids[index])
         )
       })
+
+      list(statuses = task_statuses, missing_task_ids = missing_task_ids)
     },
 
     #' @description
