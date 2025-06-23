@@ -99,7 +99,7 @@ Gets the number of workers, only implemented until we add queue status for testi
 \if{html}{\out{<a id="method-Queue-get_status"></a>}}
 \if{latex}{\out{\hypertarget{method-Queue-get_status}{}}}
 \subsection{Method \code{get_status()}}{
-Gets status of packet run
+Gets statuses of packet runs in the queue.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Queue$get_status(task_ids, include_logs = TRUE)}\if{html}{\out{</div>}}
 }
@@ -107,14 +107,14 @@ Gets status of packet run
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{task_ids}}{Task ids  to get status of.}
+\item{\code{task_ids}}{Task ids to get status of.}
 
 \item{\code{include_logs}}{Whether to include logs in response or not}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-status of redis queue job
+statuses of redis queue jobs
 }
 }
 \if{html}{\out{<hr>}}
