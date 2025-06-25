@@ -73,15 +73,18 @@ repository_branches <- function(repositories_base_path, url) {
   })
 
   branches$message <- message
+  branches <- data.frame(
+    name = branches$name,
+    commit_hash = branches$commit,
+    time = as.numeric(branches$updated),
+    message = message,
+    row.names = NULL
+  )
+  branches <- branches[order(branches$time, decreasing = TRUE), ]
+
   list(
     default_branch = scalar(git_remote_default_branch_name(repo)),
-    branches = data.frame(
-      name = branches$name,
-      commit_hash = branches$commit,
-      time = as.numeric(branches$updated),
-      message = message,
-      row.names = NULL
-    )
+    branches = branches
   )
 }
 
