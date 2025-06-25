@@ -152,10 +152,8 @@ report_run_status <- function(queue, include_logs, data) {
 }
 
 ##' @porcelain
-##'   POST /report/cancel => json(report_run_cancel_response)
+##'   POST /report/cancel/<task_id> => json(report_run_cancel_response)
 ##'   state queue :: queue
-##'   body data :: json(report_run_cancel_request)
-report_run_cancel <- function(queue, data) {
-  task_id <- jsonlite::fromJSON(data)
+report_run_cancel <- function(queue, task_id) {
   queue$cancel(task_id)
 }

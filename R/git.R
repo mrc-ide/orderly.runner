@@ -128,7 +128,7 @@ git_diff_tree <- function(left, right, repo = NULL) {
 create_temporary_worktree <- function(repo, branch, tmpdir, env = parent.frame()) {
   path <- withr::local_tempdir(tmpdir = tmpdir, .local_envir = env)
 
-  git_run(c("worktree", "add", path, branch), repo = repo)
+  git_run(c("worktree", "add", "--force", path, branch), repo = repo)
   withr::defer(env = env, {
     git_run(c("worktree", "remove", "--force", path), repo = repo)
   })

@@ -465,8 +465,7 @@ test_that("can cancel a run", {
     "PENDING"
   )
 
-  res <- obj$request("POST", "/report/cancel",
-                     body = jsonlite::toJSON(scalar(task_id)))
+  res <- obj$request("POST", paste0("/report/cancel/", task_id))
   data <- expect_success(res)
   expect_null(data)
 
@@ -475,8 +474,7 @@ test_that("can cancel a run", {
     "CANCELLED"
   )
 
-  res <- obj$request("POST", "/report/cancel",
-                     body = jsonlite::toJSON(scalar(task_id)))
+  res <- obj$request("POST", paste0("/report/cancel/", task_id))
   expect_equal(res$status, 400)
   expect_equal(
     jsonlite::fromJSON(res$body)$errors$detail,
