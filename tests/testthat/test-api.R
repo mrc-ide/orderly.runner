@@ -100,7 +100,7 @@ test_that("can list branches in repository", {
   res <- obj$request("GET", "/repository/branches",
                      query = list(url = upstream))
   data <- expect_success(res)
-  expect_setequal(data$branches$name, c("master", "new-branch"))
+  expect_setequal(data$branches$name, c("new-branch", "master"))
 
   b <- data$branches[data$branches$name == "new-branch",]
   expect_equal(b$commit, info$sha)
