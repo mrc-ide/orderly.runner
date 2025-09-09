@@ -1,13 +1,13 @@
 FROM rocker/r-ver:4
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libpq5 \
-    libproj25 \
-    pandoc \
-    libudunits2-dev \
     libgdal-dev \
     libgeos-dev \
+    libpq5 \
     libproj-dev \
+    libproj25 \
+    libudunits2-dev \
+    pandoc \
     && rm -rf /var/lib/apt/lists/*
 
 RUN install2.r pak
