@@ -43,7 +43,7 @@ api <- function(
 ##' @porcelain GET / => json(root)
 root <- function() {
   versions <- list(
-    orderly2 = package_version_string("orderly2"),
+    orderly = package_version_string("orderly"),
     orderly.runner = package_version_string("orderly.runner")
   )
   lapply(versions, scalar)

@@ -37,7 +37,7 @@ get_report_parameters <- function(name, ref, root) {
     c("show", sprintf("%s:%s", sha, path)), repo = root
   )$output
   exprs <- parse(text = contents)
-  orderly2::orderly_parse_expr(exprs, filename = basename(path))$parameters
+  orderly::orderly_parse_expr(exprs, filename = basename(path))$parameters
 }
 
 
