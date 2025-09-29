@@ -18,7 +18,7 @@ test_that("root data returns sensible data", {
   res <- obj$request("GET", "/")
   data <- expect_success(res)
 
-  expect_true(all(c("orderly2", "orderly.runner") %in% names(data)))
+  expect_true(all(c("orderly", "orderly.runner") %in% names(data)))
   expect_match(unlist(data), "^[0-9]+\\.[0-9]+\\.[0-9]+$")
 })
 

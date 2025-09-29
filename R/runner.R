@@ -22,14 +22,14 @@ runner_run_internal <- function(url, branch, ref, reportname, parameters, locati
                           repo = repo)
   worktree <- create_temporary_worktree(repo, branch, worktree_base)
 
-  orderly2::orderly_init(worktree)
-  orderly2::orderly_location_add("upstream", location$type, location$args,
-                                 root = worktree)
+  orderly::orderly_init(worktree)
+  orderly::orderly_location_add("upstream", location$type, location$args,
+                                root = worktree)
 
-  id <- orderly2::orderly_run(reportname, parameters = parameters,
-                              fetch_metadata = TRUE, allow_remote = TRUE,
-                              location = "upstream", root = worktree, ...)
-  orderly2::orderly_location_push(id, "upstream", root = worktree)
+  id <- orderly::orderly_run(reportname, parameters = parameters,
+                             fetch_metadata = TRUE, allow_remote = TRUE,
+                             location = "upstream", root = worktree, ...)
+  orderly::orderly_location_push(id, "upstream", root = worktree)
   id
 }
 

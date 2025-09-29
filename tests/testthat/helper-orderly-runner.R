@@ -50,7 +50,7 @@ empty_json_object <- function() {
 
 create_temporary_root <- function(..., env = parent.frame()) {
   path <- withr::local_tempdir(.local_envir = env)
-  suppressMessages(orderly2::orderly_init(path, ...))
+  suppressMessages(orderly::orderly_init(path, ...))
 }
 
 

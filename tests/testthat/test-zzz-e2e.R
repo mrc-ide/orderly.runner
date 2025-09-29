@@ -30,8 +30,8 @@ test_that("can run server", {
   expect_equal(dat$status, "success")
   expect_null(dat$errors)
   expect_equal(
-    dat$data$orderly2,
-    package_version_string("orderly2")
+    dat$data$orderly,
+    package_version_string("orderly")
   )
   expect_equal(
     dat$data$orderly.runner,

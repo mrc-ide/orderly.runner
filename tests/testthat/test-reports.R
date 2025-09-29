@@ -81,7 +81,7 @@ test_that("can get report parameters", {
   ## Works with a specific git hash
   params_src <- file.path(root, "src", "parameters", "parameters.R")
   contents <- readLines(params_src)
-  contents <- c("orderly2::orderly_parameters(a = 'default', b = 2, c = NULL)", 
+  contents <- c("orderly::orderly_parameters(a = 'default', b = 2, c = NULL)",
                 contents[-1])
   writeLines(contents, params_src)
   sha <- git_add_and_commit(root)

@@ -5,14 +5,14 @@ test_repo_path <- file.path(root, "docker", "test", "test-repo")
 
 gert::git_init(path = test_repo_path)
 
-orderly2::orderly_init(
+orderly::orderly_init(
     root = test_repo_path,
     use_file_store = TRUE,
     require_complete_tree = TRUE,
     force = TRUE
 )
 
-orderly2::orderly_gitignore_update("(root)", root = test_repo_path)
+orderly::orderly_gitignore_update("(root)", root = test_repo_path)
 
 gert::git_add(".", repo = test_repo_path)
 gert::git_commit("first commit", repo = test_repo_path)

@@ -22,7 +22,7 @@ test_that("runner runs as expected", {
   expect_true(fs::dir_exists(
     file.path(upstream_outpack, "archive", "data", id)))
 
-  info <- orderly2::orderly_metadata(id, root = upstream_outpack)$git
+  info <- orderly::orderly_metadata(id, root = upstream_outpack)$git
   expect_equal(info$branch, "master")
   expect_equal(info$sha, sha)
 })
@@ -114,11 +114,11 @@ test_that("runner can use an old commit", {
       echo = FALSE)
   }))
 
-  info1 <- orderly2::orderly_metadata(id1, root = upstream_outpack)$git
+  info1 <- orderly::orderly_metadata(id1, root = upstream_outpack)$git
   expect_equal(info1$branch, "master")
   expect_equal(info1$sha, commit1)
 
-  info2 <- orderly2::orderly_metadata(id2, root = upstream_outpack)$git
+  info2 <- orderly::orderly_metadata(id2, root = upstream_outpack)$git
   expect_equal(info2$branch, "master")
   expect_equal(info2$sha, commit2)
 })
@@ -163,7 +163,7 @@ test_that("runner can pull dependencies", {
   expect_true(fs::dir_exists(
     file.path(upstream_outpack, "archive", "depends", id2)))
 
-  info <- orderly2::orderly_metadata(id2, root = upstream_outpack)$depends
+  info <- orderly::orderly_metadata(id2, root = upstream_outpack)$depends
   expect_equal(info[1,]$packet, id1)
   expect_equal(info[1,]$query, 'latest(name == "data")')
 })
