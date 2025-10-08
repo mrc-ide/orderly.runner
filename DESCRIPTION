@@ -1,6 +1,6 @@
 Package: orderly.runner
 Title: Run an 'orderly' Packet
-Version: 0.1.3
+Version: 0.1.4
 Authors@R: c(person("Rich", "FitzJohn", role = c("aut", "cre"),
                     email = "rich.fitzjohn@gmail.com"),
              person("Imperial College of Science, Technology and Medicine",
@@ -20,7 +20,7 @@ Imports:
     gert (>= 2.0.1),
     ids,
     jsonlite,
-    orderly (>= 1.99.88),
+    orderly (>= 1.99.96),
     openssl,
     porcelain,
     R6,
