@@ -59,12 +59,12 @@ test_prepare_orderly_example <- function(examples, ..., env = parent.frame()) {
   # fact that the source repository (eg. GitHub) is generally distinct from the
   # upstream outpack repository (eg. Packit).
   #
-  # We do still need to create orderly_config.yml as the bare minimum source
+  # We do still need to create orderly_config.json as the bare minimum source
   # tree.
 
   path <- withr::local_tempdir(.local_envir = env)
-  writeLines('minimum_orderly_version: "1.99.0"',
-             file.path(path, "orderly_config.yml"))
+  writeLines('{"minimum_orderly_version": "1.99.0"}',
+             file.path(path, "orderly_config.json"))
 
   copy_examples(examples, path)
 
