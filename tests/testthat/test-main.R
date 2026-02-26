@@ -53,3 +53,73 @@ test_that("Can construct api", {
 test_that("Can parse arguments (worker)", {
   expect_mapequal(parse_main_worker("path"), list(path = "path"))
 })
+
+
+test_that("Can parse arguments (task_status)", {
+  withr::with_envvar(c(ORDERLY_RUNNER_QUEUE_ID = ""), {
+    expect_mapequal(parse_main_task_status(c("some-task-id")),
+                    list(task_id = "some-task-id",
+                         queue_id = ""))
+    expect_mapequal(parse_main_task_status(c("--queue-id=my-queue", "some-task-id")),
+                    list(task_id = "some-task-id",
+                         queue_id = "my-queue"))
+  })
+  withr::with_envvar(c(ORDERLY_RUNNER_QUEUE_ID = "env-queue"), {
+    expect_mapequal(parse_main_task_status(c("some-task-id")),
+                    list(task_id = "some-task-id",
+                         queue_id = "env-queue"))
+  })
+})
+
+
+test_that("main_task_status errors if no queue ID", {
+  withr::with_envvar(c(ORDERLY_RUNNER_QUEUE_ID = ""), {
+    expect_error(main_task_status(c("some-task-id")),
+                 "Queue ID must be provided")
+  })
+})
+
+
+test_that("main_task_status prints status for a task", {
+  skip_if_no_redis()
+
+  upstream_git <- test_prepare_orderly_example("data")
+  upstream_outpack <- create_temporary_root(use_file_store = TRUE)
+
+  q <- start_queue_with_workers(1)
+
+  sha <- gert::git_commit_id(repo = upstream_git)
+  task_id <- q$submit(
+    url = upstream_git,
+    branch = "master",
+    ref = sha,
+    reportname = "data",
+    parameters = NULL,
+    location = list(type = "path", args = list(path = upstream_outpack))
+  )
+  expect_worker_task_complete(task_id, q$controller, 10)
+
+  output <- capture.output(
+    withr::with_envvar(
+      c(ORDERLY_RUNNER_QUEUE_ID = q$controller$queue_id),
+      main_task_status(c(task_id))
+    )
+  )
+
+  expect_match(output, sprintf("Task ID:.*%s", task_id), all = FALSE)
+  expect_match(output, "Status:.*COMPLETE", all = FALSE)
+  expect_match(output, "Packet ID:", all = FALSE)
+})
+
+
+test_that("main_task_status errors if task does not exist", {
+  skip_if_no_redis()
+
+  q <- start_queue()
+
+  withr::with_envvar(
+    c(ORDERLY_RUNNER_QUEUE_ID = q$controller$queue_id),
+    expect_error(main_task_status(c("nonexistent-task-id")),
+                 "does not exist in queue")
+  )
+})

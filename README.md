@@ -31,6 +31,25 @@ To run the full docker setup:
 When running the server or worker containers, you should set `REDIS_URL` to point to your Redis instance.
 You should also set the `ORDERLY_RUNNER_QUEUE_ID` to the same thing between server and worker containers so they connect to the same queue.
 
+## Inspecting the queue
+
+To look up the status of a run by its task ID, use the `orderly.runner.task_status` command (available in the Docker image):
+
+```
+orderly.runner.task_status [options] <task_id>
+
+Options:
+  --queue-id=ID  Queue ID to connect to (overrides ORDERLY_RUNNER_QUEUE_ID)
+```
+
+The `ORDERLY_RUNNER_QUEUE_ID` environment variable must be set (or passed via `--queue-id`) to connect to the correct queue. For example:
+
+```sh
+ORDERLY_RUNNER_QUEUE_ID=my-queue orderly.runner.task_status abc123
+```
+
+This will print the task status, timing information, packet ID (if complete), error message (if failed), and worker logs.
+
 ## License
 
 MIT © Imperial College of Science, Technology and Medicine
