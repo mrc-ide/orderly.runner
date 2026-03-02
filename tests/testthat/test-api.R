@@ -175,8 +175,8 @@ test_that("can list orderly reports", {
                                                          ref = sha))
   other_data <- expect_success(res)
   params2 <- other_data[other_data$name == "parameters2", ]
-  existing <- res$data[other_data$name != "parameters2", ]
-  expect_equal(existing, res$data)
+  existing <- other_data[other_data$name != "parameters2", ]
+  expect_equal(existing, data)
   expect_equal(nrow(params2), 1)
   expect_true(params2$hasModifications)
 

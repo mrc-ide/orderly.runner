@@ -125,7 +125,7 @@ test_that("can run report with params", {
 
   r <- bg$request(
     "POST", "/report/run",
-    query = list(url = upstream_git),,
+    query = list(url = upstream_git),
     body = body,
     encode = "raw",
     httr::content_type("application/json")
