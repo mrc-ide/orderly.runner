@@ -11,13 +11,12 @@ library_path <- withr::local_tempdir()
 
 bg <- porcelain::porcelain_background$new(
   api,
-  args = list(withr::local_tempdir()),
+  args = list(withr::local_tempdir(), NULL, "debug", FALSE, library_path),
   # The /usr/lib/R/library R library path is guaranteed to exist,
   # including here outside the docker container that mounts a custom
   # library path at /library, so we can be sure that the /library/list endpoint
   # will return something.
-  env = c(ORDERLY_RUNNER_QUEUE_ID = queue_id,
-          ORDERLY_LIBRARY_PATH = library_path)
+  env = c(ORDERLY_RUNNER_QUEUE_ID = queue_id)
 )
 bg$start()
 on.exit(bg$stop())
