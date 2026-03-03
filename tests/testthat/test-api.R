@@ -4,7 +4,7 @@ test_that("Can construct the api", {
   result <- evaluate_promise({
     res <- obj$request("GET", "/")
   })
-  expect_equal(res$status, 200)
+  expect_equal(res$status, 123)
   logs <- lapply(strsplit(result$output, "\n")[[1]], jsonlite::parse_json)
   expect_length(logs, 2)
   expect_equal(logs[[1]]$logger, "orderly.runner")
