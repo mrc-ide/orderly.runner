@@ -7,6 +7,8 @@ queue <- start_queue_with_workers(1, queue_id = queue_id)
 upstream_git <- test_prepare_orderly_example(c("data", "parameters"))
 upstream_outpack <- create_temporary_root(use_file_store = TRUE)
 
+library_path <- withr::local_tempdir()
+
 bg <- porcelain::porcelain_background$new(
   api,
   args = list(withr::local_tempdir()),
@@ -15,10 +17,18 @@ bg <- porcelain::porcelain_background$new(
   # library path at /library, so we can be sure that the /library/list endpoint
   # will return something.
   env = c(ORDERLY_RUNNER_QUEUE_ID = queue_id,
-          ORDERLY_LIBRARY_PATH = "/usr/lib/R/library")
+          ORDERLY_LIBRARY_PATH = library_path)
 )
 bg$start()
 on.exit(bg$stop())
+
+# Install a small package at library_path
+install.packages(
+  "mime",
+  version = "0.13",
+  lib = library_path,
+  repos = "https://cloud.r-project.org",
+)
 
 r <- bg$request("POST",
                 "/repository/fetch",
@@ -46,14 +56,6 @@ test_that("can run server", {
 
 
 test_that("can list installed libraries", {
-  # Install a small package (mime). Fix version.
-  install.packages(
-    "mime",
-    lib = "/library",
-    version = "0.13",
-    repos = "https://cloud.r-project.org",
-  )
-
   r <- bg$request("GET", "/library/list")
   expect_equal(httr::status_code(r), 200)
 
@@ -63,11 +65,9 @@ test_that("can list installed libraries", {
 
   packages <- vapply(dat$data, function(x) x$name, "")
   versions <- vapply(dat$data, function(x) x$version, "")
-  # Log the packages and versions for debugging purposes on CI
-  expect_equal(packages, "lovely list of packages")
-  expect_equal(versions, "lovely list of versions")
-  expect_true(all(c("base", "utils", "stats") %in% packages))
-  expect_match(versions, "^[0-9]+\\.[0-9]+", all = TRUE)
+
+  expect_equal(packages, c("mime"))
+  expect_match(versions, c("0.13"))
 })
 
 
