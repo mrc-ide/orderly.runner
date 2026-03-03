@@ -46,6 +46,14 @@ test_that("can run server", {
 
 
 test_that("can list installed libraries", {
+  # Install a small package (mime). Fix version.
+  install.packages(
+    "mime",
+    lib = "/library",
+    version = "0.13",
+    repos = "https://cloud.r-project.org",
+  )
+
   r <- bg$request("GET", "/library/list")
   expect_equal(httr::status_code(r), 200)
 
