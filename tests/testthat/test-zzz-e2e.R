@@ -56,7 +56,8 @@ test_that("can list installed libraries", {
   packages <- vapply(dat$data, function(x) x$name, "")
   versions <- vapply(dat$data, function(x) x$version, "")
   # Log the packages and versions for debugging purposes on CI
-  message("Installed packages: ", paste(packages, versions, sep = " ", collapse = ", "))
+  expect_equal(packages, "lovely list of packages")
+  expect_equal(versions, "lovely list of versions")
   expect_true(all(c("base", "utils", "stats") %in% packages))
   expect_match(versions, "^[0-9]+\\.[0-9]+", all = TRUE)
 })
