@@ -4,32 +4,56 @@ test_that("Can parse arguments (server)", {
                        validate = FALSE,
                        port = 8001,
                        host = "0.0.0.0",
-                       repositories = "path"))
+                       repositories = "path",
+                       lib_path = "/library"))
   expect_mapequal(parse_main(c("--port=8080", "path")),
                   list(log_level = "info",
                        validate = FALSE,
                        port = 8080,
                        host = "0.0.0.0",
-                       repositories = "path"))
+                       repositories = "path",
+                       lib_path = "/library"))
   expect_mapequal(parse_main(c("--port=8080", "--validate", "path")),
                   list(log_level = "info",
                        validate = TRUE,
                        port = 8080,
                        host = "0.0.0.0",
-                       repositories = "path"))
+                       repositories = "path",
+                       lib_path = "/library"))
   expect_mapequal(parse_main(c("--log-level=debug", "--validate", "path")),
                   list(log_level = "debug",
                        validate = TRUE,
                        port = 8001,
                        host = "0.0.0.0",
-                       repositories = "path"))
+                       repositories = "path",
+                       lib_path = "/library"))
   expect_mapequal(
     parse_main(c("--host=host", "--log-level=debug", "--validate", "path")),
     list(log_level = "debug",
          validate = TRUE,
          port = 8001,
          host = "host",
-         repositories = "path")
+         repositories = "path",
+         lib_path = "/library")
+  )
+  expect_mapequal(
+    parse_main(c("path", "--lib-path=/usr/bin/library")),
+    list(log_level = "info",
+         validate = FALSE,
+         port = 8001,
+         host = "0.0.0.0",
+         repositories = "path",
+         lib_path = "/usr/bin/library")
+  )
+
+  expect_mapequal(
+    parse_main(c("--lib-path=/", "path")),
+    list(log_level = "info",
+         validate = FALSE,
+         port = 8001,
+         host = "0.0.0.0",
+         repositories = "path",
+         lib_path = "/")
   )
 })
 
@@ -39,11 +63,11 @@ test_that("Can construct api", {
   mock_run <- mockery::mock()
   mock_api <- mockery::mock(list(run = mock_run))
   mockery::stub(main, "api", mock_api)
-  main(c("--host=my-host", "--log-level=debug", "path"))
+  main(c("--host=my-host", "--log-level=debug", "path", "--lib-path=/library"))
 
   mockery::expect_called(mock_api, 1)
   expect_equal(mockery::mock_args(mock_api)[[1]],
-               list("path", FALSE, "debug"))
+               list("path", FALSE, "debug", "/library"))
 
   mockery::expect_called(mock_run, 1)
   expect_equal(mockery::mock_args(mock_run)[[1]],
