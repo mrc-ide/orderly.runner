@@ -10,7 +10,12 @@ upstream_outpack <- create_temporary_root(use_file_store = TRUE)
 bg <- porcelain::porcelain_background$new(
   api,
   args = list(withr::local_tempdir()),
-  env = c(ORDERLY_RUNNER_QUEUE_ID = queue_id)
+  # The /usr/lib/R/library R library path is guaranteed to exist,
+  # including here outside the docker container that mounts a custom
+  # library path at /library, so we can be sure that the /library/list endpoint
+  # will return something.
+  env = c(ORDERLY_RUNNER_QUEUE_ID = queue_id,
+          ORDERLY_LIBRARY_PATH = "/usr/lib/R/library")
 )
 bg$start()
 on.exit(bg$stop())
@@ -37,6 +42,21 @@ test_that("can run server", {
     dat$data$orderly.runner,
     package_version_string("orderly.runner")
   )
+})
+
+
+test_that("can list installed libraries", {
+  r <- bg$request("GET", "/library/list")
+  expect_equal(httr::status_code(r), 200)
+
+  dat <- httr::content(r)
+  expect_equal(dat$status, "success")
+  expect_null(dat$errors)
+
+  packages <- vapply(dat$data, function(x) x$name, "")
+  versions <- vapply(dat$data, function(x) x$version, "")
+  expect_true(all(c("base", "utils", "stats") %in% packages))
+  expect_match(versions, "^[0-9]+\\.[0-9]+", all = TRUE)
 })
 
 

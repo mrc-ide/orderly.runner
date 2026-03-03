@@ -23,6 +23,18 @@ test_that("root data returns sensible data", {
 })
 
 
+test_that("can list installed libraries", {
+  obj <- create_api(skip_queue_creation = TRUE)
+
+  res <- obj$request("GET", "/library/list")
+  data <- expect_success(res)
+
+  # The /library mountpoint does not exist unless the API was set up using
+  # the Docker container, so the response is an empty list
+  expect_equal(data, list())
+})
+
+
 test_that("can fetch repositories", {
   repositories <- withr::local_tempdir()
   obj <- create_api(repositories = repositories, skip_queue_creation = TRUE)

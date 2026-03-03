@@ -13,6 +13,7 @@ docker rm -f \
 docker network rm $NETWORK
 
 docker volume rm $ORDERLY_VOLUME
+docker volume rm $LIBRARY_VOLUME
 
 rm -rf $HERE/test-repo
 rm -rf $HERE/orderly-root-volume

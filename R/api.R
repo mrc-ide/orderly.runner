@@ -50,6 +50,17 @@ root <- function() {
 }
 
 
+##' @porcelain GET /library/list => json(library_list)
+library_list <- function() {
+  lib <- Sys.getenv("ORDERLY_LIBRARY_PATH", "/library")
+  pkgs <- installed.packages(lib.loc = lib, noCache = TRUE)
+  data.frame(
+    name = unname(pkgs[, "Package"]),
+    version = unname(pkgs[, "Version"])
+  )
+}
+
+
 ##' @porcelain POST /repository/fetch => json(repository_fetch_response)
 ##'   query url :: string
 ##'   body data :: json(repository_fetch_request)
