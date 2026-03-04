@@ -8,8 +8,8 @@ api(
   repositories_base_path,
   validate = NULL,
   log_level = "info",
-  skip_queue_creation = FALSE,
-  shared_library_path = "/library"
+  lib_path = "/library",
+  skip_queue_creation = FALSE
 )
 }
 \arguments{
@@ -23,14 +23,14 @@ environments.  See \link[porcelain:porcelain]{porcelain::porcelain} for details}
 \item{log_level}{Logging level to use. Sensible options are "off",
 "info" and "all".}
 
-\item{skip_queue_creation}{Skip queue creation, this is primarily
-used for tests where we can't establish a Redis connection.}
-
-\item{shared_library_path}{Path to library to list packages from in
+\item{lib_path}{Path to library to list packages from in
 the /library/list endpoint. This is expected to be a shared library
 that workers have access to, mounted from the host machine.
 See https://github.com/vimc/montagu-config/tree/main/packages
 for more details.}
+
+\item{skip_queue_creation}{Skip queue creation, this is primarily
+used for tests where we can't establish a Redis connection.}
 }
 \value{
 A \link[porcelain:porcelain]{porcelain::porcelain} object. Notably this does \emph{not}

@@ -14,7 +14,7 @@
         "GET",
         "/library/list",
         library_list,
-        porcelain::porcelain_state(shared_library_path = state$shared_library_path),
+        porcelain::porcelain_state(lib_path = state$lib_path),
         returning = porcelain::porcelain_returning_json("library_list"),
         validate = validate)
     },
