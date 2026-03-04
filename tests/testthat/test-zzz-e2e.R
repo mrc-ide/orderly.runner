@@ -11,7 +11,10 @@ library_path <- withr::local_tempdir()
 
 bg <- porcelain::porcelain_background$new(
   api,
-  args = list(withr::local_tempdir(), NULL, "debug", FALSE, library_path),
+  args = list(
+    repositories_base_path = withr::local_tempdir(),
+    lib_path = library_path
+  ),
   env = c(ORDERLY_RUNNER_QUEUE_ID = queue_id)
 )
 bg$start()
