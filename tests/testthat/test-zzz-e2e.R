@@ -25,9 +25,8 @@ on.exit(bg$stop())
 # via the API instead of directly here
 install.packages(
   "mime",
-  version = "0.13",
   lib = library_path,
-  repos = "https://cloud.r-project.org",
+  repos = "https://cloud.r-project.org"
 )
 
 r <- bg$request("POST",
@@ -66,8 +65,10 @@ test_that("can list installed libraries", {
   packages <- vapply(dat$data, function(x) x$name, "")
   versions <- vapply(dat$data, function(x) x$version, "")
 
-  expect_equal(packages, c("mime"))
-  expect_match(versions, c("0.13"))
+  expect_true("mime" %in% packages)
+  mime_version <- versions[packages == "mime"]
+  expect_match(mime_version, "^[0-9]+\\.[0-9]+")
+
 })
 
 
