@@ -26,7 +26,8 @@ on.exit(bg$stop())
 install.packages(
   "mime",
   lib = library_path,
-  repos = "https://cloud.r-project.org"
+  repos = "https://cloud.r-project.org",
+  quiet = TRUE,
 )
 
 r <- bg$request("POST",
