@@ -18,6 +18,8 @@
 ##' @param lib_path Path to library to list packages from in
 ##'   the /library/list endpoint. This is expected to be a shared library
 ##'   that workers have access to, mounted from the host machine.
+##'   It should only be used for testing, since the workers have a hard-coded
+##'   library mountpoint path of "/library" (as per Dockerfile).
 ##'   See https://github.com/vimc/montagu-config/tree/main/packages
 ##'   for more details.
 ##'
