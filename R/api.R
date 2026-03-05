@@ -1,3 +1,10 @@
+# The API is created using porcelain: https://reside-ic.github.io/porcelain/.
+# For details on how to write porcelain endpoints declaratively, see:
+# https://reside-ic.github.io/porcelain/articles/roxygen.html
+# As explained by that vignette, after updating this file
+# you will need to run `devtools::document()` or similar to generate
+# `porcelain.R`.
+
 ##' Create an orderly runner, a porcelain object
 ##'
 ##' @title Create orderly runner
