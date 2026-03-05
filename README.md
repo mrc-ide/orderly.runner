@@ -75,6 +75,8 @@ To run a redis container, use `scripts/redis start`. Bring it down with `scripts
 docker build -t orderly.runner:local -f docker/Dockerfile .
 ```
 
+This takes >30s; the build can be done quicker (<5s) if you replace `RUN Rscript -e "pak::local_install('/src')"` with `RUN R CMD INSTALL --no-deps /src`; the latter installs the package without trying to resolve the dependency tree.
+
 1. Edit ORDERLY_RUNNER_IMAGE in `docker/test/common` to point at your local Docker build rather than the published image.
 1. Edit the `docker/test/run-test` script's references to run `$ORDERLY_RUNNER_IMAGE` so as to change `--pull=always` to `--pull=missing` (both times) so that the script doesn't try to pull your local image from a remote repository (which would fail, because you correctly won't have published your local image).
 1. Follow the steps under 'Using the published docker image of this package' above.
