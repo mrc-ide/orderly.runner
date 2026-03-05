@@ -7,13 +7,27 @@ queue <- start_queue_with_workers(1, queue_id = queue_id)
 upstream_git <- test_prepare_orderly_example(c("data", "parameters"))
 upstream_outpack <- create_temporary_root(use_file_store = TRUE)
 
+library_path <- withr::local_tempdir()
+
 bg <- porcelain::porcelain_background$new(
   api,
-  args = list(withr::local_tempdir()),
+  args = list(
+    repositories_base_path = withr::local_tempdir(),
+    lib_path = library_path
+  ),
   env = c(ORDERLY_RUNNER_QUEUE_ID = queue_id)
 )
 bg$start()
 on.exit(bg$stop())
+
+# Install a small package at library_path
+# TODO: Once an 'install package' endpoint is implemented, this can be done
+# via the API instead of directly here
+install.packages(
+  "mime",
+  lib = library_path,
+  repos = "https://cloud.r-project.org"
+)
 
 r <- bg$request("POST",
                 "/repository/fetch",
@@ -37,6 +51,24 @@ test_that("can run server", {
     dat$data$orderly.runner,
     package_version_string("orderly.runner")
   )
+})
+
+
+test_that("can list installed libraries", {
+  r <- bg$request("GET", "/library/list")
+  expect_equal(httr::status_code(r), 200)
+
+  dat <- httr::content(r)
+  expect_equal(dat$status, "success")
+  expect_null(dat$errors)
+
+  packages <- vapply(dat$data, function(x) x$name, "")
+  versions <- vapply(dat$data, function(x) x$version, "")
+
+  expect_true("mime" %in% packages)
+  mime_version <- versions[packages == "mime"]
+  expect_match(mime_version, "^[0-9]+\\.[0-9]+")
+
 })
 
 

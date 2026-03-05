@@ -17,6 +17,14 @@ docker run --rm -d \
 
 docker volume create $ORDERLY_VOLUME
 docker volume create $ORDERLY_LOGS_VOLUME
+docker volume create $LIBRARY_VOLUME
+
+# Install a test package into the library volume,
+# to be returned by the library_list API endpoint.
+docker run --rm --pull=missing \
+       -v $LIBRARY_VOLUME:$LIBRARY_MOUNT_PATH \
+       $ORDERLY_RUNNER_IMAGE \
+       Rscript -e "install.packages('mime', lib='$LIBRARY_MOUNT_PATH')"
 
 docker run --rm -d --pull=missing \
        --name=$DEBUG \
@@ -36,6 +44,7 @@ docker run --rm -d --pull=always \
        -p 127.0.0.1:8001:8001 \
        -v $ORDERLY_VOLUME:$CONTAINER_ORDERLY_ROOT_PATH \
        -v $ORDERLY_LOGS_VOLUME:$LOGS_DIR \
+       -v $LIBRARY_VOLUME:$LIBRARY_MOUNT_PATH \
        $ORDERLY_RUNNER_IMAGE \
        /repositories
 
@@ -47,5 +56,6 @@ docker run --rm -d --pull=always \
        --env=REDIS_URL=redis://$REDIS \
        -v $ORDERLY_VOLUME:$CONTAINER_ORDERLY_ROOT_PATH \
        -v $ORDERLY_LOGS_VOLUME:$LOGS_DIR \
+       -v $LIBRARY_VOLUME:$LIBRARY_MOUNT_PATH \
        $ORDERLY_RUNNER_IMAGE \
        $CONTAINER_ORDERLY_ROOT_PATH

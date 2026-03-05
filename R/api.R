@@ -15,13 +15,23 @@
 ##' @param skip_queue_creation Skip queue creation, this is primarily
 ##'   used for tests where we can't establish a Redis connection.
 ##'
+##' @param lib_path Path to library to list packages from in
+##'   the /library/list endpoint. This is expected to be a shared library
+##'   that workers have access to, mounted from the host machine.
+##'   It should only be used for testing, since the workers have a hard-coded
+##'   library mountpoint path of "/library" (as per Dockerfile).
+##'   See https://github.com/vimc/montagu-config/tree/main/packages
+##'   for more details.
+##'
 ##' @return A [porcelain::porcelain] object. Notably this does *not*
 ##'   start the server
 ##'
 ##' @export
 api <- function(
     repositories_base_path,
-    validate = NULL, log_level = "info",
+    validate = NULL,
+    log_level = "info",
+    lib_path = "/library",
     skip_queue_creation = FALSE) {
   logger <- porcelain::porcelain_logger(log_level)
 
@@ -35,7 +45,8 @@ api <- function(
   api <- porcelain::porcelain$new(validate = validate, logger = logger)
   api$include_package_endpoints(state = list(
     repositories_base_path = repositories_base_path,
-    queue = queue))
+    queue = queue,
+    lib_path = lib_path))
   api
 }
 
@@ -47,6 +58,17 @@ root <- function() {
     orderly.runner = package_version_string("orderly.runner")
   )
   lapply(versions, scalar)
+}
+
+
+##' @porcelain GET /library/list => json(library_list)
+##'   state lib_path :: lib_path
+library_list <- function(lib_path) {
+  pkgs <- installed.packages(lib.loc = lib_path, noCache = TRUE)
+  data.frame(
+    name = unname(pkgs[, "Package"]),
+    version = unname(pkgs[, "Version"])
+  )
 }
 
 

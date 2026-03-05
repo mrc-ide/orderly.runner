@@ -10,9 +10,10 @@ docker rm -f \
     $WORKER \
     $DEBUG
 
-docker network rm $NETWORK
+docker network rm $NETWORK || true
 
-docker volume rm $ORDERLY_VOLUME
+docker volume rm $ORDERLY_VOLUME || true
+docker volume rm $LIBRARY_VOLUME || true
 
 rm -rf $HERE/test-repo
 rm -rf $HERE/orderly-root-volume
