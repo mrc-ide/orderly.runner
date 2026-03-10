@@ -203,10 +203,10 @@ test_that("can list orderly reports", {
   ## Can list items from this sha
   res <- obj$request("GET", "/report/list", query = list(url = upstream,
                                                          ref = sha))
-  other_data <- expect_success(res)
-  params2 <- other_data[other_data$name == "parameters2", ]
-  existing <- res$data[other_data$name != "parameters2", ]
-  expect_equal(existing, res$data)
+  new_data <- expect_success(res)
+  params2 <- new_data[new_data$name == "parameters2", ]
+  preexisting <- new_data[new_data$name != "parameters2", ]
+  expect_equal(preexisting, data)
   expect_equal(nrow(params2), 1)
   expect_true(params2$hasModifications)
 
