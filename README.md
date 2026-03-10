@@ -59,27 +59,11 @@ To run a redis container, use `scripts/redis start`. Bring it down with `scripts
 
 ## To run the full docker setup
 
-### ...using the published docker image of this package
-
 1. Optionally modify `docker/test/examples` orderly reports. These will be used as reports in the container
-1. Run `docker/test/run-test` - this will produce a `test-repo` directory to show you what was copied into the docker containers (you can create just this directory without running the docker containers by running `docker/test/setup-test-repo` if you want)
+1. Run `docker/test/run-test` to use the published docker image of this package, or `docker/test/run-test --local` to build from your local version for development. This will produce a `test-repo` directory to show you what was copied into the docker containers (you can create just this directory without running the docker containers by running `docker/test/setup-test-repo` if you want).
 1. The server will be available at `localhost:8001`
 1. To view the orderly root directory in the docker container (you may want to do this after workers have run orderly reports for example), run `docker/test/copy-orderly-root` and this will copy the contents to `docker/test/orderly-root-volume`
 1. Finally to clear docker and remove `test-repo` and `orderly-root-volume` directories run `docker/test/clear-test`
-
-### ...using a local version of this package (for local development)
-
-1. Build an image from your local version and give it a memorable name, e.g. `orderly.runner:local`:
-
-```sh
-docker build -t orderly.runner:local -f docker/Dockerfile .
-```
-
-This takes >30s; the build can be done quicker (<5s) if you replace `RUN Rscript -e "pak::local_install('/src')"` with `RUN R CMD INSTALL --no-deps /src`; the latter installs the package without trying to resolve the dependency tree.
-
-1. Edit ORDERLY_RUNNER_IMAGE in `docker/test/common` to point at your local Docker build rather than the published image.
-1. Edit the `docker/test/run-test` script's references to run `$ORDERLY_RUNNER_IMAGE` so as to change `--pull=always` to `--pull=missing` (both times) so that the script doesn't try to pull your local image from a remote repository (which would fail, because you correctly won't have published your local image).
-1. Follow the steps under 'Using the published docker image of this package' above.
 
 ## Notes for deploying
 

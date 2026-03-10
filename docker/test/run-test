@@ -5,6 +5,14 @@ ABSOLUTE_PATH=$(realpath $HERE)
 
 . $HERE/common
 
+# --local flag allows you to build an image from local source and use that for the test run, instead of pulling from the registry.
+PULL_POLICY=always
+if [[ "${1:-}" == "--local" ]]; then
+    docker build -t orderly.runner:local -f "$HERE/../Dockerfile" "$HERE/../.."
+    ORDERLY_RUNNER_IMAGE=orderly.runner:local
+    PULL_POLICY=missing # This local build won't be in the registry, so avoid attempting to pull
+fi
+
 $HERE/setup-test-repo
 
 docker network create $NETWORK
@@ -21,7 +29,7 @@ docker volume create $LIBRARY_VOLUME
 
 # Install a test package into the library volume,
 # to be returned by the library_list API endpoint.
-docker run --rm --pull=missing \
+docker run --rm --pull=$PULL_POLICY \
        --volume=$LIBRARY_VOLUME:$LIBRARY_MOUNT_PATH \
        $ORDERLY_RUNNER_IMAGE \
        Rscript -e "install.packages('mime', lib='$LIBRARY_MOUNT_PATH')"
@@ -35,7 +43,7 @@ docker run --rm -d --pull=missing \
 
 docker cp $ABSOLUTE_PATH/test-repo/. $DEBUG:$CONTAINER_ORDERLY_ROOT_PATH
 
-docker run --rm -d --pull=always \
+docker run --rm -d --pull=$PULL_POLICY \
        --net=$NETWORK \
        --name=$SERVER \
        --entrypoint="/usr/local/bin/orderly.runner.server" \
@@ -48,7 +56,7 @@ docker run --rm -d --pull=always \
        $ORDERLY_RUNNER_IMAGE \
        /repositories
 
-docker run --rm -d --pull=always \
+docker run --rm -d --pull=$PULL_POLICY \
        --net=$NETWORK \
        --name=$WORKER \
        --entrypoint="/usr/local/bin/orderly.runner.worker" \
