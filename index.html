@@ -67,20 +67,59 @@
 </h1></div>
 <!-- badges: start -->
 
+<p>A small HTTP server for running orderly reports.</p>
+<p>The worker and API server are intended to be run as separate containers created from the same image, using the two different entrypoints in <code>docker/bin</code>.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
-<p>To install <code>orderly.runner</code>:</p>
+<p>To install <code>orderly.runner</code> from GitHub:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"mrc-ide/orderly.runner"</span>, upgrade <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="testing-and-development">Testing and development<a class="anchor" aria-label="anchor" href="#testing-and-development"></a>
+<h2 id="local-development">Local development<a class="anchor" aria-label="anchor" href="#local-development"></a>
 </h2>
-<p>To run the full docker setup:</p>
+<div class="section level3">
+<h3 id="installation-1">Installation<a class="anchor" aria-label="anchor" href="#installation-1"></a>
+</h3>
+<p>To install for local development, you can use:</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install</span><span class="op">(</span>dependencies <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="set-the-ssh-key-environment-variable">Set the SSH key environment variable<a class="anchor" aria-label="anchor" href="#set-the-ssh-key-environment-variable"></a>
+</h3>
+<p>To develop (or test) functions that use private git repositories, you will need to set the environment variable <code>TEST_PRIVATE_REPO_SSH_KEY</code>.</p>
+<ol style="list-style-type: decimal">
+<li>
+<a href="https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent" class="external-link">Create an ssh key</a> - crucially, without setting a passphrase.</li>
+<li>Add it as a deploy key on <a href="https://github.com/mrc-ide/orderly.runner-private-test-repo/" class="external-link">the private test repo</a> at <a href="https://github.com/mrc-ide/orderly.runner-private-test-repo/settings/keys" class="external-link">this link</a>.</li>
+<li>Then set the private key as an environment variable:</li>
+</ol>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Sys.setenv.html" class="external-link">Sys.setenv</a></span><span class="op">(</span>TEST_PRIVATE_REPO_SSH_KEY <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/readLines.html" class="external-link">readLines</a></span><span class="op">(</span><span class="st">"path/to/ssh/key"</span><span class="op">)</span>, collapse <span class="op">=</span> <span class="st">"\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="testing-outside-docker">Testing (outside docker)<a class="anchor" aria-label="anchor" href="#testing-outside-docker"></a>
+</h3>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">test</span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co"># or to run a specific test file:</span></span>
+<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">test</span><span class="op">(</span>filter<span class="op">=</span><span class="st">'e2e'</span><span class="op">)</span></span></code></pre></div>
+<p>If redis is not running, then tests relying on redis will be skipped.</p>
+</div>
+<div class="section level3">
+<h3 id="running-redis">Running redis<a class="anchor" aria-label="anchor" href="#running-redis"></a>
+</h3>
+<p>To run a redis container, use <code>scripts/redis start</code>. Bring it down with <code>scripts/redis stop</code>.</p>
+</div>
+</div>
+<div class="section level2">
+<h2 id="to-run-the-full-docker-setup">To run the full docker setup<a class="anchor" aria-label="anchor" href="#to-run-the-full-docker-setup"></a>
+</h2>
 <ol style="list-style-type: decimal">
 <li>Optionally modify <code>docker/test/examples</code> orderly reports. These will be used as reports in the container</li>
-<li>Run <code>docker/test/run-test</code> - this will produce a <code>test-repo</code> directory to show you what was copied into the docker containers (you can create just this directory without running the docker containers by running <code>docker/test/setup-test-repo</code> if you want)</li>
+<li>Run <code>docker/test/run-test</code> to use the docker image from GitHub Container Registry, or <code>docker/test/run-test --local</code> to build from your local version for development. This will produce a <code>test-repo</code> directory to show you what was copied into the docker containers (you can create just this directory without running the docker containers by running <code>docker/test/setup-test-repo</code> if you want).</li>
 <li>The server will be available at <code>localhost:8001</code>
 </li>
 <li>To view the orderly root directory in the docker container (you may want to do this after workers have run orderly reports for example), run <code>docker/test/copy-orderly-root</code> and this will copy the contents to <code>docker/test/orderly-root-volume</code>
