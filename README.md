@@ -38,7 +38,7 @@ To develop (or test) functions that use private git repositories, you will need 
 1. Then set the private key as an environment variable:
 
 ```r
-Sys.setenv(TEST_PRIVATE_REPO_SSH_KEY = "...")
+Sys.setenv(TEST_PRIVATE_REPO_SSH_KEY = paste(readLines("path/to/ssh/key"), collapse = "\n"))
 ```
 
 ### Testing (outside docker)
