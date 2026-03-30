@@ -27,13 +27,6 @@ docker volume create $ORDERLY_VOLUME
 docker volume create $ORDERLY_LOGS_VOLUME
 docker volume create $LIBRARY_VOLUME
 
-# Install a test package into the library volume,
-# to be returned by the library_list API endpoint.
-docker run --rm --pull=$PULL_POLICY \
-       --volume=$LIBRARY_VOLUME:$LIBRARY_MOUNT_PATH \
-       $ORDERLY_RUNNER_IMAGE \
-       Rscript -e "install.packages('mime', lib='$LIBRARY_MOUNT_PATH')"
-
 docker run --rm -d --pull=missing \
        --name=$DEBUG \
        --volume=$ORDERLY_VOLUME:$CONTAINER_ORDERLY_ROOT_PATH \
