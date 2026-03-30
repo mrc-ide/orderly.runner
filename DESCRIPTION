@@ -1,6 +1,6 @@
 Package: orderly.runner
 Title: Run an 'orderly' Packet
-Version: 0.1.4
+Version: 0.1.5
 Authors@R: c(person("Rich", "FitzJohn", role = c("aut", "cre"),
                     email = "rich.fitzjohn@gmail.com"),
              person("Imperial College of Science, Technology and Medicine",
@@ -8,7 +8,7 @@ Authors@R: c(person("Rich", "FitzJohn", role = c("aut", "cre"),
 Description: Small HTTP server for running orderly reports.
 License: MIT + file LICENSE
 Encoding: UTF-8
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 Roxygen: list(markdown = TRUE, roclets = c("rd", "namespace", "porcelain::porcelain_roclet"))
 URL: https://github.com/mrc-ide/orderly.runner
 BugReports: https://github.com/mrc-ide/orderly.runner/issues

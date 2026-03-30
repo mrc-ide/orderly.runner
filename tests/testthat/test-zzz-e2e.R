@@ -7,22 +7,16 @@ queue <- start_queue_with_workers(1, queue_id = queue_id)
 upstream_git <- test_prepare_orderly_example(c("data", "parameters"))
 upstream_outpack <- create_temporary_root(use_file_store = TRUE)
 
-library_path <- withr::local_tempdir()
-
 bg <- porcelain::porcelain_background$new(
   api,
-  args = list(
-    repositories_base_path = withr::local_tempdir(),
-    lib_path = library_path
-  ),
+  args = list(repositories_base_path = withr::local_tempdir()),
   env = c(ORDERLY_RUNNER_QUEUE_ID = queue_id)
 )
 bg$start()
 on.exit(bg$stop())
 
-# Install a small package at library_path
-# TODO: Once an 'install package' endpoint is implemented, this can be done
-# via the API instead of directly here
+library_path <- withr::local_tempdir()
+# Install a small package in a temp dir for testing
 install.packages(
   "mime",
   lib = library_path,
@@ -65,11 +59,12 @@ test_that("can list installed libraries", {
 
   packages <- vapply(dat$data, function(x) x$name, "")
   versions <- vapply(dat$data, function(x) x$version, "")
+  locations <- vapply(dat$data, function(x) x$location, "")
 
   expect_true("mime" %in% packages)
   mime_version <- versions[packages == "mime"]
   expect_match(mime_version, "^[0-9]+\\.[0-9]+")
-
+  expect_equal(locations[packages == "mime"], library_path)
 })
 
 
