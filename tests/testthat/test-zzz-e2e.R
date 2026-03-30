@@ -57,7 +57,9 @@ test_that("can list installed libraries", {
   idx <- which(packages == "orderly.runner")
   expect_match(versions[idx], "^[0-9]+\\.[0-9]+")
   # Check location is a non-empty path
-  expect_true(nzchar(locations[idx]))
+  # ('all' covers the case where orderly.runner is installed in
+  # multiple locations)
+  expect_true(all(nzchar(locations[idx])))
 })
 
 
