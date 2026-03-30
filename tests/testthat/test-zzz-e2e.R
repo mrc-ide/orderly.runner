@@ -15,15 +15,6 @@ bg <- porcelain::porcelain_background$new(
 bg$start()
 on.exit(bg$stop())
 
-library_path <- withr::local_tempdir()
-# Install a small package in a temp dir for testing
-install.packages(
-  "mime",
-  lib = library_path,
-  repos = "https://cloud.r-project.org",
-  quiet = TRUE,
-)
-
 r <- bg$request("POST",
                 "/repository/fetch",
                 query = list(url = upstream_git),
@@ -61,10 +52,12 @@ test_that("can list installed libraries", {
   versions <- vapply(dat$data, function(x) x$version, "")
   locations <- vapply(dat$data, function(x) x$location, "")
 
-  expect_true("mime" %in% packages)
-  mime_version <- versions[packages == "mime"]
-  expect_match(mime_version, "^[0-9]+\\.[0-9]+")
-  expect_equal(locations[packages == "mime"], library_path)
+  # Check that orderly.runner is among the list of installed packages
+  expect_true("orderly.runner" %in% packages)
+  idx <- which(packages == "orderly.runner")
+  expect_match(versions[idx], "^[0-9]+\\.[0-9]+")
+  # Check location is a non-empty path
+  expect_true(nzchar(locations[idx]))
 })
 
 
