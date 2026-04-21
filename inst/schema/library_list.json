@@ -5,10 +5,11 @@
         "type": "object",
         "properties": {
             "name": { "type": "string" },
-            "version": { "type": "string" }
+            "version": { "type": "string" },
+            "location": { "type": "string" }
         },
         "additionalProperties": false,
-        "required": ["name", "version"]
+        "required": ["name", "version", "location"]
     }
 }
 

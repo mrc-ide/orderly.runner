@@ -23,28 +23,13 @@ test_that("root data returns sensible data", {
 })
 
 
-test_that("can list installed libraries from default library path /library", {
+test_that("can list installed libraries", {
   obj <- create_api(skip_queue_creation = TRUE)
 
   res <- obj$request("GET", "/library/list")
   data <- expect_success(res)
 
-  # The /library mountpoint does not exist unless the API was set up using
-  # the Docker container, so the response is an empty list
-  expect_equal(data, list())
-})
-
-test_that("can list installed libraries from custom library path", {
-  # Set lib_path to the parent library directory of the testthat package,
-  # which is guaranteed to be installed, since we are using it here.
-  pkg_path <- find.package("testthat")
-  lib_path <- dirname(pkg_path)
-
-  obj <- create_api(skip_queue_creation = TRUE, lib_path = lib_path)
-
-  res <- obj$request("GET", "/library/list")
-  data <- expect_success(res)
-
+  # The testthat package is guaranteed to be installed, since we use it here.
   expect_true("testthat" %in% data$name)
   expect_true(
     as.character(packageVersion("testthat")) %in%

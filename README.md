@@ -58,6 +58,7 @@ To run a redis container, use `scripts/redis start`. Bring it down with `scripts
 ## To run the full docker setup
 
 1. Optionally modify `docker/test/examples` orderly reports. These will be used as reports in the container
+1. Clear the decks with `docker/test/clear-test`.
 1. Run `docker/test/run-test` to use the docker image from GitHub Container Registry, or `docker/test/run-test --local` to build from your local version for development. This will produce a `test-repo` directory to show you what was copied into the docker containers (you can create just this directory without running the docker containers by running `docker/test/setup-test-repo` if you want).
 1. The server will be available at `localhost:8001`
 1. To view the orderly root directory in the docker container (you may want to do this after workers have run orderly reports for example), run `docker/test/copy-orderly-root` and this will copy the contents to `docker/test/orderly-root-volume`
