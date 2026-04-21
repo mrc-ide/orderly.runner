@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">orderly.runner</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.4</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.5</span>
       </span>
     </div>
 
@@ -119,6 +119,7 @@
 </h2>
 <ol style="list-style-type: decimal">
 <li>Optionally modify <code>docker/test/examples</code> orderly reports. These will be used as reports in the container</li>
+<li>Clear the decks with <code>docker/test/clear-test</code>.</li>
 <li>Run <code>docker/test/run-test</code> to use the docker image from GitHub Container Registry, or <code>docker/test/run-test --local</code> to build from your local version for development. This will produce a <code>test-repo</code> directory to show you what was copied into the docker containers (you can create just this directory without running the docker containers by running <code>docker/test/setup-test-repo</code> if you want).</li>
 <li>The server will be available at <code>localhost:8001</code>
 </li>
